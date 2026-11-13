@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.3.1',u=JSON.parse(localStorage.getItem('spark_upd')||'null');if(!u||!u.v)return;
+<script>(function(){try{var V='2.4.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null');if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -13858,7 +13858,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.3.1', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.4.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14073,7 +14073,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             window.sparkAcc = Object.freeze({ info: () => ({ signedIn: !!S.a, tier: S.tier, view: S.as || S.tier, days: daysLeft(), name: S.a && S.a.name }), can: f => can(f), recheck: async () => { await resolve(); if (S.ready && S.a && !S.tier && !$('accOv')) { closeMd(); login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); } }, profile: async () => S.a ? { name: S.a.name, email: S.a.email, org: S.a.org || '', tier: S.tier || 'none', days: daysLeft() === Infinity ? 'دائم' : String(daysLeft()), ch: S.a.code ? (await sparkSha(S.a.code)).slice(0, 16) : '' } : null, trialFrom: async ts => { ts = +ts; if (!(ts > 1.6e12) || ts > Date.now() || !S.a || S.lic) return; const b = +LS.g('spark_dv') || Infinity; if (ts >= b) return; await anchor(ts); await resolve(); if (!S.tier && S.a && !$('accOv')) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }, waLink: () => wa(null, S.a) });
             // ---------- boot ----------
             try { S.a = JSON.parse(LS.g('spark_acct_v1') || 'null'); } catch (e) { }
-            const boot = async () => { await resolve(); S.ready = true; if (!S.a) login(); else if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); else if (S.tier === 'student' && !S.lic && daysLeft() <= 5) try { sxToast('متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية'); } catch (e) { } };
+            const boot = async () => { await resolve(); S.ready = true; if (!S.a) login(); else if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); else if (S.tier === 'student' && !S.lic && daysLeft() <= 5) try { sxToast('متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية'); } catch (e) { } if (S.tier === 'student' && !S.lic && daysLeft() <= 7) try { sparkNotify({ id: 't:' + daysLeft(), title: 'متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية', text: 'اطلب كود تفعيل من صفحة حسابك لمتابعة العمل دون انقطاع.', ic: 'fa-hourglass-half', act: 'account' }); } catch (e) { } };
             if (document.readyState === 'complete') setTimeout(boot, 200); else addEventListener('load', () => setTimeout(boot, 200));
             setInterval(() => { if (S.a && S.tier && !S.lic && daysLeft() <= 0) { resolve().then(() => { if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }); } }, 600000);
         })();
@@ -14100,6 +14100,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
                     if (!m) { if (manual) bar('<b>تعذّر الوصول لخادم التحديثات</b><br>تأكد من الاتصال بالإنترنت ثم أعد المحاولة.'); return; }
                     if (typeof m.api === 'string' && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(m.api)) { if (LS.g('spark_api') !== m.api) { LS.s('spark_api', m.api); try { dispatchEvent(new Event('spark-acct')); } catch (e) { } } } else if (m.api === '') { try { localStorage.removeItem('spark_api'); } catch (e) { } }
                     if (Array.isArray(m.revoked)) { LS.s('spark_rv', JSON.stringify(m.revoked.slice(0, 5000))); try { sparkAcc.recheck(); } catch (e) { } }
+                    if (m.notice && m.notice.id) { try { sparkNotify({ id: 'n:' + m.notice.id, title: m.notice.title || 'تنبيه من إدارة المنصة', text: m.notice.text, ic: 'fa-bullhorn' }); } catch (e) { } }
                     if (m.notice && m.notice.id && LS.g('spark_ntc') !== m.notice.id) bar('<b>' + esc(m.notice.title || 'تنبيه من إدارة المنصة') + '</b><br>' + esc(m.notice.text), m.notice.id);
                     if (cmp(m.v, SPARK_VER) <= 0) { if (manual) bar('<b>المنصة محدّثة</b><br>أنت تستخدم أحدث إصدار (v' + SPARK_VER + ').'); return; }
                     const st = JSON.parse(LS.g('spark_upd') || 'null'), f = m[document.getElementById('threeSrc') ? 'single' : 'www'];
@@ -14108,13 +14109,14 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
                         if (await sparkSha(buf) !== f.sha) { if (manual) bar('<b>ملف التحديث غير مطابق</b><br>تم تجاهله حفاظاً على سلامة المنصة.'); return; }   // integrity
                         await sparkKV.set('upd_html', new TextDecoder().decode(buf)); LS.s('spark_upd', JSON.stringify({ v: m.v, tries: 0 }));
                     }
+                    try { sparkNotify({ id: 'u:' + m.v, title: 'تحديث جديد جاهز — الإصدار ' + m.v, text: (m.notes || '') + ' — اضغط لتطبيقه الآن.', ic: 'fa-download', act: 'update' }); } catch (e) { }
                     const b = bar('<b>تحديث جديد جاهز — الإصدار ' + esc(m.v) + '</b>' + (m.notes ? '<br>' + esc(m.notes) : '') + '<br><button id="spUpdGo" style="margin-top:8px;height:34px;padding:0 14px;border-radius:8px;border:0;background:#2f9e8f;color:#fff;font-weight:700;cursor:pointer;font-family:inherit">تطبيق التحديث الآن</button> <span style="opacity:.7;font-size:11.5px">أو يُطبَّق تلقائياً عند التشغيل القادم</span>');
                     b.querySelector('#spUpdGo').onclick = () => { try { if (typeof autoSaveNow === 'function') autoSaveNow(); } catch (e) { } location.reload(); };
                 } finally { busy = false; }
             }
             window.sparkUpdateCheck = check;
-            const due = () => navigator.onLine !== false && Date.now() - (+LS.g('spark_upd_t') || 0) > 3 * 3600e3;
-            addEventListener('load', () => setTimeout(() => { if (due()) check(false); }, 6000)); setInterval(() => { if (due()) check(false); }, 30 * 60e3); addEventListener('online', () => { if (due()) check(false); });
+            const due = () => navigator.onLine !== false && Date.now() - (+LS.g('spark_upd_t') || 0) > 20 * 60e3;
+            addEventListener('load', () => setTimeout(() => { if (due()) check(false); }, 6000)); setInterval(() => { if (due()) check(false); }, 30 * 60e3); addEventListener('online', () => { if (due()) check(false); }); document.addEventListener('visibilitychange', () => { if (!document.hidden && due()) check(false); });
         })();
 
 // ===== Phase 31: release hardening — untrusted-file sanitising, error log + support report, terms, what's-new =====
@@ -14153,11 +14155,11 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARK SimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
-@media (min-width:981px) and (max-width:1240px){.sx-mbtn{font-size:0!important;gap:0!important;padding-inline:9px!important}.sx-mbtn::before{font-size:13px!important;opacity:.9!important}header.sp-head h1{font-size:15px!important}header.sp-head select{max-width:150px!important}header.sp-head{gap:6px!important}}
+@media (min-width:981px) and (max-width:1500px){.sx-mbtn{font-size:0!important;gap:0!important;padding-inline:9px!important}.sx-mbtn::before{font-size:13px!important;opacity:.9!important}header.sp-head h1{font-size:15px!important}header.sp-head select{max-width:150px!important}header.sp-head{gap:6px!important}}
 #bottomTelemetryDock{container-type:inline-size}
 @container (max-width:600px){#bottomTelemetryDock>div:first-child{display:none!important}#bottomTelemetryDock>div:last-child{width:100%!important;flex:1 1 100%!important}}
 .jx-tabgrp,.jx-tabsep{cursor:pointer;border-radius:8px;padding-block:6px!important;-webkit-tap-highlight-color:transparent}.jx-tabgrp:hover,.jx-tabsep:hover,.jx-tabgrp:active,.jx-tabsep:active{color:var(--sp-txt)!important;background:var(--sp-hover)}
@@ -14191,6 +14193,46 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
             window.sparkPing = () => ping(true);
             addEventListener('spark-acct', () => setTimeout(() => ping(false), 1500)); addEventListener('online', () => ping(false));
             addEventListener('load', () => setTimeout(() => ping(false), 9000)); setInterval(() => ping(false), 30 * 60e3);
+        })();
+
+// ===== Phase 33: notifications centre (bell in the header) =====
+        (function () {
+            const LS = { g: k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }, s: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } } };
+            const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            let list = (LS.g('spark_nt') || []).filter(n => n && n.id).slice(0, 30);
+            const save = () => LS.s('spark_nt', list.slice(0, 30));
+            const st = document.createElement('style'); st.textContent = `
+.nt-btn{position:relative;width:34px;height:34px;border-radius:50%;border:1px solid var(--sp-line);background:var(--sp-surf2,transparent);color:var(--sp-txt);display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;font-size:14px}
+.nt-btn b{position:absolute;top:-4px;left:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#c8741f;color:#fff;font-size:10px;line-height:17px;font-weight:800;text-align:center}
+.nt-pop{position:fixed;z-index:285;width:min(360px,calc(100vw - 20px));max-height:min(70vh,520px);overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.4)}
+.nt-hd{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--sp-line);position:sticky;top:0;background:inherit}.nt-hd b{flex:1;font-size:14px}
+.nt-hd button{background:none;border:0;color:var(--sp-mut);font-size:11.5px;cursor:pointer;font-family:inherit}.nt-hd button:hover{color:var(--sp-txt)}
+.nt-it{display:flex;gap:10px;padding:11px 14px;border-bottom:1px solid var(--sp-line);cursor:pointer;text-align:start;width:100%;background:none;border-inline:0;border-top:0;color:inherit;font-family:inherit}
+.nt-it:hover{background:var(--sp-hover)}.nt-it.new{background:color-mix(in srgb,#c8741f 9%,transparent)}
+.nt-it i{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#4fb3a5;background:color-mix(in srgb,#4fb3a5 14%,transparent);font-size:13px}
+.nt-it div{min-width:0}.nt-it strong{display:block;font-size:13px;line-height:1.5}.nt-it span{display:block;font-size:12px;color:var(--sp-mut);line-height:1.6}.nt-it small{font-size:10.5px;color:var(--sp-mut);opacity:.8}
+.nt-emp{padding:26px 14px;text-align:center;color:var(--sp-mut);font-size:13px}
+.nt-ft{padding:10px 14px}.nt-ft button{width:100%;height:36px;border-radius:9px;border:1px solid var(--sp-line);background:var(--sp-surf2,transparent);color:var(--sp-txt);font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit}
+`; document.head.appendChild(st);
+            const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'الآن' : m < 60 ? 'قبل ' + m + ' د' : m < 1440 ? 'قبل ' + Math.round(m / 60) + ' س' : 'قبل ' + Math.round(m / 1440) + ' يوم'; };
+            function badge() { const b = document.getElementById('ntBtn'); if (!b) return; const n = list.filter(x => !x.read).length; b.innerHTML = '<i class="fa-solid fa-bell"></i>' + (n ? '<b>' + (n > 9 ? '9+' : n) + '</b>' : ''); b.title = n ? n + ' إشعار جديد' : 'الإشعارات'; }
+            function mount() {
+                if (document.getElementById('ntBtn')) return badge(); const ref = document.getElementById('accChip') || document.getElementById('sxBurger'); if (!ref || !ref.parentElement) return;
+                const b = document.createElement('button'); b.id = 'ntBtn'; b.className = 'nt-btn'; b.setAttribute('aria-label', 'الإشعارات'); b.onclick = e => { e.stopPropagation(); toggle(); }; ref.parentElement.insertBefore(b, ref); badge();
+            }
+            const close = () => { const p = document.getElementById('ntPop'); if (p) p.remove(); };
+            function act(n) { close(); if (n.act === 'update') { try { if (typeof autoSaveNow === 'function') autoSaveNow(); } catch (e) { } location.reload(); } else if (n.act === 'account') { try { accPanel(); } catch (e) { } } else if (n.act === 'news') { try { sparkNews(); } catch (e) { } } }
+            function toggle() {
+                if (document.getElementById('ntPop')) return close(); const b = document.getElementById('ntBtn'), r = b.getBoundingClientRect(), p = document.createElement('div'); p.id = 'ntPop'; p.className = 'nt-pop'; p.dir = 'rtl';
+                p.style.top = (r.bottom + 8) + 'px'; p.style.left = Math.max(10, Math.min(innerWidth - 370, r.left - 150)) + 'px';
+                p.innerHTML = `<div class="nt-hd"><b><i class="fa-solid fa-bell" style="color:#c8741f;margin-inline-end:6px"></i>الإشعارات</b>${list.length ? '<button id="ntClr">مسح الكل</button>' : ''}</div>` + (list.length ? list.map((n, i) => `<button class="nt-it ${n.read ? '' : 'new'}" data-i="${i}"><i class="fa-solid ${esc(n.ic || 'fa-circle-info')}"></i><div><strong>${esc(n.title)}</strong><span>${esc(n.text)}</span><small>${ago(n.t)}</small></div></button>`).join('') : '<div class="nt-emp"><i class="fa-regular fa-bell-slash" style="font-size:22px;display:block;margin-bottom:8px"></i>لا توجد إشعارات</div>') + '<div class="nt-ft"><button id="ntChk"><i class="fa-solid fa-rotate" style="margin-inline-end:6px"></i>فحص التحديثات الآن</button></div>';
+                document.body.appendChild(p); list.forEach(n => n.read = true); save(); badge();
+                p.onclick = e => { e.stopPropagation(); const it = e.target.closest('.nt-it'); if (it) return act(list[+it.dataset.i]); if (e.target.closest('#ntClr')) { list = []; save(); close(); badge(); } if (e.target.closest('#ntChk')) { close(); try { sparkUpdateCheck(true); } catch (er) { } } };
+            }
+            document.addEventListener('click', close);
+            window.sparkNotify = function (n) { if (!n || !n.id || list.some(x => x.id === n.id)) return; list.unshift({ id: String(n.id).slice(0, 60), title: String(n.title || '').slice(0, 120), text: String(n.text || '').slice(0, 300), ic: /^fa-[\w-]+$/.test(n.ic || '') ? n.ic : 'fa-circle-info', act: n.act || '', t: Date.now(), read: false }); save(); mount(); };
+            const boot = () => { mount(); const v = LS.g('spark_seen_v'); if (v !== SPARK_VER) { if (v) sparkNotify({ id: 'v:' + SPARK_VER, title: 'تم تحديث المنصة إلى الإصدار ' + SPARK_VER, text: 'اضغط لمعرفة ما الجديد في هذا الإصدار.', ic: 'fa-circle-check', act: 'news' }); LS.s('spark_seen_v', SPARK_VER); } };
+            addEventListener('load', () => setTimeout(boot, 900)); addEventListener('spark-acct', () => setTimeout(mount, 100));
         })();
 
         window.onload = function () {
