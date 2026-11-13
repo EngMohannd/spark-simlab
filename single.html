@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.4.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null');if(!u||!u.v)return;
+<script>(function(){try{var V='2.4.1',u=JSON.parse(localStorage.getItem('spark_upd')||'null');if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -13858,7 +13858,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.4.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.4.1', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14155,7 +14155,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARK SimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -14233,6 +14233,40 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
             window.sparkNotify = function (n) { if (!n || !n.id || list.some(x => x.id === n.id)) return; list.unshift({ id: String(n.id).slice(0, 60), title: String(n.title || '').slice(0, 120), text: String(n.text || '').slice(0, 300), ic: /^fa-[\w-]+$/.test(n.ic || '') ? n.ic : 'fa-circle-info', act: n.act || '', t: Date.now(), read: false }); save(); mount(); };
             const boot = () => { mount(); const v = LS.g('spark_seen_v'); if (v !== SPARK_VER) { if (v) sparkNotify({ id: 'v:' + SPARK_VER, title: 'تم تحديث المنصة إلى الإصدار ' + SPARK_VER, text: 'اضغط لمعرفة ما الجديد في هذا الإصدار.', ic: 'fa-circle-check', act: 'news' }); LS.s('spark_seen_v', SPARK_VER); } };
             addEventListener('load', () => setTimeout(boot, 900)); addEventListener('spark-acct', () => setTimeout(mount, 100));
+        })();
+
+// ===== Phase 34: phones — fewer icons on screen; the rest live in two drop-down menus =====
+        (function () {
+            const st = document.createElement('style'); st.textContent = `
+.mb-more{display:none!important}
+@media (max-width:768px){.mb-hide{display:none!important}.mb-more{display:inline-flex!important;align-items:center;justify-content:center;gap:5px}
+.sp-cvbar .mb-more{height:30px;padding:0 10px;border-radius:9px;border:1px solid var(--sp-line);background:var(--sp-surf2,transparent);color:var(--sp-txt);font-size:11.5px;font-weight:700;flex-shrink:0}
+.sp-cvbar{overflow:visible!important;justify-content:space-between}}
+.mb-menu{position:fixed;z-index:286;width:min(290px,calc(100vw - 20px));max-height:min(66vh,480px);overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.42);padding:6px}
+.mb-menu .cap{font-size:10.5px;font-weight:800;color:var(--sp-mut);padding:8px 10px 4px}
+.mb-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;border-radius:9px;background:none;color:inherit;font-size:13px;font-family:inherit;text-align:start;cursor:pointer}
+.mb-menu button:active,.mb-menu button:hover{background:var(--sp-hover)}
+.mb-menu button i{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12.5px;color:#4fb3a5;background:color-mix(in srgb,#4fb3a5 13%,transparent);flex-shrink:0}
+.mb-menu button.on i{background:#2f9e8f;color:#fff}`; document.head.appendChild(st);
+            const NAME = [[/عناصر مبسطة/, 'وضع الطلاب (عناصر مبسطة)'], [/تحديد عدة/, 'تحديد عدة عناصر'], [/تحديد الدائرة كاملة/, 'تحديد الدائرة كاملة'], [/فصل جميع الأسلاك/, 'فصل جميع الأسلاك'], [/مسح الساحة/, 'مسح الساحة بالكامل'], [/مكتبة العناصر/, 'إظهار/إخفاء مكتبة العناصر'], [/محرر الكود/, 'إظهار/إخفاء محرر الكود'], [/راسم الإشارات/, 'راسم الإشارات'], [/ملء الشاشة/, 'ملء الشاشة'], [/صور حقيقية/, 'عرض: صور حقيقية'], [/الشكل الحقيقي/, 'عرض: الشكل الحقيقي'], [/الرموز الهندسية/, 'عرض: رموز هندسية'], [/ثلاثي الأبعاد/, 'عرض: ثلاثي الأبعاد'], [/PCB/, 'تحويل إلى لوحة PCB'], [/ساحة الروبوت/, 'ساحة الروبوت'], [/الكاميرا/, 'الكاميرا'], [/نمط الأسلاك/, 'نمط الأسلاك'], [/المؤثرات الصوتية/, 'الصوت: تشغيل / كتم'], [/داكن \/ فاتح/, 'المظهر: داكن / فاتح'], [/إعدادات/, 'إعدادات المنصة']];
+            const label = b => { const t = b.title || b.getAttribute('aria-label') || b.textContent.trim(); const n = NAME.find(x => x[0].test(t)); return n ? n[1] : t.split(/[(:—]/)[0].trim().slice(0, 34); };
+            const keepCv = b => /zoomCanvas/.test(b.getAttribute('onclick') || '') || b.id === 'jxCenterBtn' || b.id === 'zoomLevelText' || b.classList.contains('mb-more');
+            const hdHide = () => [...document.querySelectorAll('header.sp-head button.sp-ib, header button.sp-ib')].filter(b => !b.id.match(/^(sxBurger|ntBtn)$/) && !b.classList.contains('sp-ai') && !b.classList.contains('mb-more'));
+            function mark() {
+                const bar = document.querySelector('.sp-cvbar'); if (bar) { [...bar.children].forEach(b => b.classList.toggle('mb-hide', !keepCv(b))); if (!document.getElementById('mbCvMore')) { const m = document.createElement('button'); m.id = 'mbCvMore'; m.className = 'mb-more'; m.innerHTML = '<i class="fa-solid fa-sliders"></i>أدوات الساحة<i class="fa-solid fa-chevron-down" style="font-size:9px;opacity:.7"></i>'; m.onclick = e => { e.stopPropagation(); open(m, [...bar.children].filter(b => b.classList.contains('mb-hide') && b.tagName === 'BUTTON'), 'أدوات الساحة والعرض'); }; bar.appendChild(m); } }
+                const hb = hdHide(); hb.forEach(b => b.classList.add('mb-hide'));
+                if (hb.length && !document.getElementById('mbHdMore')) { const m = document.createElement('button'); m.id = 'mbHdMore'; m.className = 'sp-ib mb-more'; m.title = 'خيارات إضافية'; m.setAttribute('aria-label', 'خيارات إضافية'); m.innerHTML = '<i class="fa-solid fa-ellipsis-vertical"></i>'; m.onclick = e => { e.stopPropagation(); open(m, hdHide(), 'خيارات سريعة'); }; const ai = document.querySelector('header .sp-ai'); if (ai && ai.parentElement) ai.parentElement.insertBefore(m, ai.nextSibling); else hb[0].parentElement.insertBefore(m, hb[0]); }
+            }
+            const close = () => { const p = document.getElementById('mbMenu'); if (p) p.remove(); };
+            function open(anchor, btns, cap) {
+                if (document.getElementById('mbMenu')) return close(); const r = anchor.getBoundingClientRect(), p = document.createElement('div'); p.id = 'mbMenu'; p.className = 'mb-menu'; p.dir = 'rtl';
+                p.innerHTML = `<div class="cap">${cap}</div>` + btns.map((b, i) => { const ic = b.querySelector('i'), on = /bg-cyan|bg-emerald|\bon\b|active/.test(b.className); return `<button data-i="${i}" class="${on ? 'on' : ''}"><i class="${ic ? ic.className.replace(/text-\S+|ml-\S+|mr-\S+/g, '') : 'fa-solid fa-circle'}"></i><span>${label(b)}</span></button>`; }).join('');
+                document.body.appendChild(p); const h = p.offsetHeight, top = r.bottom + 8 + h > innerHeight - 8 ? Math.max(8, r.top - h - 8) : r.bottom + 8; p.style.top = top + 'px'; p.style.left = Math.max(10, Math.min(innerWidth - p.offsetWidth - 10, r.left + r.width / 2 - p.offsetWidth / 2)) + 'px';
+                p.onclick = e => { e.stopPropagation(); const it = e.target.closest('button[data-i]'); if (!it) return; close(); const b = btns[+it.dataset.i]; b.classList.remove('mb-hide'); try { b.click(); } finally { b.classList.add('mb-hide'); } };
+            }
+            document.addEventListener('click', close); addEventListener('resize', close);
+            const go = () => { mark(); const bar = document.querySelector('.sp-cvbar'); if (bar) new MutationObserver(() => { clearTimeout(bar._mb); bar._mb = setTimeout(mark, 80); }).observe(bar, { childList: true }); };
+            addEventListener('load', () => { setTimeout(go, 1200); setTimeout(mark, 3500); });
         })();
 
         window.onload = function () {
