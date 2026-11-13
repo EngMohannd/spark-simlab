@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.2.2',u=JSON.parse(localStorage.getItem('spark_upd')||'null');if(!u||!u.v)return;
+<script>(function(){try{var V='2.3.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null');if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -10420,13 +10420,13 @@ ${parts}`;
         function setFmt(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : b > 1024 ? Math.round(b / 1024) + ' KB' : b + ' B'; }
         function setExport(withKeys) {
             const out = { app: 'SPARK SimLab Pro', v: 1, t: new Date().toISOString(), data: {} };
-            try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (/^spark_/.test(k) && k !== 'spark_or_pkce' && !/^spark_(acct_v1|dv|ls|upd|upd_t|rv|ntc)$/.test(k)) out.data[k] = localStorage.getItem(k); } } catch (e) { }
+            try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (/^spark_/.test(k) && k !== 'spark_or_pkce' && !/^spark_(acct_v1|dv|ls|upd|upd_t|rv|rvs|ntc|api|dev|ping)$/.test(k)) out.data[k] = localStorage.getItem(k); } } catch (e) { }
             if (!withKeys && out.data.spark_ai_cfg_v1) { try { const c = JSON.parse(out.data.spark_ai_cfg_v1); c.keys = {}; c.key = ''; out.data.spark_ai_cfg_v1 = JSON.stringify(c); } catch (e) { } }
             saveFile('spark-backup-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(out), 'application/json');
         }
         function setImport(inp) {
             const f = inp.files && inp.files[0]; if (!f) return; const r = new FileReader();
-            r.onload = () => { try { const j = JSON.parse(r.result); if (!j.data) throw 0; const ks = Object.keys(j.data).filter(k => /^spark_/.test(k) && !/^spark_(acct_v1|dv|ls|upd|upd_t|rv|ntc)$/.test(k)); if (!confirm('استيراد ' + ks.length + ' عنصر؟ ستُستبدل البيانات الحالية لنفس العناصر ثم يُعاد تحميل الصفحة.')) return; ks.forEach(k => localStorage.setItem(k, j.data[k])); location.reload(); } catch (e) { alert('ملف نسخة احتياطية غير صالح'); } };
+            r.onload = () => { try { const j = JSON.parse(r.result); if (!j.data) throw 0; const ks = Object.keys(j.data).filter(k => /^spark_/.test(k) && !/^spark_(acct_v1|dv|ls|upd|upd_t|rv|rvs|ntc|api|dev|ping)$/.test(k)); if (!confirm('استيراد ' + ks.length + ' عنصر؟ ستُستبدل البيانات الحالية لنفس العناصر ثم يُعاد تحميل الصفحة.')) return; ks.forEach(k => localStorage.setItem(k, j.data[k])); location.reload(); } catch (e) { alert('ملف نسخة احتياطية غير صالح'); } };
             r.readAsText(f); inp.value = '';
         }
         function setClear(k) { const d = SET_DATA.find(x => x[0] === k); if (!confirm('حذف «' + (d ? d[1] : k) + '» من هذا المتصفح؟ لا يمكن التراجع.')) return; try { localStorage.removeItem(k); } catch (e) { } if (k === 'spark_settings_v1') { SET = JSON.parse(JSON.stringify(SET_DEF)); setApply(); } if (k === 'spark_ai_cfg_v1') location.reload(); setOpen(); }
@@ -13842,7 +13842,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.2.2', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.3.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -13879,7 +13879,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
                 let raw; try { raw = Uint8Array.from(atob(p.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((p.length + 3) % 4)), ch => ch.charCodeAt(0)); } catch (e) { return { err: 'صيغة الكود غير صحيحة' }; }
                 if (!(await sparkVerify(raw, s))) return { err: 'كود التفعيل غير صالح' };
                 const [t, e, x, n] = new TextDecoder().decode(raw).split('|'); if (!PLAN[t]) return { err: 'كود غير معروف' };
-                try { const rv = JSON.parse(LS.g('spark_rv') || '[]'); if (rv.includes((await sparkSha(c)).slice(0, 16))) return { err: 'تم إيقاف هذا الكود من الإدارة' }; } catch (er) { }
+                try { const rv = JSON.parse(LS.g('spark_rv') || '[]').concat(JSON.parse(LS.g('spark_rvs') || '[]')); if (rv.includes((await sparkSha(c)).slice(0, 16))) return { err: 'تم إيقاف هذا الكود من الإدارة' }; } catch (er) { }
                 if (email && e && e !== '*' && e.toLowerCase() !== email.toLowerCase()) return { err: 'هذا الكود مخصص لبريد آخر' };
                 const exp = x && x !== '0' ? new Date(x.slice(0, 4) + '-' + x.slice(4, 6) + '-' + x.slice(6, 8) + 'T23:59:59').getTime() : 0;
                 if (exp && exp < now()) return { err: 'انتهت صلاحية هذا الكود' };
@@ -13891,9 +13891,9 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
                 S.lic = null; S.tier = null;
                 if (S.a) {
                     if (S.a.h !== await seal(S.a)) { S.a = null; LS.d('spark_acct_v1'); }       // edited by hand → sign in again
-                    else { S.a.created = await anchor(S.a.created) || S.a.created; if (S.a.code) { const r = await verify(S.a.code, S.a.email); if (!r.err) S.lic = r; } S.tier = S.lic ? S.lic.t : daysLeft() > 0 ? 'student' : null; }
+                    else { const c0 = S.a.created; S.a.created = await anchor(S.a.created) || S.a.created; if (S.a.created !== c0) await save(); if (S.a.code) { const r = await verify(S.a.code, S.a.email); if (!r.err) S.lic = r; } S.tier = S.lic ? S.lic.t : daysLeft() > 0 ? 'student' : null; }
                 }
-                document.documentElement.dataset.plan = S.tier || 'none'; chip(); markLib(); markNav();
+                document.documentElement.dataset.plan = S.tier || 'none'; chip(); markLib(); markNav(); try { dispatchEvent(new Event('spark-acct')); } catch (e) { }
             }
             const lv = () => { const t = S.as || S.tier; return t ? PLAN[t].lv : 0; };
             const can = f => lv() >= (FEAT[f] ? FEAT[f][0] : 1);
@@ -14054,7 +14054,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             sxNavSync = (o => function () { const r = o.apply(this, arguments); markNav(); return r; })(sxNavSync);
             // public, read-only surface
             window.accPanel = panel;
-            window.sparkAcc = Object.freeze({ info: () => ({ signedIn: !!S.a, tier: S.tier, view: S.as || S.tier, days: daysLeft(), name: S.a && S.a.name }), can: f => can(f), recheck: () => resolve(), waLink: () => wa(null, S.a) });
+            window.sparkAcc = Object.freeze({ info: () => ({ signedIn: !!S.a, tier: S.tier, view: S.as || S.tier, days: daysLeft(), name: S.a && S.a.name }), can: f => can(f), recheck: async () => { await resolve(); if (S.ready && S.a && !S.tier && !$('accOv')) { closeMd(); login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); } }, profile: async () => S.a ? { name: S.a.name, email: S.a.email, org: S.a.org || '', tier: S.tier || 'none', days: daysLeft() === Infinity ? 'دائم' : String(daysLeft()), ch: S.a.code ? (await sparkSha(S.a.code)).slice(0, 16) : '' } : null, trialFrom: async ts => { ts = +ts; if (!(ts > 1.6e12) || ts > Date.now() || !S.a || S.lic) return; const b = +LS.g('spark_dv') || Infinity; if (ts >= b) return; await anchor(ts); await resolve(); if (!S.tier && S.a && !$('accOv')) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }, waLink: () => wa(null, S.a) });
             // ---------- boot ----------
             try { S.a = JSON.parse(LS.g('spark_acct_v1') || 'null'); } catch (e) { }
             const boot = async () => { await resolve(); S.ready = true; if (!S.a) login(); else if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); else if (S.tier === 'student' && !S.lic && daysLeft() <= 5) try { sxToast('متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية'); } catch (e) { } };
@@ -14082,6 +14082,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
                     for (const u of SRC) { try { const r = await fetch(u + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) continue; const j = await r.json(); if (j && j.body && j.sig && await sparkVerify(j.body, j.sig)) { m = JSON.parse(j.body); break; } } catch (e) { } }
                     LS.s('spark_upd_t', String(Date.now()));
                     if (!m) { if (manual) bar('<b>تعذّر الوصول لخادم التحديثات</b><br>تأكد من الاتصال بالإنترنت ثم أعد المحاولة.'); return; }
+                    if (typeof m.api === 'string' && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(m.api)) { if (LS.g('spark_api') !== m.api) { LS.s('spark_api', m.api); try { dispatchEvent(new Event('spark-acct')); } catch (e) { } } } else if (m.api === '') { try { localStorage.removeItem('spark_api'); } catch (e) { } }
                     if (Array.isArray(m.revoked)) { LS.s('spark_rv', JSON.stringify(m.revoked.slice(0, 5000))); try { sparkAcc.recheck(); } catch (e) { } }
                     if (m.notice && m.notice.id && LS.g('spark_ntc') !== m.notice.id) bar('<b>' + esc(m.notice.title || 'تنبيه من إدارة المنصة') + '</b><br>' + esc(m.notice.text), m.notice.id);
                     if (cmp(m.v, SPARK_VER) <= 0) { if (manual) bar('<b>المنصة محدّثة</b><br>أنت تستخدم أحدث إصدار (v' + SPARK_VER + ').'); return; }
@@ -14135,8 +14136,8 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             };
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
-            window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARK SimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>بيانات حسابك ومشاريعك تُحفظ على جهازك فقط ولا تُرسل إلى أي خادم. تتصل المنصة بالإنترنت فقط لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARK SimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -14149,6 +14150,28 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
 `; document.head.appendChild(st);
             // help menu entries
             const _m = sxMenus; sxMenus = function () { const m = _m.apply(this, arguments); try { const h = m[m.length - 1][2]; if (!h.some(x => x && x[1] === 'أبلغ عن مشكلة / تواصل معنا')) h.push(0, ['fa-bullhorn', 'ما الجديد', '', () => sparkNews()], ['fa-life-ring', 'أبلغ عن مشكلة / تواصل معنا', '', () => sparkReport()], ['fa-file-contract', 'شروط الاستخدام والخصوصية', '', () => sparkTerms()], ['fa-rotate', 'فحص التحديثات', '', () => sparkUpdateCheck(true)]); } catch (e) { } return m; };
+        })();
+
+// ===== Phase 32: subscription heartbeat to the SPARK server (Google Apps Script). The server URL arrives in the signed update manifest. =====
+        (function () {
+            const LS = { g: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, s: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } } };
+            let dev = LS.g('spark_dev'); if (!dev) { dev = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).replace(/-/g, '').slice(0, 20); LS.s('spark_dev', dev); }
+            sparkKV.get('dev_id').then(v => { if (v && v !== dev) { dev = v; LS.s('spark_dev', v); } else if (!v) sparkKV.set('dev_id', dev); });
+            const kind = location.protocol === 'app:' ? 'exe' : location.protocol === 'file:' ? 'file' : 'web';
+            let busy = false, lastKey = '';
+            async function ping(force) {
+                const u = LS.g('spark_api'); if (!u || busy || navigator.onLine === false || !window.sparkAcc) return; const p = await sparkAcc.profile(); if (!p) return;
+                const key = p.email + '|' + p.tier + '|' + p.ch; if (!force && key === lastKey && Date.now() - (+LS.g('spark_ping') || 0) < 6 * 3600e3) return;
+                busy = true; lastKey = key;
+                try {
+                    const r = await fetch(u, { method: 'POST', body: JSON.stringify(Object.assign({ a: 'ping', ver: SPARK_VER, kind, dev }, p)) }), j = await r.json(); if (!j || !j.ok) return; LS.s('spark_ping', String(Date.now()));
+                    if (p.ch) { let rv = []; try { rv = JSON.parse(LS.g('spark_rvs') || '[]'); } catch (e) { } const has = rv.includes(p.ch); if (!!j.block !== has) { LS.s('spark_rvs', JSON.stringify(j.block ? rv.concat([p.ch]) : rv.filter(x => x !== p.ch))); await sparkAcc.recheck(); } }
+                    if (j.trial) await sparkAcc.trialFrom(j.trial);
+                } catch (e) { } finally { busy = false; }
+            }
+            window.sparkPing = () => ping(true);
+            addEventListener('spark-acct', () => setTimeout(() => ping(false), 1500)); addEventListener('online', () => ping(false));
+            addEventListener('load', () => setTimeout(() => ping(false), 9000)); setInterval(() => ping(false), 30 * 60e3);
         })();
 
         window.onload = function () {
