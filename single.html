@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.4.2',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='2.4.3',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -13858,7 +13858,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.4.2', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.4.3', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14105,7 +14105,9 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
                     if (cmp(m.v, SPARK_VER) <= 0) { if (manual) bar('<b>المنصة محدّثة</b><br>أنت تستخدم أحدث إصدار (v' + SPARK_VER + ').'); return; }
                     const st = JSON.parse(LS.g('spark_upd') || 'null'), f = m[document.getElementById('threeSrc') ? 'single' : 'www'];
                     if (!(st && st.v === m.v && await sparkKV.get('upd_html'))) {
-                        if (!f || !f.url) return; const r = await fetch(f.url + '?v=' + encodeURIComponent(m.v), { cache: 'no-store' }); if (!r.ok) return; const buf = await r.arrayBuffer();
+                        if (!f || !f.url) return; if (manual) bar('<b>جارٍ تنزيل الإصدار ' + esc(m.v) + '…</b><br>قد يستغرق دقيقة حسب سرعة الإنترنت.');
+                        let buf = null; for (const u of [f.url, f.url.replace('https://raw.githubusercontent.com/EngMohannd/spark-simlab/main/', 'https://cdn.jsdelivr.net/gh/EngMohannd/spark-simlab@main/')]) { try { const r = await fetch(u + '?v=' + encodeURIComponent(m.v), { cache: 'no-store' }); if (!r.ok) continue; const b2 = await r.arrayBuffer(); if (await sparkSha(b2) === f.sha) { buf = b2; break; } buf = buf || b2; } catch (e) { } }
+                        if (!buf) { if (manual) bar('<b>تعذّر تنزيل ملف التحديث</b><br>الإصدار ' + esc(m.v) + ' متوفر لكن التنزيل لم يكتمل. تأكد من الإنترنت وأعد المحاولة.'); return; }
                         if (await sparkSha(buf) !== f.sha) { if (manual) bar('<b>ملف التحديث غير مطابق</b><br>تم تجاهله حفاظاً على سلامة المنصة.'); return; }   // integrity
                         await sparkKV.set('upd_html', new TextDecoder().decode(buf)); LS.s('spark_upd', JSON.stringify({ v: m.v, tries: 0 }));
                     }
@@ -14158,7 +14160,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARK SimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -14256,20 +14258,89 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
             const keepCv = b => /zoomCanvas/.test(b.getAttribute('onclick') || '') || b.id === 'jxCenterBtn' || b.id === 'zoomLevelText' || b.classList.contains('mb-more');
             const hdHide = () => [...document.querySelectorAll('header.sp-head button.sp-ib, header button.sp-ib')].filter(b => !b.id.match(/^(sxBurger|ntBtn)$/) && !b.classList.contains('sp-ai') && !b.classList.contains('mb-more'));
             function mark() {
-                const bar = document.querySelector('.sp-cvbar'); if (bar) { [...bar.children].forEach(b => b.classList.toggle('mb-hide', !keepCv(b))); if (!document.getElementById('mbCvMore')) { const m = document.createElement('button'); m.id = 'mbCvMore'; m.className = 'mb-more'; m.innerHTML = '<i class="fa-solid fa-sliders"></i>أدوات الساحة<i class="fa-solid fa-chevron-down" style="font-size:9px;opacity:.7"></i>'; m.onclick = e => { e.stopPropagation(); open(m, [...bar.children].filter(b => b.classList.contains('mb-hide') && b.tagName === 'BUTTON'), 'أدوات الساحة والعرض'); }; bar.appendChild(m); } }
+                const bar = document.querySelector('.sp-cvbar'); if (bar) { [...bar.children].forEach(b => b.classList.toggle('mb-hide', !keepCv(b))); if (!document.getElementById('mbCvMore')) { const m = document.createElement('button'); m.id = 'mbCvMore'; m.className = 'mb-more'; m.innerHTML = '<i class="fa-solid fa-sliders"></i>أدوات الساحة<i class="fa-solid fa-chevron-down" style="font-size:9px;opacity:.7"></i>'; m.onclick = e => { e.stopPropagation(); e.preventDefault(); const cur = document.querySelector('.sp-cvbar') || bar; [...cur.children].forEach(b => b.classList.toggle('mb-hide', !keepCv(b))); open(m, [...cur.children].filter(b => b.tagName === 'BUTTON' && !keepCv(b)), 'أدوات الساحة والعرض'); }; bar.appendChild(m); } }
                 const hb = hdHide(); hb.forEach(b => b.classList.add('mb-hide'));
                 if (hb.length && !document.getElementById('mbHdMore')) { const m = document.createElement('button'); m.id = 'mbHdMore'; m.className = 'sp-ib mb-more'; m.title = 'خيارات إضافية'; m.setAttribute('aria-label', 'خيارات إضافية'); m.innerHTML = '<i class="fa-solid fa-ellipsis-vertical"></i>'; m.onclick = e => { e.stopPropagation(); open(m, hdHide(), 'خيارات سريعة'); }; const ai = document.querySelector('header .sp-ai'); if (ai && ai.parentElement) ai.parentElement.insertBefore(m, ai.nextSibling); else hb[0].parentElement.insertBefore(m, hb[0]); }
             }
-            const close = () => { const p = document.getElementById('mbMenu'); if (p) p.remove(); };
+            let opened = 0; const close = () => { if (Date.now() - opened < 350) return; const p = document.getElementById('mbMenu'); if (p) p.remove(); };
             function open(anchor, btns, cap) {
-                if (document.getElementById('mbMenu')) return close(); const r = anchor.getBoundingClientRect(), p = document.createElement('div'); p.id = 'mbMenu'; p.className = 'mb-menu'; p.dir = 'rtl';
+                if (document.getElementById('mbMenu')) return close(); if (!btns.length) return; opened = Date.now(); const r = anchor.getBoundingClientRect(), p = document.createElement('div'); p.id = 'mbMenu'; p.className = 'mb-menu'; p.dir = 'rtl';
                 p.innerHTML = `<div class="cap">${cap}</div>` + btns.map((b, i) => { const ic = b.querySelector('i'), on = /bg-cyan|bg-emerald|\bon\b|active/.test(b.className); return `<button data-i="${i}" class="${on ? 'on' : ''}"><i class="${ic ? ic.className.replace(/text-\S+|ml-\S+|mr-\S+/g, '') : 'fa-solid fa-circle'}"></i><span>${label(b)}</span></button>`; }).join('');
                 document.body.appendChild(p); const h = p.offsetHeight, top = r.bottom + 8 + h > innerHeight - 8 ? Math.max(8, r.top - h - 8) : r.bottom + 8; p.style.top = top + 'px'; p.style.left = Math.max(10, Math.min(innerWidth - p.offsetWidth - 10, r.left + r.width / 2 - p.offsetWidth / 2)) + 'px';
-                p.onclick = e => { e.stopPropagation(); const it = e.target.closest('button[data-i]'); if (!it) return; close(); const b = btns[+it.dataset.i]; b.classList.remove('mb-hide'); try { b.click(); } finally { b.classList.add('mb-hide'); } };
+                p.onclick = e => { e.stopPropagation(); const it = e.target.closest('button[data-i]'); if (!it) return; opened = 0; close(); const b = btns[+it.dataset.i]; b.classList.remove('mb-hide'); try { b.click(); } finally { b.classList.add('mb-hide'); } };
             }
-            document.addEventListener('click', close); addEventListener('resize', close);
+            document.addEventListener('click', close);
+            setInterval(() => { const bar = document.querySelector('.sp-cvbar'); if (bar && !bar.querySelector('#mbCvMore')) { const old = document.getElementById('mbCvMore'); if (old) old.remove(); mark(); } }, 1500);
             const go = () => { mark(); const bar = document.querySelector('.sp-cvbar'); if (bar) new MutationObserver(() => { clearTimeout(bar._mb); bar._mb = setTimeout(mark, 80); }).observe(bar, { childList: true }); };
             addEventListener('load', () => { setTimeout(go, 1200); setTimeout(mark, 3500); });
+        })();
+
+// ===== Phase 35: circuit check before running, phone performance mode, phone nav clean-up =====
+        (function () {
+            const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const st = document.createElement('style'); st.textContent = `
+.erc-bad{outline:2.5px solid #d9534f!important;outline-offset:3px;border-radius:14px}
+.erc-sh{position:fixed;inset:auto 0 0 0;z-index:288;display:flex;justify-content:center;padding:12px;pointer-events:none}
+.erc-box{pointer-events:auto;width:min(520px,100%);max-height:70vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-top:4px solid #d9a441;border-radius:16px;box-shadow:0 -10px 50px rgba(0,0,0,.45);padding:14px 16px}
+.erc-box h4{font-size:15px;font-weight:800;margin:0 0 2px;display:flex;align-items:center;gap:8px}.erc-box p{font-size:12px;color:var(--sp-mut);margin:0 0 8px}
+.erc-box ul{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:6px}.erc-box li{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.6;background:var(--sp-surf2,rgba(255,255,255,.03));border:1px solid var(--sp-line);border-radius:10px;padding:7px 10px;cursor:pointer}
+.erc-box li i{color:#d9a441;margin-top:4px;font-size:12px}.erc-box li.err i{color:#d9534f}
+.erc-act{display:flex;gap:8px;flex-wrap:wrap}.erc-act button{flex:1;min-width:130px;height:40px;border-radius:10px;border:1px solid var(--sp-line);background:var(--sp-surf2,transparent);color:var(--sp-txt);font-weight:700;font-size:13px;font-family:inherit;cursor:pointer}
+.erc-act .pri{background:#2f9e8f;border-color:#2f9e8f;color:#fff}
+@media (max-width:768px){.jx-tabgrp,.jx-tabsep{display:none!important}.sp-mobnav-qa{display:none!important}}
+html.lite *,html.lite *::before,html.lite *::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html.lite .animate-ping,html.lite .animate-pulse,html.lite .animate-bounce{animation:none!important}
+html.lite .sim-component{box-shadow:none!important;transition:none!important}html.lite #wiresGroup *{filter:none!important}
+html.lite .acc-card,html.lite .nt-pop,html.lite .mb-menu,html.lite .sx-drawer{box-shadow:0 6px 18px rgba(0,0,0,.35)!important}`; document.head.appendChild(st);
+            // ---------- electrical rules check ----------
+            const nm = c => (COMPONENT_CATALOG[c.type] || {}).name || c.type;
+            function erc() {
+                const out = [], cs = state.components, ws = state.wires; if (!cs.length) return [{ lv: 'err', t: 'الساحة فارغة — أضف عناصر ووصّلها أولاً.' }];
+                const used = {}; ws.forEach(w => { [w.from, w.to].forEach(e => { (used[e.compId] = used[e.compId] || new Set()).add(e.pinId); }); });
+                let power = false;
+                cs.forEach(c => {
+                    const cat = COMPONENT_CATALOG[c.type]; if (!cat) return; const pins = (cat.pins || []).map(p => p.id), u = used[c.id] || new Set(), isMcu = /arduino|esp32|esp8266|pico|microbit|mcu/i.test(c.type) || /Microcontroller|المتحكمات/.test(cat.category || '');
+                    if (isMcu || /battery|supply|solar|usb_power|dc_jack|power/i.test(c.type)) power = power || u.size > 0;
+                    if (/Instruments|أجهزة القياس|breadboard|لوحة التجارب/i.test((cat.category || '') + c.type) || pins.length < 1) return;
+                    if (!u.size) return out.push({ lv: 'err', id: c.id, t: '«' + nm(c) + '» غير موصول بأي سلك.' });
+                    if (isMcu) return;
+                    if (pins.length === 2 && u.size === 1) return out.push({ lv: 'warn', id: c.id, t: '«' + nm(c) + '» موصول من طرف واحد فقط — الدارة مفتوحة.' });
+                    const need = [['VCC', /^(VCC|VIN|V\+|5V|3V3|VDD|\+)$/i], ['GND', /^(GND|G|V-|VSS|-)$/i]].filter(([, re]) => pins.some(p => re.test(p)) && ![...u].some(p => re.test(p))).map(x => x[0]);
+                    if (need.length) return out.push({ lv: 'warn', id: c.id, t: '«' + nm(c) + '» بدون تغذية: الطرف ' + need.join(' و ') + ' غير موصول.' });
+                    const sig = pins.filter(p => !/^(VCC|VIN|V\+|5V|3V3|VDD|\+|GND|G|V-|VSS|-)$/i.test(p)); if (sig.length && pins.length > 2 && !sig.some(p => u.has(p))) out.push({ lv: 'warn', id: c.id, t: '«' + nm(c) + '» موصول بالتغذية فقط — أطراف الإشارة غير موصولة.' });
+                });
+                if (!power) out.unshift({ lv: 'err', t: 'لا يوجد مصدر تغذية موصول (متحكم أو بطارية أو مصدر جهد).' });
+                return out;
+            }
+            window.sparkERC = erc;
+            const clear = () => { document.querySelectorAll('.erc-bad').forEach(e => e.classList.remove('erc-bad')); const s = document.getElementById('ercSh'); if (s) s.remove(); };
+            const sig = () => state.components.map(c => c.id + ':' + c.type).sort().join(',') + '|' + state.wires.map(w => [w.from.compId + '.' + w.from.pinId, w.to.compId + '.' + w.to.pinId].sort().join('-')).sort().join(','); let trusted = null;
+            function sheet(list, go) {
+                clear(); list.forEach(i => { const e = i.id && document.getElementById('comp-' + i.id); if (e) e.classList.add('erc-bad'); });
+                const s = document.createElement('div'); s.id = 'ercSh'; s.className = 'erc-sh'; s.dir = 'rtl'; const errs = list.filter(i => i.lv === 'err').length;
+                s.innerHTML = `<div class="erc-box"><h4><i class="fa-solid fa-triangle-exclamation" style="color:#d9a441"></i>${go ? 'الدائرة غير مكتملة' : 'ملاحظات على التوصيل'}</h4><p>${go ? 'أوقفنا التشغيل: ' : 'المحاكاة تعمل، لكن '}وجدنا ${list.length} ملاحظة — العناصر المعلَّمة بالأحمر تحتاج مراجعة. اضغط على الملاحظة للانتقال إلى العنصر.</p><ul>${list.slice(0, 8).map((i, k) => `<li class="${i.lv}" data-k="${k}"><i class="fa-solid ${i.lv === 'err' ? 'fa-circle-xmark' : 'fa-circle-exclamation'}"></i><span>${esc(i.t)}</span></li>`).join('')}${list.length > 8 ? '<li><span>… و' + (list.length - 8) + ' ملاحظات أخرى</span></li>' : ''}</ul><div class="erc-act"><button class="pri" id="ercFix">${go ? 'سأكمل التوصيل' : 'فهمت'}</button>${go ? '<button id="ercRun">تشغيل على أي حال</button>' : ''}</div></div>`;
+                document.body.appendChild(s);
+                s.querySelector('#ercFix').onclick = () => { const x = document.getElementById('ercSh'); if (x) x.remove(); setTimeout(() => document.querySelectorAll('.erc-bad').forEach(e => e.classList.remove('erc-bad')), 6000); };
+                const rb = s.querySelector('#ercRun'); if (rb) rb.onclick = () => { clear(); go(); };
+                s.querySelectorAll('li[data-k]').forEach(li => li.onclick = () => { const i = list[+li.dataset.k], c = i.id && state.components.find(x => x.id === i.id), vp = document.getElementById('canvasViewport'); if (c && vp) { vp.scrollTo({ left: Math.max(0, c.x * state.zoom - vp.clientWidth / 2 + 80), top: Math.max(0, c.y * state.zoom - vp.clientHeight / 2 + 80), behavior: 'smooth' }); } });
+            }
+            let bypass = false;
+            const guard = (o, starting) => function () { if (bypass || window.SPARK_ERC_OFF || !starting()) return o.apply(this, arguments); if (sig() === trusted) return o.apply(this, arguments); const l = erc(); if (!l.some(i => i.lv === 'err')) { clear(); const rv = o.apply(this, arguments); if (l.length) sheet(l, null); return rv; } const self = this, args = arguments; sheet(l, () => { bypass = true; try { o.apply(self, args); } finally { bypass = false; } }); };
+            toggleSimulation = guard(toggleSimulation, () => !state.running);
+            uploadCode = guard(uploadCode, () => true);
+            // examples / templates / saved projects start on their own and are trusted to be complete
+            ['loadExample', 'loadPresetTemplate', 'restoreProject'].forEach(n => { const o = window[n]; if (typeof o === 'function') window[n] = function () { bypass = true; try { return o.apply(this, arguments); } finally { bypass = false; clear(); try { trusted = sig(); } catch (e) { } } }; });
+            addEventListener('load', () => setTimeout(() => { try { if (trusted === null) trusted = sig(); } catch (e) { } }, 1500));
+            // ---------- phone performance mode ----------
+            const lite = matchMedia('(max-width: 900px)').matches || matchMedia('(pointer: coarse)').matches || (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 3;
+            if (lite) {
+                document.documentElement.classList.add('lite');
+                const thr = (fn, ms) => { let last = 0, t = null; return function () { const now = performance.now(), a = arguments, me = this; if (now - last >= ms) { last = now; return fn.apply(me, a); } if (!t) t = setTimeout(() => { t = null; last = performance.now(); fn.apply(me, a); }, ms - (now - last)); }; };
+                refreshComponentBodiesLive = thr(refreshComponentBodiesLive, 130);
+                const _osc = drawOscilloscope; drawOscilloscope = thr(function () { const c = document.getElementById('oscilloscopeCanvas') || document.querySelector('#bottomTelemetryDock canvas'); if (c && !c.offsetParent) return; return _osc.apply(this, arguments); }, 160);
+            }
+            // phone bottom bar: the platform self-test is an internal tool
+            addEventListener('load', () => setTimeout(() => { document.querySelectorAll('button[onclick*="runPlatformQATests"]').forEach(b => { if (b.closest('nav,footer,[class*="fixed"]') && !b.closest('.sx-drop,.sx-drawer')) b.classList.add('sp-mobnav-qa'); }); }, 800));
         })();
 
         window.onload = function () {
