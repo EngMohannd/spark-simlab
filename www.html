@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.6.2',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='2.6.3',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -13865,7 +13865,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.6.2', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.6.3', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14212,7 +14212,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -14278,7 +14278,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
                 const b = document.createElement('button'); b.id = 'ntBtn'; b.className = 'nt-btn'; b.setAttribute('aria-label', 'الإشعارات'); b.onclick = e => { e.stopPropagation(); toggle(); }; ref.parentElement.insertBefore(b, ref); badge();
             }
             const close = () => { const p = document.getElementById('ntPop'); if (p) p.remove(); };
-            function act(n) { close(); if (n.act === 'update') { try { sparkApplyUpdate(String(n.id).slice(2)); } catch (e) { location.reload(); } } else if (n.act === 'account') { try { accPanel(); } catch (e) { } } else if (n.act === 'news') { try { sparkNews(); } catch (e) { } } }
+            function act(n) { close(); if (n.act === 'update') { try { sparkApplyUpdate(String(n.id).slice(2)); } catch (e) { location.reload(); } } else if (n.act === 'account') { try { accPanel(); } catch (e) { } } else if (n.act === 'news') { try { sparkNews(); } catch (e) { } } else if (n.act === 'renew') { try { const a = document.createElement('a'); a.href = sparkAcc.waLink(); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); } catch (e) { try { accPanel(); } catch (x) { } } } }
             function toggle() {
                 if (document.getElementById('ntPop')) return close(); const b = document.getElementById('ntBtn'), r = b.getBoundingClientRect(), p = document.createElement('div'); p.id = 'ntPop'; p.className = 'nt-pop'; p.dir = 'rtl';
                 p.style.top = (r.bottom + 8) + 'px'; p.style.left = Math.max(10, Math.min(innerWidth - 370, r.left - 150)) + 'px';
@@ -15595,6 +15595,157 @@ class TouchScreen:
             addEventListener('load', () => setTimeout(navAdd, 1600));
             window.SPARK_EDISON = { compile: toJS, ED, Ed, MS, run, stop };
         })();
+
+// ===== Phase 39: in-app dialogs when alert/confirm/prompt are blocked, subscription expiry reminders, first-run tour =====
+(function () {
+    const $ = id => document.getElementById(id);
+    const LS = { g: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, s: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } } };
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    const st = document.createElement('style');
+    st.textContent = `
+    .sdlg{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:420;width:min(440px,calc(100vw - 24px));background:var(--sp-surf,#1d2126);color:var(--sp-txt,#e8e6e1);border:1px solid var(--sp-line,#343a41);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.45);padding:16px 16px 14px;font-size:14px;line-height:1.7;direction:rtl}
+    .sdlg .m{white-space:pre-wrap;max-height:40vh;overflow:auto;margin-bottom:12px}
+    .sdlg input{width:100%;height:40px;border-radius:9px;border:1px solid var(--sp-line,#343a41);background:var(--sp-bg,#14171a);color:inherit;padding:0 10px;margin-bottom:12px;font-size:14px}
+    .sdlg .b{display:flex;gap:8px;justify-content:flex-start}
+    .sdlg button{height:40px;padding:0 18px;border-radius:9px;font-weight:700;font-size:13.5px;border:1px solid var(--sp-line,#343a41);background:transparent;color:inherit;cursor:pointer}
+    .sdlg button.ok{background:#c8741f;border-color:#c8741f;color:#fff}
+    .stour-ring{position:fixed;z-index:415;border:2px solid #c8741f;border-radius:12px;box-shadow:0 0 0 9999px rgba(8,10,12,.55);pointer-events:none;transition:all .25s ease}
+    .stour-bub{position:fixed;z-index:416;width:min(340px,calc(100vw - 24px));background:var(--sp-surf,#1d2126);color:var(--sp-txt,#e8e6e1);border:1px solid var(--sp-line,#343a41);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.45);padding:16px;direction:rtl;font-size:14px;line-height:1.75}
+    .stour-bub h4{margin:0 0 6px;font-size:15.5px;font-weight:800;display:flex;align-items:center;gap:8px}
+    .stour-bub h4 i{color:#c8741f}
+    .stour-bub .n{font-size:11.5px;color:var(--sp-mut,#9aa0a6);margin-bottom:4px}
+    .stour-bub .b{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .stour-bub button{height:38px;padding:0 14px;border-radius:9px;font-weight:700;font-size:13px;border:1px solid var(--sp-line,#343a41);background:transparent;color:inherit;cursor:pointer}
+    .stour-bub button.ok{background:#c8741f;border-color:#c8741f;color:#fff}
+    .stour-bub button.sk{border:0;color:var(--sp-mut,#9aa0a6);margin-inline-start:auto}
+    @media(max-width:768px){.sdlg{bottom:12px}.stour-bub{font-size:13.5px}}`;
+    document.head.appendChild(st);
+
+    // ---------- 1) alert / confirm / prompt fallback ----------
+    // Embedded pages (APK WebView, sandboxed frames) block native dialogs: they return instantly (false/null).
+    // When that happens we show an in-app sheet and, on confirmation, replay the event that triggered the call.
+    const N = { a: window.alert && window.alert.bind(window), c: window.confirm && window.confirm.bind(window), p: window.prompt && window.prompt.bind(window) };
+    let blocked = false, pass = null;
+    const fast = t => performance.now() - t < 40;
+    function replayer() {
+        const e = window.event; if (!e || !e.type || !e.target) return null; const t = e.target;
+        return () => {
+            if (e.type === 'click' && t.isConnected && typeof t.click === 'function') { t.click(); return; }
+            try { t.dispatchEvent(new e.constructor(e.type, e)); } catch (x) { try { t.dispatchEvent(new Event(e.type, { bubbles: e.bubbles })); } catch (y) { } }
+        };
+    }
+    function sheet(kind, msg, def, rp) {
+        const old = $('spDlg'); if (old) old.remove();
+        const d = document.createElement('div'); d.id = 'spDlg'; d.className = 'sdlg'; d.setAttribute('role', 'dialog');
+        d.innerHTML = `<div class="m">${esc(msg)}</div>${kind === 'p' ? `<input id="spDlgIn" value="${esc(def)}">` : ''}<div class="b">${kind === 'a' ? '<button class="ok" data-k="ok">حسناً</button>' : '<button class="ok" data-k="ok">تأكيد</button><button data-k="no">إلغاء</button>'}</div>`;
+        document.body.appendChild(d);
+        const close = () => d.remove();
+        d.querySelector('[data-k=ok]').onclick = () => {
+            if (kind === 'a') return close();
+            pass = { k: kind, m: msg, v: kind === 'p' ? ($('spDlgIn') || {}).value : true, t: Date.now() }; close();
+            if (rp) { setTimeout(rp, 0); setTimeout(() => { if (pass && pass.m === msg && Date.now() - pass.t > 1200) pass = null; }, 1500); }
+            else setTimeout(() => sheet('a', 'تم التأكيد — اضغط الزر نفسه مرة أخرى لإكمال الإجراء.'), 0);
+        };
+        const no = d.querySelector('[data-k=no]'); if (no) no.onclick = close;
+        const inp = $('spDlgIn'); if (inp) { inp.focus(); inp.select(); inp.onkeydown = ev => { if (ev.key === 'Enter') d.querySelector('[data-k=ok]').click(); }; }
+        else setTimeout(() => { try { d.querySelector('[data-k=ok]').focus(); } catch (e) { } }, 30);
+    }
+    const take = (k, m) => { if (pass && pass.k === k && pass.m === m && Date.now() - pass.t < 60000) { const v = pass.v; pass = null; return { v }; } return null; };
+    window.confirm = function (m) {
+        m = String(m == null ? '' : m); const p = take('c', m); if (p) return true;
+        if (!blocked && N.c) { const t = performance.now(); let r = false; try { r = N.c(m); } catch (e) { } if (r) return true; if (!fast(t)) return false; blocked = true; }
+        sheet('c', m, '', replayer()); return false;
+    };
+    window.alert = function (m) {
+        m = String(m == null ? '' : m);
+        if (!blocked && N.a) { const t = performance.now(); try { N.a(m); } catch (e) { } if (!fast(t)) return; blocked = true; }
+        sheet('a', m);
+    };
+    window.prompt = function (m, def) {
+        m = String(m == null ? '' : m); const p = take('p', m); if (p) return p.v;
+        if (!blocked && N.p) { const t = performance.now(); let r = null; try { r = N.p(m, def == null ? '' : def); } catch (e) { } if (r !== null || !fast(t)) return r; blocked = true; }
+        sheet('p', m, def == null ? '' : def, replayer()); return null;
+    };
+    window.sparkDialogs = { blocked: () => blocked, force: v => { blocked = !!v; } };
+
+    // ---------- 2) expiry reminders (7, 3, 1 days before the trial / subscription ends) ----------
+    async function expiryCheck() {
+        try {
+            if (!window.sparkAcc || typeof sparkNotify !== 'function') return; const i = sparkAcc.info();
+            if (!i.signedIn || !i.tier || i.tier === 'owner' || !isFinite(i.days) || i.days <= 0) return;
+            const step = [1, 3, 7].find(n => i.days <= n); if (!step) return;
+            const end = Math.floor(Date.now() / 864e5) + i.days, pr = await sparkAcc.profile(), trial = i.tier === 'student' && !(pr && pr.ch);
+            const left = i.days === 1 ? 'غداً' : i.days === 2 ? 'بعد يومين' : 'بعد ' + i.days + ' أيام';
+            sparkNotify({ id: 'x:' + i.tier + ':' + end + ':' + step, ic: 'fa-hourglass-half', act: 'renew',
+                title: (trial ? 'تنتهي الفترة المجانية ' : 'ينتهي اشتراكك ') + left,
+                text: 'اضغط هنا لطلب كود التفعيل عبر واتساب — مشاريعك محفوظة ولن تُحذف.' });
+        } catch (e) { }
+    }
+    addEventListener('load', () => setTimeout(expiryCheck, 2500));
+    addEventListener('spark-acct', () => setTimeout(expiryCheck, 400));
+    setInterval(expiryCheck, 6 * 3600e3);
+
+    // ---------- 3) first-run tour ----------
+    const STEPS = [
+        { el: ['paneLibrary', 'libraryListContainer'], ic: 'fa-cubes', t: 'مكتبة العناصر', x: 'ابحث عن أي عنصر (حساس، شاشة، محرك، لوحة أردوينو…) واسحبه إلى الساحة.' },
+        { el: ['canvasViewport'], ic: 'fa-diagram-project', t: 'ساحة العمل', x: 'وصّل الأسلاك بالسحب من منفذ إلى منفذ. كبّر وصغّر بعجلة الماوس أو بإصبعين على الجوال.' },
+        { el: ['pjPick'], ic: 'fa-folder-open', t: 'المشاريع الجاهزة', x: 'أكثر من 18 مشروعاً مكتملاً: افتح أي واحد وعدّل عليه لتتعلم أسرع.' },
+        { el: ['btnRunSim'], ic: 'fa-play', t: 'تشغيل المحاكاة', x: 'اضغط «تشغيل» لترى الدائرة تعمل. المنصة تفحص التوصيلات قبل التشغيل وتنبّهك لأي خطأ.' }
+    ];
+    const vis = e => { if (!e) return null; const r = e.getBoundingClientRect(); return r.width > 4 && r.height > 4 && r.bottom > 0 && r.top < innerHeight ? r : null; };
+    function tourEnd(done) { ['stRing', 'stBub'].forEach(i => { const e = $(i); if (e) e.remove(); }); removeEventListener('resize', tourEnd.rs); if (done) LS.s('spark_tour_v1', String(Date.now())); }
+    window.sparkTour = function (force) {
+        if (!force && LS.g('spark_tour_v1')) return; tourEnd(false); let i = 0;
+        const ring = document.createElement('div'); ring.id = 'stRing'; ring.className = 'stour-ring';
+        const bub = document.createElement('div'); bub.id = 'stBub'; bub.className = 'stour-bub'; bub.setAttribute('role', 'dialog');
+        document.body.append(ring, bub);
+        function show() {
+            const s = STEPS[i], last = i === STEPS.length - 1; let r = null;
+            for (const id of s.el) { r = vis($(id)); if (r) break; }
+            bub.innerHTML = `<div class="n">${i + 1} / ${STEPS.length}</div><h4><i class="fa-solid ${s.ic}"></i>${s.t}</h4><div>${s.x}</div><div class="b">${last
+                ? '<button class="ok" data-k="ex"><i class="fa-solid fa-folder-open"></i> ابدأ بمثال جاهز</button><button data-k="end">ابدأ من الصفر</button>'
+                : '<button class="ok" data-k="next">التالي</button>' + (i ? '<button data-k="prev">السابق</button>' : '') + '<button class="sk" data-k="end">تخطي</button>'}</div>`;
+            if (r) {
+                const p = 6; Object.assign(ring.style, { display: 'block', left: (r.left - p) + 'px', top: (r.top - p) + 'px', width: (r.width + 2 * p) + 'px', height: (r.height + 2 * p) + 'px' });
+                const bw = bub.offsetWidth, bh = bub.offsetHeight, big = r.height > innerHeight * 0.5;
+                let top = big ? r.top + (r.height - bh) / 2 : (r.bottom + 14 + bh < innerHeight ? r.bottom + 14 : r.top - 14 - bh);
+                let left = big ? r.left + (r.width - bw) / 2 : r.left + r.width / 2 - bw / 2;
+                if (big && r.width < innerWidth * 0.5 && innerWidth > 700) { top = r.top + Math.min(120, (r.height - bh) / 2); left = r.left > innerWidth - r.right ? r.left - bw - 18 : r.right + 18; }
+                top = Math.max(10, Math.min(innerHeight - bh - 10, top)); left = Math.max(10, Math.min(innerWidth - bw - 10, left));
+                Object.assign(bub.style, { top: top + 'px', left: left + 'px' });
+            } else {
+                Object.assign(ring.style, { display: 'block', left: '50%', top: '50%', width: '0px', height: '0px' });
+                Object.assign(bub.style, { top: Math.max(10, (innerHeight - bub.offsetHeight) / 2) + 'px', left: Math.max(10, (innerWidth - bub.offsetWidth) / 2) + 'px' });
+            }
+            bub.querySelectorAll('button').forEach(b => b.onclick = () => {
+                const k = b.dataset.k;
+                if (k === 'next') { i++; show(); } else if (k === 'prev') { i--; show(); }
+                else if (k === 'end') tourEnd(true);
+                else if (k === 'ex') { tourEnd(true); try { pjOpen(); } catch (e) { } }
+            });
+        }
+        tourEnd.rs = () => { if ($('stBub')) show(); }; addEventListener('resize', tourEnd.rs);
+        show();
+    };
+    addEventListener('keydown', e => { if (e.key === 'Escape' && $('stBub')) tourEnd(true); });
+    // auto-start once, after sign-in screens and notices are closed (skipped under automated tests)
+    addEventListener('load', () => {
+        if (LS.g('spark_tour_v1') || (navigator.webdriver && !LS.g('spark_tour_force'))) return;
+        let n = 0; const tick = () => {
+            if (LS.g('spark_tour_v1') || ++n > 180) return;
+            if ($('accOv') || $('spDoc') || $('spDlg') || document.querySelector('.ntPanel,#ntPanel') || (window.state && state.components && state.components.length)) return setTimeout(tick, 1000);
+            sparkTour(false);
+        };
+        setTimeout(tick, 2200);
+    });
+    // help menu entry
+    addEventListener('load', () => setTimeout(() => {
+        try {
+            const _m = sxMenus; sxMenus = function () { const m = _m.apply(this, arguments); try { const h = m[m.length - 1][2]; if (!h.some(x => x && x[1] === 'جولة تعريفية')) h.unshift(['fa-route', 'جولة تعريفية', '', () => sparkTour(true)]); } catch (e) { } return m; };
+        } catch (e) { }
+    }, 0));
+})();
 
         window.onload = function () {
             renderComponentLibrary();
