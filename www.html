@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.4.7',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='2.5.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -4265,7 +4265,7 @@ var qrcode = function() {
                 if (c.type === 'arduino_uno') {
                     powerSources.push({ key: pinKey(c.id, '5V'), voltage: 5.0, comp: c });
                     groundPins.add(pinKey(c.id, 'GND'));
-                } else if (c.type === 'esp32_devkit') {
+                } else if (c.type === 'esp32_devkit' || c.type === 'rpi4') {
                     powerSources.push({ key: pinKey(c.id, '3V3'), voltage: 3.3, comp: c });
                     powerSources.push({ key: pinKey(c.id, '5V'), voltage: 5.0, comp: c });
                     groundPins.add(pinKey(c.id, 'GND'));
@@ -4567,12 +4567,13 @@ var qrcode = function() {
         const VM_CONST = { HIGH: 1, LOW: 0, INPUT: 0, OUTPUT: 1, INPUT_PULLUP: 2, true: 1, false: 0, LED_BUILTIN: 13, PI: Math.PI, A0: 14, A1: 15, A2: 16, A3: 17, A4: 18, A5: 19, DHT22: 22, DHT11: 11, WL_CONNECTED: 3, WL_NO_SSID_AVAIL: 1, WL_CONNECT_FAILED: 4, WL_DISCONNECTED: 6, WL_IDLE_STATUS: 0, WIFI_STA: 1, WIFI_AP: 2, HTTP_CODE_OK: 200 };
 
         function isEspBoard() { return state.components.some(c => c.type === 'esp32_devkit'); }
-        function vmMcu() { return state.components.find(c => c.type === 'arduino_uno' || c.type === 'esp32_devkit'); }
-        function vmVcc() { const m = vmMcu(); return m && m.type === 'esp32_devkit' ? 3.3 : 5; }
+        function vmMcu() { return state.components.find(c => c.type === 'arduino_uno' || c.type === 'esp32_devkit' || c.type === 'rpi4'); }
+        function vmVcc() { const m = vmMcu(); return m && (m.type === 'esp32_devkit' || m.type === 'rpi4') ? 3.3 : 5; }
         function pidOf(n) {
             const m = vmMcu(); if (!m) return null;
             if (typeof n === 'string') return n;
             if (m.type === 'arduino_uno') return n <= 13 ? 'D' + n : (n === 18 ? 'SDA' : n === 19 ? 'SCL' : 'A' + (n - 14));
+            if (m.type === 'rpi4') return n === 2 ? 'SDA' : n === 3 ? 'SCL' : 'G' + n;
             return n === 21 ? 'SDA' : n === 22 ? 'SCL' : 'G' + n;
         }
         function vmUpdateBadge() {
@@ -5622,7 +5623,7 @@ var qrcode = function() {
             state.wires.forEach(w => uni(K(w.from.compId, w.from.pinId), K(w.to.compId, w.to.pinId)));
             state.components.forEach(c => {
                 c.pinI = {};
-                if (['arduino_uno', 'esp32_devkit', 'dc_supply'].includes(c.type)) uni(K(c.id, 'GND'), '__GND__');
+                if (['arduino_uno', 'esp32_devkit', 'rpi4', 'dc_supply'].includes(c.type)) uni(K(c.id, 'GND'), '__GND__');
                 const xd = EXT[c.type]; if (xd && xd.gnd) uni(K(c.id, xd.gnd), '__GND__');
                 if (xd && xd.groups) xd.groups(c).forEach(g => g.slice(1).forEach(q => uni(K(c.id, g[0]), K(c.id, q))));
             });
@@ -5676,9 +5677,9 @@ var qrcode = function() {
                 }
             });
             if (vmOn) {
-                const m = state.components.find(c => c.type === 'arduino_uno' || c.type === 'esp32_devkit');
+                const m = state.components.find(c => c.type === 'arduino_uno' || c.type === 'esp32_devkit' || c.type === 'rpi4');
                 if (m) {
-                    const vc = m.type === 'esp32_devkit' ? 3.3 : 5;
+                    const vc = (m.type === 'esp32_devkit' || m.type === 'rpi4') ? 3.3 : 5;
                     Object.entries(state.vm.pins).forEach(([id, pp]) => {
                         if (pp.out !== undefined) els.push({ t: 'S', c: m, pa: id, a: find(K(m.id, id)), v: (pp.duty !== undefined && state._pwmT != null) ? (pp.duty > state._pwmT ? vc : 0) : pp.out, r: 40 });
                         else if (pp.pull) els.push({ t: 'S', c: m, pa: id, a: find(K(m.id, id)), v: vc, r: 30000 });
@@ -8187,7 +8188,7 @@ ${AI.teacher ? '- وضع المعلم مفعّل: لا تعطِ الحل الك�
             g.fillStyle = '#b4bcc8'; g.fillRect(0, rh * 8.6, cv.width, rh * 0.8);
             const t = new TH3.CanvasTexture(cv); t.anisotropy = 4; return t;
         }
-        const SRC_T = /^(arduino_uno|esp32_devkit|dc_supply|bat_|solar|func_gen|reg_|buck_|boost_|tp4056)/;
+        const SRC_T = /^(arduino_uno|esp32_devkit|rpi4|dc_supply|bat_|solar|func_gen|reg_|buck_|boost_|tp4056)/;
         function wireI(w) {
             let best = 0, sign = 0;
             const cand = (c, p, dir) => { if (!c || !c.pinI) return; const i = c.pinI[p]; if (i === undefined || !isFinite(i)) return; if (Math.abs(i) > Math.abs(best)) { best = i; const into = SRC_T.test(c.type) ? -i : i; sign = dir * Math.sign(into); } };
@@ -12244,8 +12245,8 @@ ${lk ? `<text x="0" y="36" text-anchor="middle" font-size="9" font-weight="700" 
             state.components.forEach(c => (COMPONENT_CATALOG[c.type] || { pins: [] }).pins.forEach(p => { const n = nets[root(c.id + '|' + p.id)]; if (n) n.members.add(c.type + '.' + p.id); }));
             netArr.forEach(n => {
                 const m = [...n.members], has = re => m.some(x => re.test(x));
-                n.name = has(/\.GND$/) || has(/^(bat_\w+|solar_\w+)\.NEG$/) ? 'GND' : has(/^(arduino_uno|esp32_devkit)\.5V$/) ? '+5V' : has(/^esp32_devkit\.3V3$/) ? '+3V3' : has(/^(dc_supply\.VPOS|bat_\w+\.POS|solar_\w+\.POS)$/) ? 'VIN' : '';
-                if (!n.name) { const mc = m.find(x => /^(arduino_uno|esp32_devkit)\./.test(x)); n.name = mc ? mc.split('.')[1] : ''; }
+                n.name = has(/\.GND$/) || has(/^(bat_\w+|solar_\w+)\.NEG$/) ? 'GND' : has(/^(arduino_uno|esp32_devkit|rpi4)\.5V$/) ? '+5V' : has(/^(esp32_devkit|rpi4)\.3V3$/) ? '+3V3' : has(/^(dc_supply\.VPOS|bat_\w+\.POS|solar_\w+\.POS)$/) ? 'VIN' : '';
+                if (!n.name) { const mc = m.find(x => /^(arduino_uno|esp32_devkit|rpi4)\./.test(x)); n.name = mc ? mc.split('.')[1] : ''; }
                 n.pow = /^(GND|\+5V|\+3V3|VIN)$/.test(n.name) || m.some(x => /^(water_pump|motor_|solenoid|heater|bulb_12v|cooling_fan|robot_car|relay_\w+\.(COM|NO|NC)|drv_\w+\.(OUT\d|VS)|reg_\w+\.(IN|OUT)|buck_|boost_|tp4056)/.test(x));
             });
             let k = 1; netArr.forEach(n => { if (!n.name) n.name = 'N' + (k++); });
@@ -13863,7 +13864,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.4.7', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.5.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -13885,7 +13886,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
                 parts: [2, 'العناصر المتقدمة: ESP32، حساسات المياه والتربة، اللاسلكي، البصمة، الحساسات الدقيقة'], aicloud: [2, 'المساعد الذكي السحابي'],
                 mech: [3, 'التصميم الميكانيكي ثلاثي الأبعاد وتصدير STL'], drone: [3, 'مهام المروحية الرباعية'], ges: [3, 'الإيماءات والرؤية الحاسوبية بالكاميرا'], llm: [3, 'المساعد الذكي المحلي (بدون إنترنت)']
             };
-            const ADV = new Set(['esp32_devkit', 'bmp280', 'bme280', 'mpu6050', 'bh1750', 'hx711', 'acs712', 'fp_r307', 'igbt_gt', 'scr', 'triac', 'diac', 'buck_lm2596', 'boost_mt3608', 'tft_18', 'tft_24', 'max7219', 'camera_module', 'robot_car', 'func_gen', 'max485', 'rf_rx4', 'rc_rx6', 'lora_sx1278']);
+            const ADV = new Set(['esp32_devkit', 'rpi4', 'rpi_touch7', 'mcp3008', 'bmp280', 'bme280', 'mpu6050', 'bh1750', 'hx711', 'acs712', 'fp_r307', 'igbt_gt', 'scr', 'triac', 'diac', 'buck_lm2596', 'boost_mt3608', 'tft_18', 'tft_24', 'max7219', 'camera_module', 'robot_car', 'func_gen', 'max485', 'rf_rx4', 'rc_rx6', 'lora_sx1278']);
             const partLocked = t => { const c = COMPONENT_CATALOG[t]; return ADV.has(t) || (c && /Water & Soil|Wireless/.test(c.category)); };
             const S = { a: null, tier: null, lic: null, as: null };   // private state
             const LS = { g: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, s: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } }, d: k => { try { localStorage.removeItem(k); } catch (e) { } } };
@@ -14111,8 +14112,26 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
                     const st = JSON.parse(LS.g('spark_upd') || 'null'), f = m[document.getElementById('threeSrc') ? 'single' : 'www'];
                     if (!(st && st.v === m.v && await sparkKV.get('upd_html'))) {
                         if (!f || !f.url) return; if (manual) bar('<b>جارٍ تنزيل الإصدار ' + esc(m.v) + '…</b><br>قد يستغرق دقيقة حسب سرعة الإنترنت.');
-                        let buf = null; for (const u of [f.url, f.url.replace('https://raw.githubusercontent.com/EngMohannd/spark-simlab/main/', 'https://cdn.jsdelivr.net/gh/EngMohannd/spark-simlab@main/')]) { try { const r = await fetch(u + '?v=' + encodeURIComponent(m.v), { cache: 'no-store' }); if (!r.ok) continue; const b2 = await r.arrayBuffer(); if (await sparkSha(b2) === f.sha) { buf = b2; break; } buf = buf || b2; } catch (e) { } }
-                        if (!buf) { if (manual) bar('<b>تعذّر تنزيل ملف التحديث</b><br>الإصدار ' + esc(m.v) + ' متوفر لكن التنزيل لم يكتمل. تأكد من الإنترنت وأعد المحاولة.'); return; }
+                        const why = []; let buf = null, stale = false;
+                        // download in small ranged pieces, each retried, so a flaky connection that cuts big transfers can still finish
+                        const pull = async (u, size) => {
+                            const url = u + '?v=' + encodeURIComponent(m.v), one = async (hd) => { const r = await fetch(url, { cache: 'no-store', headers: hd }); if (r.status !== 200 && r.status !== 206) throw new Error('HTTP ' + r.status); return { st: r.status, b: new Uint8Array(await r.arrayBuffer()) }; };
+                            const retry = async (fn) => { for (let t = 0; ; t++) { try { return await fn(); } catch (e) { if (t >= 4) throw e; await new Promise(k => setTimeout(k, 700 * (t + 1))); } } };
+                            if (!size) { const r = await retry(() => one({})); return r.b.buffer; }
+                            const out = new Uint8Array(size), CH = 262144;
+                            for (let st = 0; st < size; st += CH) {
+                                const en = Math.min(size, st + CH) - 1, r = await retry(async () => { const x = await one({ Range: 'bytes=' + st + '-' + en }); if (x.st === 206 ? x.b.length !== en - st + 1 : x.b.length !== size) throw new Error('incomplete'); return x; });
+                                if (r.st === 200) { out.set(r.b, 0); break; } out.set(r.b, st);
+                                if (manual) bar('<b>جارٍ تنزيل الإصدار ' + esc(m.v) + '… ' + Math.round((en + 1) / size * 100) + '%</b>');
+                            }
+                            return out.buffer;
+                        };
+                        for (const u of [f.url, f.url.replace('https://raw.githubusercontent.com/EngMohannd/spark-simlab/main/', 'https://cdn.jsdelivr.net/gh/EngMohannd/spark-simlab@main/')]) {
+                            const host = u.split('/')[2];
+                            try { const b2 = await pull(u, +f.size || 0); if (await sparkSha(b2) === f.sha) { buf = b2; break; } why.push(host + ': stale copy'); stale = true; } catch (e) { why.push(host + ': ' + String(e && e.message || e).slice(0, 40)); }
+                        }
+                        try { LS.s('spark_upd_err', JSON.stringify({ t: Date.now(), v: m.v, why })); } catch (e) { }
+                        if (!buf) { if (manual) bar('<b>' + (stale ? 'النسخة الجديدة لم تصل للخادم بعد' : 'تعذّر تنزيل ملف التحديث') + '</b><br>' + (stale ? 'انتظر دقائق ثم أعد الفحص.' : 'الإصدار ' + esc(m.v) + ' متوفر لكن التنزيل لم يكتمل. أعد المحاولة بعد قليل.') + '<br><span dir="ltr" style="opacity:.6;font-size:11px">' + esc(why.join(' | ')) + '</span>'); return; }
                         if (await sparkSha(buf) !== f.sha) { if (manual) bar('<b>ملف التحديث غير مطابق</b><br>تم تجاهله حفاظاً على سلامة المنصة.'); return; }   // integrity
                         await sparkKV.set('upd_html', new TextDecoder().decode(buf)); LS.s('spark_upd', JSON.stringify({ v: m.v, tries: 0 }));
                     }
@@ -14165,7 +14184,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -14305,7 +14324,7 @@ html.lite .acc-card,html.lite .nt-pop,html.lite .mb-menu,html.lite .sx-drawer{bo
                 let power = false;
                 cs.forEach(c => {
                     const cat = COMPONENT_CATALOG[c.type]; if (!cat) return; const pins = (cat.pins || []).map(p => p.id), u = used[c.id] || new Set(), isMcu = /arduino|esp32|esp8266|pico|microbit|mcu/i.test(c.type) || /Microcontroller|المتحكمات/.test(cat.category || '');
-                    if (isMcu || /battery|supply|solar|usb_power|dc_jack|power/i.test(c.type)) power = power || u.size > 0;
+                    if (isMcu || /^bat_|battery|supply|solar|usb_power|dc_jack|power|psu|vsrc|adapter/i.test(c.type)) power = power || u.size > 0;
                     if (/Instruments|أجهزة القياس|breadboard|لوحة التجارب/i.test((cat.category || '') + c.type) || pins.length < 1) return;
                     if (!u.size) return out.push({ lv: 'err', id: c.id, t: '«' + nm(c) + '» غير موصول بأي سلك.' });
                     if (isMcu) return;
@@ -14349,9 +14368,427 @@ html.lite .acc-card,html.lite .nt-pop,html.lite .mb-menu,html.lite .sx-drawer{bo
             // serial monitor + scope stay hidden until their button is pressed (the choice is remembered)
             const dockState = () => { const d = document.getElementById('bottomTelemetryDock'); return !d || d.classList.contains('dock-off') ? 'off' : d.classList.contains('dock-lg') ? 'lg' : 'on'; };
             toggleDock = (o => function () { const r = o.apply(this, arguments); try { localStorage.setItem('spark_dock', dockState()); } catch (e) { } return r; })(toggleDock);
-            addEventListener('load', () => setTimeout(() => { const d = document.getElementById('bottomTelemetryDock'); if (!d) return; let v = 'off'; try { v = localStorage.getItem('spark_dock') || 'off'; } catch (e) { } d.classList.toggle('dock-off', v === 'off'); d.classList.toggle('dock-lg', v === 'lg'); try { relayout(); } catch (e) { } }, 80));
+            addEventListener('load', () => { let touched = false; const o2 = toggleDock; toggleDock = function () { touched = true; return o2.apply(this, arguments); };
+                const apply = () => { const d = document.getElementById('bottomTelemetryDock'); if (!d || touched) return; let v = 'off'; try { v = localStorage.getItem('spark_dock') || 'off'; } catch (e) { } d.classList.toggle('dock-off', v === 'off'); d.classList.toggle('dock-lg', v === 'lg'); try { relayout(); } catch (e) { } };
+                [80, 600, 1500, 3000].forEach(t => setTimeout(apply, t)); });
             // phone bottom bar: the platform self-test is an internal tool
             addEventListener('load', () => setTimeout(() => { document.querySelectorAll('button[onclick*="runPlatformQATests"]').forEach(b => { if (b.closest('nav,footer,[class*="fixed"]') && !b.closest('.sx-drop,.sx-drawer')) b.classList.add('sp-mobnav-qa'); }); }, 800));
+        })();
+
+// ===== Phase 36: Raspberry Pi 4 (Python: gpiozero / RPi.GPIO), 7" touch screen, MCP3008 ADC, new lab circuits =====
+        (function () {
+            const svgUrl = s => 'data:image/svg+xml;utf8,' + encodeURIComponent(s);
+            // ---------- drawn boards (pin positions match the real 40-pin header) ----------
+            const hdr = [22.3, 47.7].map(y => Array.from({ length: 20 }, (_, i) => `<rect x="${79.2 + 25.4 * i}" y="${y - 4.5}" width="9" height="9" fill="#d4af37"/>`).join('')).join('');
+            const usb = (y, c) => `<rect x="690" y="${y}" width="172" height="132" rx="6" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><rect x="800" y="${y + 14}" width="54" height="44" fill="${c}"/><rect x="800" y="${y + 74}" width="54" height="44" fill="${c}"/>`;
+            const PI = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 870 560"><rect x="2" y="2" width="846" height="556" rx="30" fill="#1f7a3d" stroke="#14532d" stroke-width="4"/>
+${[[35, 35], [615, 35], [35, 525], [615, 525]].map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="15" fill="#d4af37"/><circle cx="${p[0]}" cy="${p[1]}" r="8" fill="#e9edf2"/>`).join('')}
+<rect x="68" y="6" width="518" height="58" rx="4" fill="#17181c"/>${hdr}
+<rect x="80" y="96" width="128" height="84" rx="4" fill="#cfd4db" stroke="#8b929c" stroke-width="3"/><text x="144" y="145" font-size="20" text-anchor="middle" fill="#59616d" font-family="sans-serif">WiFi · BT</text>
+<rect x="296" y="196" width="140" height="140" rx="6" fill="#d7dbe1" stroke="#8b929c" stroke-width="3"/><rect x="318" y="218" width="96" height="96" fill="#bfc5cd"/><text x="366" y="272" font-size="19" text-anchor="middle" fill="#4b5563" font-family="sans-serif">BCM2711</text>
+<rect x="476" y="206" width="104" height="120" rx="4" fill="#15171b"/><text x="528" y="272" font-size="17" text-anchor="middle" fill="#9aa3af" font-family="sans-serif">RAM</text>
+<rect x="600" y="230" width="62" height="62" rx="3" fill="#15171b"/>
+<rect x="16" y="196" width="40" height="170" rx="3" fill="#e9edf2" stroke="#59616d" stroke-width="3"/><rect x="24" y="204" width="12" height="154" fill="#2b2f36"/><text x="76" y="290" font-size="17" fill="#d9f2e1" font-family="sans-serif" transform="rotate(-90 76 290)">DISPLAY</text>
+<rect x="432" y="392" width="40" height="120" rx="3" fill="#e9edf2" stroke="#59616d" stroke-width="3"/><rect x="440" y="400" width="12" height="104" fill="#2b2f36"/><text x="490" y="470" font-size="15" fill="#d9f2e1" font-family="sans-serif" transform="rotate(-90 490 470)">CAMERA</text>
+<rect x="72" y="498" width="92" height="62" rx="8" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><text x="118" y="488" font-size="15" text-anchor="middle" fill="#d9f2e1" font-family="sans-serif">USB-C 5V</text>
+<rect x="222" y="506" width="74" height="54" rx="5" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><rect x="332" y="506" width="74" height="54" rx="5" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><text x="314" y="496" font-size="15" text-anchor="middle" fill="#d9f2e1" font-family="sans-serif">HDMI ×2</text>
+<rect x="520" y="486" width="64" height="74" rx="8" fill="#15171b"/><circle cx="552" cy="540" r="14" fill="#2b2f36"/>
+${usb(50, '#2563eb')}${usb(222, '#1f2937')}<rect x="690" y="396" width="172" height="146" rx="6" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><rect x="792" y="420" width="62" height="98" fill="#2b2f36"/>
+<text x="200" y="420" font-size="25" fill="#e6e9ee" font-family="sans-serif" font-weight="700">Raspberry Pi 4 Model B</text><text x="96" y="86" font-size="14" fill="#d9f2e1" font-family="sans-serif">3V3 ▸ pin 1</text></svg>`;
+            const TS = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 372"><rect x="10" y="2" width="588" height="368" rx="18" fill="#0d0f13" stroke="#2b2f36" stroke-width="3"/><rect x="34" y="22" width="542" height="308" rx="4" fill="#05070a"/><rect x="0" y="112" width="16" height="148" rx="3" fill="#2b2f36"/><text x="306" y="355" font-size="14" text-anchor="middle" fill="#6b7280" font-family="sans-serif">7" Touch Display · 800×480</text></svg>`;
+            const leg = y => Array.from({ length: 8 }, (_, i) => `<rect x="${27 + 33 * i}" y="${y}" width="15" height="26" rx="2" fill="#c9ced6"/>`).join('');
+            const IC = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 150">${leg(0)}${leg(124)}<rect x="12" y="22" width="276" height="106" rx="8" fill="#17181c"/><circle cx="12" cy="75" r="11" fill="#2b2f36"/><text x="155" y="72" font-size="27" text-anchor="middle" fill="#d1d5db" font-family="monospace" font-weight="700">MCP3008</text><text x="155" y="100" font-size="15" text-anchor="middle" fill="#8b929c" font-family="sans-serif">10-bit ADC · SPI</text></svg>`;
+            try { [['rpi4', PI, 870, 560], ['rpi_touch7', TS, 600, 372], ['mcp3008', IC, 300, 150]].forEach(([k, s, w, h]) => { PHOTO.img['x_' + k] = { w, h, d: svgUrl(s) }; PHOTO.cat[k] = 'x_' + k; }); } catch (e) { }
+
+            // ---------- parts ----------
+            const P = (id, label, side, role, voltage) => ({ id, label, side, role: role || 'digital_io', voltage });
+            X('rpi4', 'المتحكمات الدقيقة (MCUs)', 'Raspberry Pi 4 Model B', 'حاسوب لوحي 4 أنوية · Linux · Python (gpiozero)', 'fa-microchip', 'emerald', 236, '', '', {
+                nopower: true,
+                pinList: [P('3V3', '3.3V (pin 1)', 'left', 'power_out', 3.3), P('5V', '5V (pin 2)', 'left', 'power_out', 5), P('GND', 'GND', 'left', 'gnd', 0), P('SDA', 'GPIO2 (SDA)', 'left', 'i2c_sda'), P('SCL', 'GPIO3 (SCL)', 'left', 'i2c_scl'),
+                P('G4', 'GPIO4', 'left'), P('G17', 'GPIO17', 'left'), P('G27', 'GPIO27', 'left'), P('G22', 'GPIO22', 'left'), P('G10', 'GPIO10 (MOSI)', 'left'), P('G9', 'GPIO9 (MISO)', 'left'), P('G11', 'GPIO11 (SCLK)', 'left'), P('G5', 'GPIO5', 'left'), P('G6', 'GPIO6', 'left'), P('G13', 'GPIO13 (PWM)', 'left', 'pwm_out'), P('G19', 'GPIO19', 'left'), P('G26', 'GPIO26', 'left'),
+                P('G14', 'GPIO14 (TXD)', 'right'), P('G15', 'GPIO15 (RXD)', 'right'), P('G18', 'GPIO18 (PWM)', 'right', 'pwm_out'), P('G23', 'GPIO23', 'right'), P('G24', 'GPIO24', 'right'), P('G25', 'GPIO25', 'right'), P('G8', 'GPIO8 (CE0)', 'right'), P('G7', 'GPIO7 (CE1)', 'right'), P('G12', 'GPIO12 (PWM)', 'right', 'pwm_out'), P('G16', 'GPIO16', 'right'), P('G20', 'GPIO20', 'right'), P('G21', 'GPIO21', 'right'),
+                P('DSI', 'DSI (شاشة)', 'right', 'x'), P('CSI', 'CSI (كاميرا)', 'right', 'x')],
+                stamp2: (c, A) => { A.S(c, '3V3', 3.3, 0.5); A.S(c, '5V', 5, 0.5); },
+                vis: () => `<div class="text-[10px] text-slate-300 leading-relaxed">منافذ GPIO تعمل على <b>3.3V فقط</b> (ليست متحملة لـ 5V) · أقصى تيار للمنفذ ≈ 16mA<br>البرمجة بلغة <b>Python</b>: gpiozero أو RPi.GPIO</div>`,
+                status: () => 'BCM2711 · 3.3V logic'
+            });
+            const scrOk = c => (c.pinVoltages['5V'] || 0) >= 4.5 && state.wires.some(w => { const a = w.from, b = w.to, o = a.compId === c.id && a.pinId === 'DSI' ? b : b.compId === c.id && b.pinId === 'DSI' ? a : null, t = o && compById(o.compId); return !!t && t.type === 'rpi4' && o.pinId === 'DSI'; });
+            const escH = s => String(s == null ? '' : s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+            const STOP = 'onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"';
+            function scrHTML(c) {
+                const s = c.state, on = scrOk(c) && state.running;
+                if (!on) return `<div class="pi-off">${scrOk(c) ? 'اضغط «تشغيل المحاكاة»' : 'لا إشارة — وصّل 5V و GND وكيبل DSI'}</div>`;
+                return `<div class="pi-bar">${escH(s.title || 'Raspberry Pi')}</div><div class="pi-body">${(s.rows || []).map(r => `<div class="pi-row">${escH(r)}</div>`).join('')}${(s.gz || []).map(g => `<div class="pi-g"><span>${escH(g.n)}</span><i><b style="width:${Math.max(0, Math.min(100, g.v / (g.m || 100) * 100))}%"></b></i><em>${fm(g.v, 1)}</em></div>`).join('')}</div><div class="pi-btns">${(s.btns || []).map((b, i) => `<button class="${b.k === 't' && s.tg[b.n] ? 'on' : ''}" ${STOP} onpointerdown="event.stopPropagation();piTouch('${c.id}',${i})">${escH(b.n)}</button>`).join('')}</div>`;
+            }
+            window.piTouch = (id, i) => { const c = compById(id); if (!c) return; const b = (c.state.btns || [])[i]; if (!b) return; if (b.k === 't') c.state.tg[b.n] = !c.state.tg[b.n]; else c.state.dn[b.n] = true; c.state.sig = ''; try { refreshComponentBodiesLive(); } catch (e) { } };
+            X('rpi_touch7', XC.DS, 'شاشة لمس 7 بوصة للراسبري باي', 'Official 7" DSI Touch Display · 800×480', 'fa-tablet-screen-button', 'violet', 300, '5V,GND', 'DSI', {
+                nopower: true, state: { title: '', rows: [], gz: [], btns: [], dn: {}, tg: {} }, res: [{ a: '5V', b: 'GND', r: () => 12 }],
+                vis: c => `<div class="pi-scr" style="position:relative;height:150px">${scrHTML(c)}</div>`,
+                jrInit: (c, vis) => vis.insertAdjacentHTML('beforeend', '<div class="pi-scr pi-jr"></div>'),
+                jrLive: (c, el) => { const d = el.querySelector('.pi-scr'); if (!d) return; const h = scrHTML(c); if (d._h !== h) { d._h = h; d.innerHTML = h; } },
+                status: c => scrOk(c) ? 'DSI متصل · 5V ✓' : 'غير موصّلة'
+            });
+            X('mcp3008', XC.IC, 'MCP3008 محوّل تماثلي-رقمي 8 قنوات', 'ADC 10-bit عبر SPI — الراسبري باي لا تملك منافذ تماثلية', 'fa-microchip', 'cyan', 215, 'VDD,VREF,GND,CLK,DOUT,DIN,CS', 'CH0,CH1,CH2,CH3', {
+                nopower: true, res: [{ a: 'VDD', b: 'GND', r: () => 8000 }],
+                status: c => 'CH0 = ' + fm(c.pinVoltages.CH0 || 0, 2) + 'V'
+            });
+            const css = document.createElement('style'); css.textContent = `.pi-scr{background:#191d24;color:#e5e7eb;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;font-family:Cairo,system-ui,sans-serif;direction:rtl}
+.pi-scr.pi-jr{position:absolute;left:5.7%;top:5.9%;width:90.3%;height:82.8%;z-index:2}
+.pi-off{margin:auto;color:#6b7684;font-size:10px;text-align:center;padding:6px}.pi-bar{background:linear-gradient(90deg,#1d4ed8,#3a557b);color:#fff;font-weight:800;font-size:11px;padding:3px 8px;flex:0 0 auto}
+.pi-body{flex:1 1 auto;padding:4px 8px;overflow:hidden;font-size:10.5px;line-height:1.5}.pi-row{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-g{display:flex;align-items:center;gap:5px;font-size:9.5px;margin:2px 0}.pi-g span{flex:0 0 34%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pi-g i{flex:1;height:7px;border-radius:4px;background:#262c34;overflow:hidden}.pi-g b{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#eab308,#ef4444)}.pi-g em{font-style:normal;font-family:monospace;min-width:30px;text-align:left}
+.pi-btns{display:flex;gap:4px;padding:4px 6px;flex:0 0 auto}.pi-btns button{flex:1;min-height:26px;border-radius:7px;border:1px solid #353c46;background:#262c34;color:#e5e7eb;font-size:10.5px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation}.pi-btns button.on{background:#16a34a;border-color:#22c55e;color:#fff}.pi-btns button:active{transform:scale(.96)}`; document.head.appendChild(css);
+
+            // ---------- VM: touch-screen object + MCP3008 reader ----------
+            VM_TYPES.add('PiScreen'); VM_OBJ.add('PiScreen');
+            const _xm36 = extMethod;
+            extMethod = function (o, m, a) {
+                if (!o || o.cls !== 'PiScreen') return _xm36(o, m, a);
+                const c = state.components.find(x => x.type === 'rpi_touch7' && scrOk(x)); if (!c) return 0; const s = c.state, str = v => typeof v === 'number' ? String(+v.toFixed(2)) : String(v == null ? '' : v);
+                const reg = (n, k) => { n = str(n).slice(0, 14); if (!s.btns.some(b => b.n === n) && s.btns.length < 4) s.btns.push({ n, k }); return n; };
+                if (m === 'clear') { s.rows = []; s.gz = []; return 0; }
+                if (m === 'title') { s.title = str(a[0]).slice(0, 30); return 0; }
+                if (m === 'text') { const r = Math.max(0, Math.min(4, a[0] | 0)); s.rows[r] = str(a[1]).slice(0, 44); for (let i = 0; i < r; i++) if (s.rows[i] === undefined) s.rows[i] = ''; return 0; }
+                if (m === 'print') { s.rows.push(str(a[0]).slice(0, 44)); if (s.rows.length > 4) s.rows.shift(); return 0; }
+                if (m === 'button') { const n = reg(a[0], 'b'), v = s.dn[n] ? 1 : 0; s.dn[n] = false; return v; }
+                if (m === 'toggle') { const n = reg(a[0], 't'); return s.tg[n] ? 1 : 0; }
+                if (m === 'set') { const n = reg(a[0], 't'); s.tg[n] = !!a[1]; return 0; }
+                if (m === 'gauge') { const n = str(a[0]).slice(0, 16), g = s.gz.find(x => x.n === n), v = +a[1] || 0, mx = +a[2] || 100; if (g) { g.v = v; g.m = mx; } else if (s.gz.length < 3) s.gz.push({ n, v, m: mx }); return 0; }
+                return 0;
+            };
+            VM_B.mcpRead = ch => {
+                const m = vmMcu(), c = state.components.find(x => x.type === 'mcp3008'); if (!m || !c) return 0; const pv = c.pinVoltages;
+                const link = (p, g) => state.wires.some(w => (w.from.compId === c.id && w.from.pinId === p && w.to.compId === m.id && w.to.pinId === g) || (w.to.compId === c.id && w.to.pinId === p && w.from.compId === m.id && w.from.pinId === g));
+                if ((pv.VDD || 0) < 2.7 || !link('CLK', 'G11') || !link('DOUT', 'G9') || !link('DIN', 'G10') || !link('CS', 'G8')) return 0;
+                const ref = pv.VREF || 0; return ref < 0.5 ? 0 : Math.round(Math.max(0, Math.min(1, (pv['CH' + (ch | 0)] || 0) / ref)) * 1023) / 1023;
+            };
+
+            // ---------- Python (gpiozero / RPi.GPIO subset) -> the simulator's VM language ----------
+            const OUTS = /^(LED|Buzzer|OutputDevice|DigitalOutputDevice)$/, PWMS = /^(PWMLED|PWMOutputDevice)$/, DINS = /^(MotionSensor|DigitalInputDevice|LineSensor|LightSensor)$/;
+            function py2c(src) {
+                const strs = [], keep = s => { strs.push(s); return '\u0001' + (strs.length - 1) + '\u0002'; }, q = s => keep('"' + s.replace(/\\'/g, "'").replace(/"/g, '\\"') + '"');
+                const lift = line => {
+                    let out = '', i = 0;
+                    while (i < line.length) {
+                        const ch = line[i]; if (ch === '#') break;
+                        const f = (ch === 'f' || ch === 'F') && /["']/.test(line[i + 1] || '') && !/\w/.test(line[i - 1] || ''), qc = f ? line[i + 1] : ch;
+                        if (!f && ch !== '"' && ch !== "'") { out += ch; i++; continue; }
+                        let j = i + (f ? 2 : 1), body = ''; while (j < line.length && line[j] !== qc) { if (line[j] === '\\') body += line[j++]; body += line[j++]; }
+                        if (f) { const parts = []; body.split(/(\{[^{}]*\})/).forEach(p => { if (!p) return; const m = /^\{([^{}:!]+)(?::\.?(\d*)[fd]?)?\}$/.exec(p); if (m) parts.push(m[2] !== undefined && m[2] !== '' ? 'String(' + m[1] + ', ' + m[2] + ')' : 'String(' + m[1] + ')'); else parts.push(q(p)); }); out += '(' + (parts.join(' + ') || q('')) + ')'; }
+                        else out += q(body);
+                        i = j + 1;
+                    }
+                    return out.replace(/\s+$/, '');
+                };
+                let L = src.replace(/\r/g, '').replace(/\t/g, '    ').split('\n').map((raw, n) => { const t = lift(raw); return { ind: t.length - t.trimStart().length, t: t.trim(), n: n + 1 }; }).filter(x => x.t);
+                // "try:" and "if __name__ ..." wrappers are transparent; except / finally blocks are dropped
+                for (let guard = 0; guard < 40; guard++) {
+                    const k = L.findIndex(x => /^try\s*:$/.test(x.t) || /^if\s+__name__\s*==/.test(x.t)); if (k < 0) break;
+                    const base = L[k].ind; let e = k + 1; while (e < L.length && L[e].ind > base) e++;
+                    const d = e > k + 1 ? L[k + 1].ind - base : 0, body = L.slice(k + 1, e).map(x => Object.assign({}, x, { ind: x.ind - d }));
+                    let r = e; while (r < L.length && L[r].ind === base && /^(except|finally)\b/.test(L[r].t)) { r++; while (r < L.length && L[r].ind > base) r++; }
+                    L = L.slice(0, k).concat(body, L.slice(r));
+                }
+                const dev = {}, consts = {}, gl = new Map(), pre = [], setup = [], loop = [], funcs = [], need = {};
+                const num = v => { v = String(v).trim(); if (/^-?\d+$/.test(v)) return +v; if (consts[v] !== undefined) return consts[v]; const b = /^board\.D(\d+)$/.exec(v); if (b) return +b[1]; throw new Error('رقم المنفذ يجب أن يكون رقماً: ' + v); };
+                const split = s => { const o = []; let d = 0, cur = ''; for (const ch of s) { if (ch === '(' || ch === '[') d++; if (ch === ')' || ch === ']') d--; if (ch === ',' && d === 0) { o.push(cur.trim()); cur = ''; } else cur += ch; } if (cur.trim()) o.push(cur.trim()); return o; };
+                const args = s => { const pos = [], kw = {}; split(s).forEach(a => { const m = /^([A-Za-z_]\w*)\s*=(?!=)\s*(.+)$/.exec(a); if (m) kw[m[1]] = m[2]; else pos.push(a); }); return { pos, kw }; };
+                const isStr = e => /^\(?\u0001/.test(e.trim()) || /^(String|str)\(/.test(e.trim()) || gl.get(e.trim()) === 'String';
+                const ex = e => e.replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false').replace(/\bNone\b/g, '0').replace(/\band\b/g, '&&').replace(/\bor\b/g, '||').replace(/\bnot\s+/g, '!')
+                    .replace(/\btime\.time\(\)/g, '(millis() / 1000.0)').replace(/\bstr\(/g, 'String(').replace(/\bGPIO\.(HIGH|LOW)\b/g, '$1').replace(/\bGPIO\.input\(/g, 'digitalRead(').replace(/\.switch\(/g, '.toggle(')
+                    .replace(/\bround\(([^(),]+),\s*(\d)\)/g, (m, a, n) => '(round((' + a + ') * 1' + '0'.repeat(+n) + ') / 1' + '0'.repeat(+n) + '.0)')
+                    .replace(/\b([A-Za-z_]\w*)\.([a-z_]+)\b(?!\s*\()/g, (m, n, at) => {
+                        const d = dev[n]; if (!d) return m;
+                        if (d.k === 'out' || d.k === 'pwm') return /^(value|is_lit|is_active)$/.test(at) ? 'st' + d.pin : m;
+                        if (d.k === 'btn') return /^(is_pressed|value|is_active|is_held)$/.test(at) ? '(digitalRead(' + d.pin + ') == ' + (d.up ? 'LOW' : 'HIGH') + ')' : m;
+                        if (d.k === 'din') return '(digitalRead(' + d.pin + ') == HIGH)';
+                        if (d.k === 'dist') return at === 'distance' ? 'pyDist(' + d.trig + ', ' + d.echo + ')' : m;
+                        if (d.k === 'mcp') return at === 'voltage' ? '(mcpRead(' + d.ch + ') * 3.3)' : 'mcpRead(' + d.ch + ')';
+                        if (d.k === 'dht') return 'dht' + d.pin + (at === 'humidity' ? '.readHumidity()' : '.readTemperature()');
+                        return m;
+                    });
+                const decl = (name, e, scope) => { if (scope) { if (scope.has(name)) return ''; scope.add(name); return isStr(e) ? 'String ' : 'float '; } if (!gl.has(name)) gl.set(name, isStr(e) ? 'String' : 'float'); return ''; };
+                function stmt(t, scope, top) {
+                    let m;
+                    if (/^(import|from)\b/.test(t) || /^GPIO\.(setmode|setwarnings|cleanup)\(/.test(t) || /^global\b/.test(t) || t === 'pass') return [];
+                    if ((m = /^GPIO\.setup\((.+)\)$/.exec(t))) { const a = args(m[1]), md = /OUT/.test(a.pos[1]) ? 'OUTPUT' : /PUD_UP/.test(a.kw.pull_up_down || '') ? 'INPUT_PULLUP' : 'INPUT'; return ['pinMode(' + ex(a.pos[0]) + ', ' + md + ');']; }
+                    if ((m = /^GPIO\.output\((.+)\)$/.exec(t))) { const a = split(m[1]); return ['digitalWrite(' + ex(a[0]) + ', ' + ex(a[1]) + ');']; }
+                    if ((m = /^(\w+)\s*=\s*GPIO\.PWM\((.+)\)$/.exec(t))) { const p = num(split(m[2])[0]); dev[m[1]] = { k: 'gpwm', pin: p }; return ['pinMode(' + p + ', OUTPUT);']; }
+                    if ((m = /^(\w+)\s*=\s*adafruit_dht\.DHT(22|11)\((.+)\)$/.exec(t))) { const p = num(split(m[3])[0]); dev[m[1]] = { k: 'dht', pin: p }; pre.push('DHT dht' + p + '(' + p + ', DHT' + m[2] + ');'); return ['dht' + p + '.begin();']; }
+                    if ((m = /^(\w+)\s*,\s*(\w+)\s*=\s*Adafruit_DHT\.read(?:_retry)?\(\s*Adafruit_DHT\.DHT(22|11)\s*,\s*(\w+)\s*\)$/.exec(t))) { const p = num(m[4]); if (!need['dht' + p]) { need['dht' + p] = 1; pre.push('DHT dht' + p + '(' + p + ', DHT' + m[3] + ');'); setup.unshift('dht' + p + '.begin();'); } return [decl(m[1], '0', scope) + m[1] + ' = dht' + p + '.readHumidity();', decl(m[2], '0', scope) + m[2] + ' = dht' + p + '.readTemperature();']; }
+                    if ((m = /^(\w+)\s*=\s*(?:gpiozero\.)?(LED|PWMLED|Buzzer|OutputDevice|DigitalOutputDevice|PWMOutputDevice|Button|MotionSensor|DigitalInputDevice|LineSensor|LightSensor|DistanceSensor|Servo|AngularServo|MCP3008|TouchScreen|CharLCD)\((.*)\)$/.exec(t))) {
+                        const n = m[1], cl = m[2], a = args(m[3]);
+                        if (cl === 'TouchScreen') { dev[n] = { k: 'scr' }; pre.push('PiScreen ' + n + ';'); return []; }
+                        if (cl === 'CharLCD') { dev[n] = { k: 'lcd' }; pre.push('LiquidCrystal_I2C ' + n + '(0x27, 16, 2);'); return [n + '.init();', n + '.backlight();']; }
+                        if (cl === 'MCP3008') { dev[n] = { k: 'mcp', ch: num(a.kw.channel !== undefined ? a.kw.channel : a.pos[0] || 0) }; return []; }
+                        if (cl === 'DistanceSensor') { const e = num(a.kw.echo !== undefined ? a.kw.echo : a.pos[0]), tr = num(a.kw.trigger !== undefined ? a.kw.trigger : a.pos[1]); dev[n] = { k: 'dist', echo: e, trig: tr }; need.dist = 1; return ['pinMode(' + tr + ', OUTPUT);', 'pinMode(' + e + ', INPUT);']; }
+                        const p = num(a.kw.pin !== undefined ? a.kw.pin : a.pos[0]);
+                        if (/Servo/.test(cl)) { dev[n] = { k: 'servo', pin: p, off: cl === 'AngularServo' && a.kw.min_angle !== undefined && +a.kw.min_angle >= 0 ? 0 : 90 }; pre.push('Servo sv' + p + ';'); return ['sv' + p + '.attach(' + p + ');']; }
+                        if (cl === 'Button') { const up = !/False/.test(a.kw.pull_up || ''); dev[n] = { k: 'btn', pin: p, up }; return ['pinMode(' + p + ', ' + (up ? 'INPUT_PULLUP' : 'INPUT') + ');']; }
+                        if (DINS.test(cl)) { dev[n] = { k: 'din', pin: p }; return ['pinMode(' + p + ', INPUT);']; }
+                        dev[n] = { k: PWMS.test(cl) ? 'pwm' : 'out', pin: p }; if (!gl.has('st' + p)) gl.set('st' + p, 'float'); return ['pinMode(' + p + ', OUTPUT);'];
+                    }
+                    if ((m = /^(\w+)\.(\w+)\((.*)\)$/.exec(t)) && dev[m[1]]) {
+                        const d = dev[m[1]], f = m[2], a = split(m[3]).map(ex), p = d.pin, s = 'st' + p;
+                        if (d.k === 'out') { if (f === 'on') return [s + ' = 1;', 'digitalWrite(' + p + ', HIGH);']; if (f === 'off') return [s + ' = 0;', 'digitalWrite(' + p + ', LOW);']; if (f === 'toggle') return [s + ' = !' + s + ';', 'digitalWrite(' + p + ', ' + s + ');']; if (f === 'close') return []; }
+                        if (d.k === 'pwm') { if (f === 'on') return [s + ' = 1;', 'analogWrite(' + p + ', 255);']; if (f === 'off') return [s + ' = 0;', 'analogWrite(' + p + ', 0);']; if (f === 'close') return []; }
+                        if (d.k === 'gpwm') { if (f === 'start' || f === 'ChangeDutyCycle') return ['analogWrite(' + p + ', (' + a[0] + ') * 2.55);']; if (f === 'stop') return ['analogWrite(' + p + ', 0);']; if (f === 'ChangeFrequency') return []; }
+                        if (d.k === 'servo') { const w = { min: 0, mid: 90, max: 180 }[f]; if (w !== undefined) return ['sv' + p + '.write(' + w + ');']; if (f === 'detach' || f === 'close') return []; }
+                        if (d.k === 'btn' && /^wait_for_(press|release)$/.test(f)) return ['while (digitalRead(' + p + ') ' + ((f === 'wait_for_press') === d.up ? '!=' : '==') + ' LOW) { delay(10); }'];
+                        if (d.k === 'lcd') { if (f === 'write_string') return [m[1] + '.print(' + a[0] + ');']; if (f === 'clear') return [m[1] + '.clear();']; if (f === 'close') return []; }
+                        if (d.k === 'dht') return [];
+                        if (d.k === 'scr') return [ex(t) + ';'];
+                        throw new Error('الدالة ' + m[1] + '.' + f + '() غير مدعومة في المحاكي');
+                    }
+                    if ((m = /^(\w+)\.(\w+)\s*=(?!=)\s*(.+)$/.exec(t)) && dev[m[1]]) {
+                        const d = dev[m[1]], e = ex(m[3]), p = d.pin;
+                        if (d.k === 'out' && m[2] === 'value') return ['st' + p + ' = (' + e + ');', 'digitalWrite(' + p + ', st' + p + ');'];
+                        if (d.k === 'pwm' && m[2] === 'value') return ['st' + p + ' = (' + e + ');', 'analogWrite(' + p + ', st' + p + ' * 255);'];
+                        if (d.k === 'servo' && m[2] === 'angle') return ['sv' + p + '.write((' + e + ') + ' + d.off + ');'];
+                        if (d.k === 'servo' && m[2] === 'value') return ['sv' + p + '.write(((' + e + ') + 1) * 90);'];
+                        if (d.k === 'lcd' && m[2] === 'cursor_pos') { const rc = split(m[3].replace(/^\(|\)$/g, '')); return [m[1] + '.setCursor(' + ex(rc[1]) + ', ' + ex(rc[0]) + ');']; }
+                        throw new Error('الخاصية ' + m[1] + '.' + m[2] + ' غير مدعومة في المحاكي');
+                    }
+                    if ((m = /^print\((.*)\)$/.exec(t))) { const a = split(m[1]).filter(x => !/^(end|sep|flush)\s*=/.test(x)).map(x => isStr(x) ? ex(x) : 'String(' + ex(x) + ')'); return ['Serial.println(' + (a.join(' + " " + ') || '""') + ');']; }
+                    if ((m = /^(?:time\.)?sleep\((.+)\)$/.exec(t))) return ['delay((' + ex(m[1]) + ') * 1000);'];
+                    if ((m = /^return\b\s*(.*)$/.exec(t))) return ['return' + (m[1] ? ' ' + ex(m[1]) : '') + ';'];
+                    if (t === 'break' || t === 'continue') return [t + ';'];
+                    if ((m = /^([A-Za-z_]\w*)\s*(=|\+=|-=|\*=|\/=)(?!=)\s*(.+)$/.exec(t))) { if (top && m[2] === '=' && /^-?\d+$/.test(m[3].trim())) consts[m[1]] = +m[3]; return [decl(m[1], m[3], scope) + m[1] + ' ' + m[2] + ' ' + ex(m[3]) + ';']; }
+                    return [ex(t) + ';'];
+                }
+                let mode = 'setup', tgt = setup, scope = null, stack = [], fn = null, sawLoop = false;
+                const closeAll = () => { while (stack.length) { stack.pop(); tgt.push('}'); } };
+                for (const { ind, t, n } of L) {
+                    try {
+                        let m;
+                        if (ind === 0) {
+                            closeAll(); if (mode === 'func') { fn.lines = tgt; funcs.push(fn); fn = null; } if (mode === 'loop') mode = 'dead'; if (mode !== 'dead') { mode = 'setup'; tgt = setup; scope = null; }
+                            if ((m = /^def\s+(\w+)\s*\((.*)\)\s*:$/.exec(t))) { const ps = split(m[2]).map(p => p.split('=')[0].trim()).filter(Boolean); fn = { name: m[1], ps, ret: false }; mode = 'func'; tgt = []; scope = new Set(ps); continue; }
+                            if (mode === 'dead') continue;
+                            if (/^while\s+(True|1)\s*:$/.test(t)) { if (sawLoop) throw new Error('حلقة while True واحدة فقط في المستوى الرئيسي'); sawLoop = true; mode = 'loop'; tgt = loop; continue; }
+                        } else if (mode === 'dead') continue;
+                        let chained = false;
+                        while (stack.length && stack[stack.length - 1] >= ind) { const b = stack.pop(); if (b === ind && /^(elif|else)\b/.test(t)) { chained = true; break; } tgt.push('}'); }
+                        if ((m = /^if\s+(.+):$/.exec(t))) { tgt.push('if (' + ex(m[1]) + ') {'); stack.push(ind); }
+                        else if ((m = /^elif\s+(.+):$/.exec(t))) { if (!chained) throw new Error('elif بدون if'); tgt.push('} else if (' + ex(m[1]) + ') {'); stack.push(ind); }
+                        else if (/^else\s*:$/.test(t)) { if (!chained) throw new Error('else بدون if'); tgt.push('} else {'); stack.push(ind); }
+                        else if ((m = /^while\s+(.+):$/.exec(t))) { tgt.push('while (' + ex(m[1]) + ') {'); stack.push(ind); }
+                        else if ((m = /^for\s+(\w+)\s+in\s+range\((.+)\)\s*:$/.exec(t))) { const a = split(m[2]).map(ex), v = m[1]; tgt.push('for (int ' + v + ' = ' + (a.length > 1 ? a[0] : '0') + '; ' + v + (a[2] && /^-/.test(a[2].trim()) ? ' > ' : ' < ') + (a.length > 1 ? a[1] : a[0]) + '; ' + v + ' += ' + (a[2] || '1') + ') {'); stack.push(ind); }
+                        else if (/:$/.test(t)) throw new Error('هذه البنية غير مدعومة في المحاكي');
+                        else { if (fn && /^return\s+\S/.test(t)) fn.ret = true; stmt(t, scope, ind === 0 && mode === 'setup').forEach(x => tgt.push(x)); }
+                    } catch (e) { throw new Error('Python سطر ' + n + ': ' + e.message); }
+                }
+                closeAll(); if (mode === 'func' && fn) { fn.lines = tgt; funcs.push(fn); }
+                const out = ['// (محوَّل تلقائياً من Python ليعمل على محرك المحاكاة)'];
+                gl.forEach((ty, name) => out.push(ty + ' ' + name + ';')); pre.forEach(x => out.push(x));
+                if (need.dist) out.push('float pyDist(int t, int e) { digitalWrite(t, LOW); delayMicroseconds(2); digitalWrite(t, HIGH); delayMicroseconds(10); digitalWrite(t, LOW); return pulseIn(e, HIGH) * 0.0001715; }');
+                funcs.forEach(f => { out.push((f.ret ? 'float ' : 'void ') + f.name + '(' + f.ps.map(p => 'float ' + p).join(', ') + ') {'); f.lines.forEach(x => out.push('  ' + x)); out.push('}'); });
+                out.push('void setup() {', '  Serial.begin(115200);'); setup.forEach(x => out.push('  ' + x)); out.push('}', 'void loop() {'); (sawLoop ? loop : ['delay(1000);']).forEach(x => out.push('  ' + x)); out.push('}');
+                return out.join('\n').replace(/\u0001(\d+)\u0002/g, (m, i) => strs[+i]);
+            }
+            window.sparkPy2C = py2c;
+            const isPy = src => !/\bvoid\s+(setup|loop)\s*\(/.test(src) && /(^|\n)\s*(import |from \w+ import |while True|def |print\()/.test(src);
+            const _vc36 = vmCompile;
+            vmCompile = function (src) {
+                state.components.forEach(c => { if (c.type === 'rpi_touch7') Object.assign(c.state, { title: '', rows: [], gz: [], btns: [], dn: {}, tg: {} }); });
+                vm.py = false;
+                if (typeof src === 'string' && isPy(src)) { let c2; try { c2 = py2c(src); } catch (e) { _vc36('void setup(){} void loop(){}'); vm.active = false; vm.err = e.message; vm.py = true; return; } vm.py = true; const r = _vc36(c2); try { vmUpdateBadge(); } catch (e) { } return r; }
+                return _vc36(src);
+            };
+            const _ub36 = vmUpdateBadge; vmUpdateBadge = function () { _ub36(); const b = document.getElementById('compilerStatusBadge'); if (b && vm.py && vm.active && !vm.err) b.textContent = '✓ Python (gpiozero) → محرك المحاكاة'; };
+
+            // ---------- new circuits + Raspberry Pi projects ----------
+            const first = EXAMPLES.length, sel = $('exSelect'), R = (id, x, y, o) => ['res_e12', id, x, y, { ohms: o }], PIB = ['rpi4', 'pi', 380, 150];
+            const add = (name, comps, wires, code) => { EXP(name, comps, wires, code); if (sel) sel.insertAdjacentHTML('beforeend', `<option value="${EXAMPLES.length - 1}">${name}</option>`); };
+            add('🚦 إشارة مرور ضوئية (3 ليدات)', [['arduino_uno', 'u', 380, 150], R('r1', 760, 60, 220), R('r2', 760, 190, 220), R('r3', 760, 320, 220), ['led_red', 'lr', 930, 40], ['led_yellow', 'ly', 930, 170], ['led_green', 'lg', 930, 300]],
+                'u.D10-r1.P1 r1.P2-lr.A lr.K-u.GND u.D9-r2.P1 r2.P2-ly.A ly.K-u.GND u.D8-r3.P1 r3.P2-lg.A lg.K-u.GND', `// إشارة مرور: أحمر ← أحمر+أصفر ← أخضر ← أصفر
+// كل ليد عبر مقاومة 220Ω:  I = (5 - 2) / 220 ≈ 13.6mA  (أقل من حد المنفذ 20mA)
+const int RED = 10, YELLOW = 9, GREEN = 8;
+
+void show(int r, int y, int g, int ms) {
+  digitalWrite(RED, r);
+  digitalWrite(YELLOW, y);
+  digitalWrite(GREEN, g);
+  delay(ms);
+}
+
+void setup() {
+  pinMode(RED, OUTPUT);
+  pinMode(YELLOW, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  Serial.begin(115200);
+}
+
+void loop() {
+  Serial.println("STOP");
+  show(HIGH, LOW, LOW, 3000);
+  show(HIGH, HIGH, LOW, 1000);
+  Serial.println("GO");
+  show(LOW, LOW, HIGH, 3000);
+  show(LOW, HIGH, LOW, 1000);
+}`);
+            add('🌙 إنارة ليلية تلقائية (LDR + PWM)', [['arduino_uno', 'u', 380, 150], ['ldr_sensor', 'ld', 90, 170], R('r', 760, 120, 220), ['led_white', 'l', 930, 100]],
+                'ld.VCC-u.5V ld.GND-u.GND ld.AO-u.A0 u.D9-r.P1 r.P2-l.A l.K-u.GND', `// إنارة ليلية: كلما قلّ الضوء زاد سطوع الليد (غيّر شدة الإضاءة من حساس LDR)
+const int LDR = A0, LAMP = 9;
+
+void setup() {
+  pinMode(LAMP, OUTPUT);
+  Serial.begin(115200);
+}
+
+void loop() {
+  int light = analogRead(LDR);                 // 0..1023
+  int level = map(light, 0, 1023, 255, 0);     // ضوء أقل = سطوع أعلى
+  level = constrain(level, 0, 255);
+  analogWrite(LAMP, level);
+  Serial.print("light=");
+  Serial.print(light);
+  Serial.print("  pwm=");
+  Serial.println(level);
+  delay(200);
+}`);
+            add('⏱️ مؤقت 555 — وميض بدون متحكم', [['bat_9v', 'b', 90, 80], ['timer_555', 't', 400, 140], R('ra', 400, 20, 1000), R('rb', 130, 300, 10000), ['cap_elec', 'c', 130, 430, { F: 0.000047 }], R('rl', 760, 160, 470), ['led_red', 'l', 930, 140]],
+                'b.POS-t.VCC b.NEG-t.GND t.RESET-t.VCC b.POS-ra.P1 ra.P2-t.DIS t.DIS-rb.P1 rb.P2-t.THR t.THR-t.TRIG t.THR-c.P1 c.P2-b.NEG t.OUT-rl.P1 rl.P2-l.A l.K-b.NEG', `// دائرة تماثلية بحتة (لا تحتاج متحكماً): مذبذب غير مستقر بالمؤقت 555
+// التردد  f = 1.44 / ((RA + 2·RB) · C) = 1.44 / ((1k + 20k) × 47µF) ≈ 1.46 Hz
+// نسبة التشغيل  D = (RA + RB) / (RA + 2·RB) ≈ 52 %
+// جرّب تغيير RB أو المكثف C وراقب سرعة الوميض على راسم الإشارة.
+void setup() { }
+void loop() { }`);
+            add('🔌 ترانزستور NPN يقود محركاً + دايود حماية', [['arduino_uno', 'u', 380, 150], R('rb', 760, 250, 1000), ['npn_2n2222', 'q', 930, 240], ['motor_dc6', 'm', 900, 60], ['d_1n4007', 'd', 760, 60]],
+                'u.D9-rb.P1 rb.P2-q.B q.E-u.GND u.5V-m.P1 m.P2-q.C d.K-u.5V d.A-q.C', `// منفذ الأردوينو لا يعطي تياراً كافياً للمحرك، فيعمل الترانزستور كمفتاح:
+//  تيار القاعدة  Ib = (5 - 0.7) / 1k ≈ 4.3mA  يكفي لتشبّع الترانزستور
+//  الدايود 1N4007 عكسي على المحرك يحمي الترانزستور من جهد الارتداد الحثّي
+const int MOTOR = 9;
+
+void setup() {
+  pinMode(MOTOR, OUTPUT);
+  Serial.begin(115200);
+}
+
+void loop() {
+  for (int s = 0; s <= 255; s += 15) {   // تسارع تدريجي بـ PWM
+    analogWrite(MOTOR, s);
+    Serial.println(s);
+    delay(150);
+  }
+  delay(1500);
+  analogWrite(MOTOR, 0);
+  delay(1500);
+}`);
+            const firstPi = EXAMPLES.length;
+            add('🍓 Pi 4: وميض LED وزر (gpiozero)', [PIB, R('r', 800, 80, 330), ['led_green', 'l', 960, 60], ['push_button', 'b', 110, 240]],
+                'pi.G17-r.P1 r.P2-l.A l.K-pi.GND pi.G27-b.P1 b.P2-pi.GND', `# Raspberry Pi 4 — أول برنامج بمكتبة gpiozero
+# الليد على GPIO17 عبر مقاومة 330Ω:  I = (3.3 - 2.1) / 330 ≈ 3.6mA  (حد المنفذ 16mA)
+# الزر بين GPIO27 و GND (مقاومة الرفع الداخلية مفعّلة تلقائياً)
+from gpiozero import LED, Button
+from time import sleep
+
+led = LED(17)
+button = Button(27)
+
+while True:
+    if button.is_pressed:
+        led.on()
+        print("الزر مضغوط: الليد يعمل")
+    else:
+        led.toggle()
+        print("وميض")
+    sleep(0.5)
+`);
+            add('🍓 Pi 4: لوحة منزل ذكي بشاشة اللمس', [PIB, ['rpi_touch7', 'ts', 40, 330], R('r', 800, 60, 330), ['led_yellow', 'l', 960, 40], ['relay_module', 'k', 800, 190], ['motor_dc6', 'm', 990, 330], ['active_buzzer', 'z', 110, 150]],
+                'ts.5V-pi.5V ts.GND-pi.GND ts.DSI-pi.DSI pi.G17-r.P1 r.P2-l.A l.K-pi.GND k.VCC-pi.5V k.GND-pi.GND k.IN-pi.G27 k.COM-pi.5V k.NO-m.P1 m.P2-pi.GND z.POS-pi.G22 z.NEG-pi.GND', `# لوحة تحكم منزل ذكي: المس الأزرار على شاشة الراسبري 7"
+# الإنارة على GPIO17 · ريليه المروحة على GPIO27 · الجرس على GPIO22
+from gpiozero import LED, OutputDevice, Buzzer
+from spark_pi import TouchScreen      # مكتبة الشاشة في المحاكي
+from time import sleep
+
+lamp = LED(17)
+fan = OutputDevice(27)
+bell = Buzzer(22)
+screen = TouchScreen()
+screen.title("المنزل الذكي")
+
+while True:
+    lamp.value = screen.switch("الإنارة")
+    fan.value = screen.switch("المروحة")
+    if screen.button("الجرس"):
+        bell.on()
+        sleep(0.4)
+        bell.off()
+    screen.text(0, f"الإنارة: {lamp.value}    المروحة: {fan.value}")
+    sleep(0.1)
+`);
+            add('🍓 Pi 4: محطة طقس DHT22 على شاشة اللمس', [PIB, ['rpi_touch7', 'ts', 40, 330], ['dht22_sensor', 'd', 110, 120, { temp: 27, humidity: 55 }], R('rp', 110, 20, 10000), R('r', 800, 80, 330), ['led_red', 'l', 960, 60]],
+                'ts.5V-pi.5V ts.GND-pi.GND ts.DSI-pi.DSI d.VCC-pi.3V3 d.GND-pi.GND d.DATA-pi.G4 rp.P1-pi.3V3 rp.P2-pi.G4 pi.G17-r.P1 r.P2-l.A l.K-pi.GND', `# محطة طقس: DHT22 على GPIO4 (يتغذى من 3.3V مع مقاومة رفع 10kΩ على خط البيانات)
+# غيّر الحرارة من الحساس وراقب الشاشة وليد التحذير
+import adafruit_dht
+import board
+from gpiozero import LED
+from spark_pi import TouchScreen
+from time import sleep
+
+dht = adafruit_dht.DHT22(board.D4)
+alarm = LED(17)
+screen = TouchScreen()
+screen.title("محطة الطقس")
+limit = 35
+
+while True:
+    t = dht.temperature
+    h = dht.humidity
+    screen.gauge("الحرارة °C", t, 50)
+    screen.gauge("الرطوبة %", h, 100)
+    if t > limit:
+        alarm.on()
+        screen.text(0, "تحذير: حرارة مرتفعة!")
+    else:
+        alarm.off()
+        screen.text(0, "الوضع طبيعي")
+    print(f"T={t:.1f}C  H={h:.0f}%")
+    sleep(1)
+`);
+            add('🍓 Pi 4: قراءة تماثلية MCP3008 + سطوع PWM', [PIB, ['mcp3008', 'a', 90, 330], ['pot_lin', 'p', 110, 160, { pos: 40 }], R('r', 800, 80, 330), ['led_blue', 'l', 960, 60]],
+                'a.VDD-pi.3V3 a.VREF-pi.3V3 a.GND-pi.GND a.CLK-pi.G11 a.DOUT-pi.G9 a.DIN-pi.G10 a.CS-pi.G8 p.A-pi.3V3 p.B-pi.GND p.W-a.CH0 pi.G18-r.P1 r.P2-l.A l.K-pi.GND', `# الراسبري باي لا تملك منافذ تماثلية، لذلك نستخدم المحوّل MCP3008 عبر SPI:
+#   CLK→GPIO11   DOUT→GPIO9 (MISO)   DIN→GPIO10 (MOSI)   CS→GPIO8 (CE0)
+# حرّك المقاومة المتغيرة: القراءة 0..1 تتحكم بسطوع الليد على GPIO18 (PWM)
+from gpiozero import MCP3008, PWMLED
+from time import sleep
+
+pot = MCP3008(channel=0)
+led = PWMLED(18)
+
+while True:
+    v = pot.value
+    led.value = v
+    print(f"ADC={v:.2f}   V={pot.voltage:.2f}V")
+    sleep(0.2)
+`);
+            add('🍓 Pi 4: حساس مسافة HC-SR04 بمقسم جهد', [PIB, ['ultrasonic_sensor', 'u', 90, 330, { distance: 35 }], R('r1', 800, 60, 1000), R('r2', 800, 190, 2000), ['active_buzzer', 'z', 960, 300]],
+                'u.VCC-pi.5V u.GND-pi.GND u.TRIG-pi.G23 u.ECHO-r1.P1 r1.P2-pi.G24 r2.P1-pi.G24 r2.P2-pi.GND z.POS-pi.G18 z.NEG-pi.GND', `# HC-SR04 يعمل على 5V ومخرجه ECHO = 5V، ومنافذ الراسبري تتحمل 3.3V فقط!
+# مقسم الجهد:  V = 5 × 2k / (1k + 2k) = 3.33V  ← آمن للمنفذ GPIO24
+# قرّب الجسم (غيّر المسافة من الحساس): الطنان يعمل تحت 20 سم
+from gpiozero import DistanceSensor, Buzzer
+from time import sleep
+
+sensor = DistanceSensor(echo=24, trigger=23)
+buzzer = Buzzer(18)
+
+while True:
+    d = sensor.distance * 100
+    print(f"المسافة: {d:.1f} cm")
+    if d < 20:
+        buzzer.on()
+    else:
+        buzzer.off()
+    sleep(0.3)
+`);
+            // the lab picker in the header lists them too
+            const ps = $('presetSelect');
+            if (ps) {
+                const og = (label, a, b) => `<optgroup label="${label}">${EXAMPLES.slice(a, b).map((e, i) => `<option value="ex:${a + i}">${e.name}</option>`).join('')}</optgroup>`;
+                ps.insertAdjacentHTML('beforeend', og('دوائر جديدة', first, firstPi) + og('مشاريع Raspberry Pi 4', firstPi, EXAMPLES.length));
+                const _lp36 = loadPresetTemplate; loadPresetTemplate = function (k) { if (/^ex:\d+$/.test(k)) return loadExample(+k.slice(3)); return _lp36(k); };
+            }
         })();
 
         window.onload = function () {
@@ -14399,6 +14836,13 @@ html.lite .acc-card,html.lite .nt-pop,html.lite .mb-menu,html.lite .sx-drawer{bo
         seven_segment: { w: 56, pins: Object.assign(row(['G', 'F', 'COM', 'A', 'B'], 0.18, 0.82, 0.01), row(['E', 'D', '', 'C', 'DP'], 0.18, 0.82, 0.99)), leg: 1 },
         cooling_fan: { w: 76, spin: 2 }, motor_dc6: { w: 100, pins: { P1: [0.01, 0.22], P2: [0.01, 0.72] }, wire: 1, spin: 1 }
     };
+    // Raspberry Pi 4: the real 40-pin header (pin 1 = 3V3 on the inner row), DSI / CSI ribbon ports on the board
+    (function () { const X = i => (8.37 + 2.54 * i) / 85, o = {}, put = (ids, y) => ids.forEach((p, i) => { if (p) o[p] = [X(i), y]; });
+        put(['5V', '', 'GND', 'G14', 'G15', 'G18', '', 'G23', 'G24', '', 'G25', 'G8', 'G7', '', '', 'G12', '', 'G16', 'G20', 'G21'], 0.04);
+        put(['3V3', 'SDA', 'SCL', 'G4', '', 'G17', 'G27', 'G22', '', 'G10', 'G9', 'G11', '', '', 'G5', 'G6', 'G13', 'G19', 'G26', ''], 0.085);
+        o.DSI = [0.045, 0.5]; o.CSI = [0.53, 0.8]; JRT.rpi4 = { w: 310, pins: o, hdr: 1 }; })();
+    JRT.rpi_touch7 = { w: 300, pins: { '5V': [0.012, 0.36], GND: [0.012, 0.5], DSI: [0.012, 0.64] }, hdr: 1 };
+    JRT.mcp3008 = { w: 150, pins: Object.assign(row(['CH0', 'CH1', 'CH2', 'CH3', '', '', '', ''], 0.115, 0.885, 0.93), row(['VDD', 'VREF', 'GND', 'CLK', 'DOUT', 'DIN', 'CS', ''], 0.115, 0.885, 0.07)), leg: 1 };
     ['led_red', 'led_green', 'led_yellow', 'led_blue', 'led_white', 'led_orange', 'led_ir'].forEach(k => JRT[k] = { w: 40, pins: LED2, leg: 1, glow: [0.47, 0.32] });
     ['motor_dc12', 'motor_gear'].forEach(k => JRT[k] = JRT.motor_dc6);
     ['mq2', 'mq135', 'mq7'].forEach(k => JRT[k] = { w: 130, pins: row(['VCC', 'GND', 'DO', 'AO'], 0.2, 0.35, 0.93), hdr: 1 });
@@ -14430,6 +14874,7 @@ html.lite .acc-card,html.lite .nt-pop,html.lite .mb-menu,html.lite .sx-drawer{bo
             if (S.t && S.t.ring) vis.insertAdjacentHTML('beforeend', '<span class="jr-ring"></span>');
             if (S.t && S.t.lcd) { const [a, b, c2, d] = S.t.lcd; vis.insertAdjacentHTML('beforeend', `<div class="jr-lcd" style="left:${a * 100}%;top:${b * 100}%;width:${(c2 - a) * 100}%;height:${(d - b) * 100}%"><div></div><div></div></div>`); }
             vis.insertAdjacentHTML('beforeend', '<span class="jr-badge"></span>');
+            try { const xj = EXT[c.type] && EXT[c.type].jrInit; if (xj) xj(c, vis); } catch (e) { }
             el.appendChild(vis);
             const lay = document.createElement('div'); lay.className = 'jr-pins'; el.appendChild(lay);
             if (stripH) { const s = document.createElement('div'); s.className = 'jr-strip'; s.style.top = S.h + 'px'; const pw = Math.min(11, (S.w - 8) / S.strip.length); s.style.width = (pw * S.strip.length + 6) + 'px'; el.appendChild(s); S.strip.forEach((p, i) => S.pins[p] = [((S.w - pw * S.strip.length) / 2 + pw * (i + 0.5)) / S.w, (S.h + 7) / S.h]); }
@@ -14457,6 +14902,7 @@ html.lite .acc-card,html.lite .nt-pop,html.lite .mb-menu,html.lite .sx-drawer{bo
             const burned = !!(s.burned || s.blown);
             if (t.glow || glow) { el.style.setProperty('--glow', glow); if (col) el.style.setProperty('--gcol', col); el.classList.toggle('jr-lit', glow > 0.05 && !burned); }
             el.classList.toggle('jr-burn', burned);
+            try { const xl = EXT[c.type] && EXT[c.type].jrLive; if (xl) xl(c, el); } catch (e) { }
             const act = !!(s.active || Math.abs(s.rpm || 0) > 1 || s.closed || s.on === true && c.type !== 'led_indicator');
             el.classList.toggle('jr-act', act);
             const bd = el.querySelector('.jr-badge'); if (bd) { let txt = ''; if (c.type === 'servo_motor' && s.angle != null) txt = Math.round(s.angle) + '°'; else if (burned) txt = '💥'; else if (/relay/.test(c.type)) txt = s.closed ? 'ON' : ''; else if (s.rpm) txt = Math.round(Math.abs(s.rpm)) + ' rpm'; if (bd.textContent !== txt) bd.textContent = txt; bd.style.display = txt ? '' : 'none'; }
