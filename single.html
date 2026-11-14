@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.4.6',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='2.4.7',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -13657,9 +13657,9 @@ void loop() {
             const snap = (v, e) => e && e.altKey ? Math.round(v) : Math.round(v / 10) * 10;
             window.wxHandles = function () {
                 const g = $('wiresGroup'); if (!g || state.viewMode === 'schem' || state.viewMode === '3d') return; const w = state.wires.find(x => x.id === state.selectedWireId); if (!w) return; const P = poly(w); if (!P) return;
-                let h = '';
-                for (let k = 0; k < P.length - 1; k++) { const mx = (P[k][0] + P[k + 1][0]) / 2, my = (P[k][1] + P[k + 1][1]) / 2; h += `<circle class="wxm" data-w="${w.id}" data-k="${k}" cx="${mx}" cy="${my}" r="5.5"><title>اسحب لإضافة انحناء</title></circle>`; }
-                (w.pts || []).forEach((p, k) => { h += `<circle class="wxh" data-w="${w.id}" data-p="${k}" cx="${p[0]}" cy="${p[1]}" r="6.5"><title>اسحب لتحريك النقطة — نقرتان لحذفها</title></circle>`; });
+                let h = ''; const z = state.zoom || 1, coarse = window.matchMedia && matchMedia('(pointer:coarse)').matches, rm = Math.max(5.5, (coarse ? 11 : 6) / z), rh = Math.max(6.5, (coarse ? 13 : 7) / z);
+                for (let k = 0; k < P.length - 1; k++) { const mx = (P[k][0] + P[k + 1][0]) / 2, my = (P[k][1] + P[k + 1][1]) / 2; h += `<circle class="wxm" data-w="${w.id}" data-k="${k}" cx="${mx}" cy="${my}" r="${rm}"><title>اسحب لإضافة انحناء</title></circle>`; }
+                (w.pts || []).forEach((p, k) => { h += `<circle class="wxh" data-w="${w.id}" data-p="${k}" cx="${p[0]}" cy="${p[1]}" r="${rh}"><title>اسحب لتحريك النقطة — نقرتان لحذفها</title></circle>`; });
                 g.insertAdjacentHTML('beforeend', h);
             };
             const _rw = renderAllWires; renderAllWires = function () { _rw.apply(this, arguments); try { wxHandles(); } catch (e) { } };
@@ -13673,7 +13673,7 @@ void loop() {
                 else { const i = [...$('wiresGroup').querySelectorAll('g.wx')].indexOf(gx); w = state.wires.filter(x => getPinCenterCoords(x.from.compId, x.from.pinId) && getPinCenterCoords(x.to.compId, x.to.pinId))[i]; insert = true; }
                 if (!w) return; const p0 = svgPt(svg, e); if (!p0) return;
                 if (insert && idx < 0) { const P = poly(w); let best = 1e9; for (let k = 0; k < P.length - 1; k++) { const d = segD(p0, P[k], P[k + 1]); if (d < best) { best = d; idx = k; } } }
-                drag = { w, svg, idx, insert, x: e.clientX, y: e.clientY, live: false }; e.stopPropagation(); if (hd) e.preventDefault();
+                drag = { w, svg, idx, insert, x: e.clientX, y: e.clientY, live: false, touch: e.pointerType === 'touch', pt: hd && hd.classList.contains('wxh') ? +hd.dataset.p : -1 }; e.stopPropagation(); if (hd) e.preventDefault();
             }, true);
             // the same press also fires mousedown: keep it away from the canvas pan, so the whole circuit stays still while a wire is being shaped
             document.addEventListener('mousedown', e => {
@@ -13685,8 +13685,22 @@ void loop() {
                 if (!drag) return; if (!drag.live) { if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 5) return; drag.live = true; try { pushUndo(); } catch (er) { } const w = drag.w; w.pts = w.pts || []; if (drag.insert) w.pts.splice(drag.idx, 0, [0, 0]); state.selectedWireId = w.id; }
                 const p = svgPt(drag.svg, e); if (!p) return; drag.w.pts[drag.idx] = [snap(p[0], e), snap(p[1], e)]; renderAllWires(); e.preventDefault();
             }, true);
+            // touch screens: while a wire is held the page must not scroll or pan under the finger
+            // (the browser ignores touch-action on SVG shapes, so the touch itself is claimed here; taps are then handled in pointerup)
+            const onWire = t => { const svg = t && t.ownerSVGElement; return !!(svg && svg.id === 'wiresSvgLayer' && t.closest('.wxh,.wxm,g.wx')); };
+            document.addEventListener('touchstart', e => { if (e.touches.length === 1 && state.viewMode !== 'schem' && state.viewMode !== '3d' && onWire(e.target) && e.cancelable) e.preventDefault(); }, { capture: true, passive: false });
+            document.addEventListener('touchmove', e => { if (drag && e.cancelable) e.preventDefault(); }, { capture: true, passive: false });
+            let lastTap = { t: 0, w: '', p: -1 };
+            document.addEventListener('pointercancel', () => { if (drag) { const d = drag; drag = null; if (d.live) renderAllWires(); } }, true);
             document.addEventListener('pointerup', e => {
                 if (!drag) return; const d = drag; drag = null;
+                if (!d.live && d.touch) { // a tap with the finger: select the wire, or double-tap a bend point to remove it
+                    const now = Date.now();
+                    if (d.pt >= 0 && lastTap.w === d.w.id && lastTap.p === d.pt && now - lastTap.t < 400 && d.w.pts) { try { pushUndo(); } catch (er) { } d.w.pts.splice(d.pt, 1); if (!d.w.pts.length) delete d.w.pts; lastTap.t = 0; renderAllWires(); return; }
+                    lastTap = { t: now, w: d.w.id, p: d.pt };
+                    if (state.selectedWireId !== d.w.id) { try { selectWire({ stopPropagation() { }, preventDefault() { } }, d.w.id); } catch (er) { state.selectedWireId = d.w.id; renderAllWires(); } }
+                    return;
+                }
                 if (d.live) { const sup = ev => { ev.stopPropagation(); ev.preventDefault(); }; window.addEventListener('click', sup, { capture: true, once: true }); setTimeout(() => window.removeEventListener('click', sup, true), 50); renderAllWires(); if (!hinted && window.sxToast) { hinted = true; sxToast('✓ تم تشكيل السلك — نقرتان على النقطة لحذفها، و R لإعادة المسار التلقائي'); } }
             }, true);
             document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.wxh,.wxm')) e.stopPropagation(); }, true);
@@ -13751,6 +13765,7 @@ void loop() {
         // ---------- 3) styles: nav, drawer, code-editor bar, eye comfort ----------
         (function () {
             const st = document.createElement('style'); st.id = 'h28Css'; st.textContent = `
+#wiresGroup .wx,#wiresGroup .wx *,#wiresGroup .wxm,#wiresGroup .wxh{touch-action:none}
 #wiresGroup .wxm{fill:#fff;fill-opacity:.55;stroke:#0ea5e9;stroke-width:1.5;cursor:copy}
 #wiresGroup .wxh{fill:#0ea5e9;stroke:#fff;stroke-width:2;cursor:move}
 #wiresGroup .wxm:hover,#wiresGroup .wxh:hover{r:8}
@@ -13864,7 +13879,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.4.6', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.4.7', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14166,7 +14181,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
