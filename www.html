@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.5.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='2.6.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -10374,7 +10374,7 @@ ${parts}`;
         })();
 
 // ===== Phase 12B: full platform settings (one place for everything) =====
-        const SET_DEF = { uiScale: 100, motion: true, sound: true, simSpeed: 1, telemetry: true, wireColor: '#10b981', autosave: true, edFont: 12, ac: true, ai: { style: 'balanced', lang: 'ar' }, gfx: 'high', rsSpeed: 0.8, camId: '', autoBridge: true, bridgeUrl: '' };
+        const SET_DEF = { chime: true, uiScale: 100, motion: true, sound: true, simSpeed: 1, telemetry: true, wireColor: '#10b981', autosave: true, edFont: 12, ac: true, ai: { style: 'balanced', lang: 'ar' }, gfx: 'high', rsSpeed: 0.8, camId: '', autoBridge: true, bridgeUrl: '' };
         var SET = JSON.parse(JSON.stringify(SET_DEF));
         try { const s = JSON.parse(localStorage.getItem('spark_settings_v1') || '{}'); Object.assign(SET, s, { ai: Object.assign({}, SET_DEF.ai, s.ai || {}) }); } catch (e) { }
         function setSave() { try { localStorage.setItem('spark_settings_v1', JSON.stringify(SET)); } catch (e) { } }
@@ -10462,6 +10462,7 @@ ${parts}`;
                 row('حجم الواجهة', 'تكبير أو تصغير النصوص والأزرار — مفيد للشاشات الكبيرة في الصف أو الهاتف.', rng('uiScale', SET.uiScale, 80, 130, 5, '%')) +
                 row('تقسيم الشاشة', 'تخطيط جاهز للوحات المكتبة والدائرة والكود.', `<div class="grid grid-cols-2 gap-1">${[['std', '▦ قياسي'], ['circuit', '◉ الدائرة'], ['code', '⌨ الكود'], ['split', '◫ نصفان'], ['lab', '📈 مختبر']].map(([v, l]) => btn(l, `setLayout('${v}')`, 'bg-slate-800 hover:bg-slate-700 border border-slate-600')).join('')}</div>`) +
                 row('الحركة والتأثيرات', 'أوقفها لتسريع الأجهزة الضعيفة أو لراحة العين.', tog('motion', SET.motion)) +
+                row('نغمة الترحيب', 'نغمة قصيرة عند فتح المنصة.', tog('chime', SET.chime !== false) + ` <button onclick="window.sparkChime&&sparkChime()" class="px-2 py-1 rounded-lg text-[11px] border border-slate-600">▶ استماع</button>`) +
                 row('أصوات المحاكاة', 'نقرة المرحّل وصوت الجرس والشرارة.', tog('sound', SET.sound));
             else if (setTab === 'sim') body =
                 row('سرعة الزمن في المحاكاة', 'تسريع أو إبطاء الزمن الافتراضي للكود (delay و millis). ×1 = الزمن الحقيقي.', seg('simSpeed', SET.simSpeed, [[0.25, '×¼'], [0.5, '×½'], [1, '×1'], [2, '×2'], [4, '×4']])) +
@@ -13864,7 +13865,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.5.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.6.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -13896,8 +13897,35 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
             function now() { const t = Date.now(), l = +LS.g('spark_ls') || 0; if (t > l) LS.s('spark_ls', String(t)); return Math.max(t, l); }
             // one free trial per device: the earliest start ever seen on this device wins
             async function anchor(created) { const a = +LS.g('spark_dv') || 0, b = +(await sparkKV.get('dv')) || 0, all = [created, a, b].filter(x => x > 0), m = all.length ? Math.min(...all) : 0; if (m) { if (m !== a) LS.s('spark_dv', String(m)); if (m !== b) sparkKV.set('dv', m); } return m; }
-            async function verify(code, email) {
-                const c = String(code || '').trim().replace(/\s+/g, ''), [p, s] = c.split('.'); if (!p || !s) return { err: 'صيغة الكود غير صحيحة' };
+            // short codes (SPK-XXXX-XXXX-XXXX): looked up in lic.json, a list signed with the same key and published on GitHub.
+            // only hashes are public; the signed copy is cached so the app keeps working offline after the first activation.
+            const SHORT = /^SPK-?([2-9A-HJ-NP-Z]{4})-?([2-9A-HJ-NP-Z]{4})-?([2-9A-HJ-NP-Z]{4})$/;
+            async function licRead() { try { const j = JSON.parse(LS.g('spark_lic') || 'null'); if (j && j.body && j.sig && await sparkVerify(j.body, j.sig)) return JSON.parse(j.body); } catch (e) { } return null; }
+            async function licList(net) {
+                let L = await licRead(); if (!net) return L;
+                for (const u of ['https://api.github.com/repos/EngMohannd/spark-simlab/contents/lic.json?ref=main', 'https://raw.githubusercontent.com/EngMohannd/spark-simlab/main/lic.json', 'https://cdn.jsdelivr.net/gh/EngMohannd/spark-simlab@main/lic.json']) {
+                    try {
+                        const r = await fetch(u + (u.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' }); if (!r.ok) continue; let j = await r.json();
+                        if (j && j.content && j.encoding === 'base64') j = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\s/g, '')), ch => ch.charCodeAt(0))));
+                        if (j && j.body && j.sig && await sparkVerify(j.body, j.sig)) { const b = JSON.parse(j.body); if (!L || !(L.at > b.at)) { L = b; LS.s('spark_lic', JSON.stringify({ body: j.body, sig: j.sig })); } return L; }
+                    } catch (e) { }
+                }
+                return L;
+            }
+            window.sparkLicRefresh = async () => { if (!S.a || !SHORT.test(String(S.a.code || '').toUpperCase())) return; const a = (await licRead() || {}).at, L = await licList(true); if (L && L.at !== a) await resolve(); };
+            async function verify(code, email, net) {
+                const c = String(code || '').trim().replace(/\s+/g, ''), sm = c.toUpperCase().match(SHORT);
+                if (sm) {
+                    const h = (await sparkSha('spark-lic|' + sm[1] + sm[2] + sm[3])).slice(0, 20); let L = await licList(false), e = L && L.c && L.c[h];
+                    if (!e && net) { L = await licList(true); e = L && L.c && L.c[h]; }
+                    if (!e) return { err: L ? 'كود غير معروف أو تم إيقافه' : 'تعذّر التحقق من الكود — اتصل بالإنترنت مرة واحدة لإتمام التفعيل' };
+                    const [t, x, eh] = e; if (!PLAN[t]) return { err: 'كود غير معروف' };
+                    if (email && eh && eh !== '*' && eh !== (await sparkSha('spark-mail|' + email.toLowerCase())).slice(0, 12)) return { err: 'هذا الكود مخصص لبريد آخر' };
+                    const exp = x && x !== '0' ? new Date(x.slice(0, 4) + '-' + x.slice(4, 6) + '-' + x.slice(6, 8) + 'T23:59:59').getTime() : 0;
+                    if (exp && exp < now()) return { err: 'انتهت صلاحية هذا الكود' };
+                    return { t, e: eh === '*' ? '*' : email, exp, n: '' };
+                }
+                const [p, s] = c.split('.'); if (!p || !s) return { err: 'صيغة الكود غير صحيحة — مثال: SPK-7K4M-Q2XR-9WDH' };
                 let raw; try { raw = Uint8Array.from(atob(p.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((p.length + 3) % 4)), ch => ch.charCodeAt(0)); } catch (e) { return { err: 'صيغة الكود غير صحيحة' }; }
                 if (!(await sparkVerify(raw, s))) return { err: 'كود التفعيل غير صالح' };
                 const [t, e, x, n] = new TextDecoder().decode(raw).split('|'); if (!PLAN[t]) return { err: 'كود غير معروف' };
@@ -14001,7 +14029,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
 <div class="acc-f"><label>الاسم الكامل<input id="accName" autocomplete="name" placeholder="الاسم الثلاثي" value="${esc(pre.name)}"></label>
 <label id="accEmL">البريد الإلكتروني (Gmail)<input id="accEmail" type="email" dir="ltr" autocomplete="email" placeholder="name@gmail.com" value="${esc(pre.email)}"></label>
 <label id="accOrgL">المدرسة / الجامعة / جهة العمل<input id="accOrg" placeholder="اختياري" value="${esc(pre.org)}"></label>
-<label id="accCodeL">كود التفعيل<input id="accCode" dir="ltr" autocomplete="off" spellcheck="false" placeholder="الصق الكود هنا" style="font-family:monospace;font-size:12px"></label>
+<label id="accCodeL">كود التفعيل<input id="accCode" dir="ltr" autocomplete="off" spellcheck="false" placeholder="SPK-XXXX-XXXX-XXXX" style="font-family:monospace;font-size:14px;letter-spacing:.5px"></label>
 <div class="acc-err" id="accErr"></div><button class="acc-go" id="accGo"></button><div id="accWa"></div>
 <div class="acc-mut" id="accNote" style="text-align:center"></div>
 <div class="acc-mut" style="text-align:center;font-size:11.5px">بالمتابعة أنت توافق على <button type="button" class="acc-link" onclick="sparkTerms()">شروط الاستخدام والخصوصية</button></div><div style="text-align:center;margin-top:6px"><button type="button" class="acc-link" id="accOwn"></button></div></div></section>`;
@@ -14023,7 +14051,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
                     if (own) { email = email || 'owner@spark'; } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return err.textContent = 'اكتب بريداً إلكترونياً صحيحاً';
                     const a = { name: name.slice(0, 60), email: email.slice(0, 90), org: org.slice(0, 80), role: plan, created: Date.now(), code: '' };
                     if (own || plan !== 'student' || expired) {
-                        if (!code) return err.textContent = 'أدخل كود التفعيل'; $('accGo').disabled = true; const r = await verify(code, own ? '' : email); $('accGo').disabled = false; if (r.err) return err.textContent = r.err;
+                        if (!code) return err.textContent = 'أدخل كود التفعيل'; $('accGo').disabled = true; const r = await verify(code, own ? '' : email, true); $('accGo').disabled = false; if (r.err) return err.textContent = r.err;
                         if (own && r.t !== 'owner') return err.textContent = 'هذا الكود ليس كود فريق التطوير'; a.code = code.replace(/\s+/g, ''); a.role = r.t;
                     }
                     a.created = await anchor(a.created) || a.created; S.a = a; await save(); await resolve();
@@ -14050,7 +14078,7 @@ ${own ? `<div class="acc-own"><b><i class="fa-solid fa-user-gear"></i> أدوا�
 <table class="acc-tbl" style="--c:${p.c}"><tr><th>الميزة</th>${vis.map(([k, q]) => `<th class="${k === t ? 'me' : ''}">${q.n}</th>`).join('')}</tr>${rows.map(r => `<tr><td>${r[0]}</td>${vis.map(([, q]) => `<td>${q.lv >= r[1] ? '<i class="fa-solid fa-circle-check y"></i>' : '<i class="fa-solid fa-lock n"></i>'}</td>`).join('')}</tr>`).join('')}</table>
 ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية الباقة بكود تفعيل<div style="display:flex;gap:6px"><input id="accUp" dir="ltr" autocomplete="off" placeholder="الصق كود التفعيل" style="flex:1;font-family:monospace;font-size:12px"><button class="acc-btn pri" id="accUpGo"><i class="fa-solid fa-key"></i>تفعيل</button></div></label><div class="acc-err" id="accUpErr"></div>${waBtn(t === 'developer' ? 'developer' : t === 'engineer' ? 'developer' : 'engineer', S.a)}</div></div>`}
 <div class="acc-act"><button class="acc-btn" id="accOut"><i class="fa-solid fa-right-from-bracket"></i>تسجيل الخروج</button><span style="flex:1"></span><span class="acc-mut">حاضنة سبارك للابتكار والتكنولوجيا</span></div>`);
-                const up = $('accUpGo'); if (up) up.onclick = async () => { const r = await verify($('accUp').value, S.a.email); if (r.err) return $('accUpErr').textContent = r.err; if (r.t === 'owner') return $('accUpErr').textContent = 'استخدم «دخول فريق التطوير» لهذا الكود'; S.a.code = $('accUp').value.trim().replace(/\s+/g, ''); S.a.role = r.t; await save(); await resolve(); panel(); try { sxToast('تم التفعيل — باقة ' + PLAN[S.tier].n); } catch (e) { } };
+                const up = $('accUpGo'); if (up) up.onclick = async () => { const r = await verify($('accUp').value, S.a.email, true); if (r.err) return $('accUpErr').textContent = r.err; if (r.t === 'owner') return $('accUpErr').textContent = 'استخدم «دخول فريق التطوير» لهذا الكود'; S.a.code = $('accUp').value.trim().replace(/\s+/g, ''); S.a.role = r.t; await save(); await resolve(); panel(); try { sxToast('تم التفعيل — باقة ' + PLAN[S.tier].n); } catch (e) { } };
                 m.querySelectorAll('[data-as]').forEach(b => b.onclick = () => { S.as = b.dataset.as || null; chip(); markLib(); markNav(); panel(); });
                 const u = $('accUpd'); if (u) u.onclick = () => { try { sparkUpdateCheck(true); } catch (e) { } };
                 $('accOut').onclick = function () {   // two-step confirm (browser confirm() is blocked inside embedded pages)
@@ -14079,7 +14107,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             window.sparkAcc = Object.freeze({ info: () => ({ signedIn: !!S.a, tier: S.tier, view: S.as || S.tier, days: daysLeft(), name: S.a && S.a.name }), can: f => can(f), recheck: async () => { await resolve(); if (S.ready && S.a && !S.tier && !$('accOv')) { closeMd(); login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); } }, profile: async () => S.a ? { name: S.a.name, email: S.a.email, org: S.a.org || '', tier: S.tier || 'none', days: daysLeft() === Infinity ? 'دائم' : String(daysLeft()), ch: S.a.code ? (await sparkSha(S.a.code)).slice(0, 16) : '' } : null, trialFrom: async ts => { ts = +ts; if (!(ts > 1.6e12) || ts > Date.now() || !S.a || S.lic) return; const b = +LS.g('spark_dv') || Infinity; if (ts >= b) return; await anchor(ts); await resolve(); if (!S.tier && S.a && !$('accOv')) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }, waLink: () => wa(null, S.a) });
             // ---------- boot ----------
             try { S.a = JSON.parse(LS.g('spark_acct_v1') || 'null'); } catch (e) { }
-            const boot = async () => { await resolve(); S.ready = true; if (!S.a) login(); else if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); else if (S.tier === 'student' && !S.lic && daysLeft() <= 5) try { sxToast('متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية'); } catch (e) { } if (S.tier === 'student' && !S.lic && daysLeft() <= 7) try { sparkNotify({ id: 't:' + daysLeft(), title: 'متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية', text: 'اطلب كود تفعيل من صفحة حسابك لمتابعة العمل دون انقطاع.', ic: 'fa-hourglass-half', act: 'account' }); } catch (e) { } };
+            const boot = async () => { try { if (S.a && SHORT.test(String(S.a.code || '').toUpperCase()) && !(await licRead())) await licList(true); } catch (e) { } await resolve(); S.ready = true; setTimeout(() => { try { sparkLicRefresh(); } catch (e) { } }, 6000); if (!S.a) login(); else if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); else if (S.tier === 'student' && !S.lic && daysLeft() <= 5) try { sxToast('متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية'); } catch (e) { } if (S.tier === 'student' && !S.lic && daysLeft() <= 7) try { sparkNotify({ id: 't:' + daysLeft(), title: 'متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية', text: 'اطلب كود تفعيل من صفحة حسابك لمتابعة العمل دون انقطاع.', ic: 'fa-hourglass-half', act: 'account' }); } catch (e) { } };
             if (document.readyState === 'complete') setTimeout(boot, 200); else addEventListener('load', () => setTimeout(boot, 200));
             setInterval(() => { if (S.a && S.tier && !S.lic && daysLeft() <= 0) { resolve().then(() => { if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }); } }, 600000);
         })();
@@ -14120,8 +14148,8 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
                             if (!size) { const r = await retry(() => one({})); return r.b.buffer; }
                             const out = new Uint8Array(size), CH = 262144;
                             for (let st = 0; st < size; st += CH) {
-                                const en = Math.min(size, st + CH) - 1, r = await retry(async () => { const x = await one({ Range: 'bytes=' + st + '-' + en }); if (x.st === 206 ? x.b.length !== en - st + 1 : x.b.length !== size) throw new Error('incomplete'); return x; });
-                                if (r.st === 200) { out.set(r.b, 0); break; } out.set(r.b, st);
+                                const en = Math.min(size, st + CH) - 1, r = await retry(async () => { const x = await one({ Range: 'bytes=' + st + '-' + en }); if (x.st === 206 && x.b.length !== en - st + 1) throw new Error('incomplete'); return x; });
+                                if (r.st === 200) return r.b.buffer; out.set(r.b, st);
                                 if (manual) bar('<b>جارٍ تنزيل الإصدار ' + esc(m.v) + '… ' + Math.round((en + 1) / size * 100) + '%</b>');
                             }
                             return out.buffer;
@@ -14131,7 +14159,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
                             try { const b2 = await pull(u, +f.size || 0); if (await sparkSha(b2) === f.sha) { buf = b2; break; } why.push(host + ': stale copy'); stale = true; } catch (e) { why.push(host + ': ' + String(e && e.message || e).slice(0, 40)); }
                         }
                         try { LS.s('spark_upd_err', JSON.stringify({ t: Date.now(), v: m.v, why })); } catch (e) { }
-                        if (!buf) { if (manual) bar('<b>' + (stale ? 'النسخة الجديدة لم تصل للخادم بعد' : 'تعذّر تنزيل ملف التحديث') + '</b><br>' + (stale ? 'انتظر دقائق ثم أعد الفحص.' : 'الإصدار ' + esc(m.v) + ' متوفر لكن التنزيل لم يكتمل. أعد المحاولة بعد قليل.') + '<br><span dir="ltr" style="opacity:.6;font-size:11px">' + esc(why.join(' | ')) + '</span>'); return; }
+                        if (!buf) { if (manual) bar('<b>' + (stale ? 'ملف التحديث غير مطابق — تم تجاهله' : 'تعذّر تنزيل ملف التحديث') + '</b><br>' + (stale ? 'ربما لم تصل النسخة الجديدة للخادم بعد؛ أعد الفحص بعد دقائق.' : 'الإصدار ' + esc(m.v) + ' متوفر لكن التنزيل لم يكتمل. أعد المحاولة بعد قليل.') + '<br><span dir="ltr" style="opacity:.6;font-size:11px">' + esc(why.join(' | ')) + '</span>'); return; }
                         if (await sparkSha(buf) !== f.sha) { if (manual) bar('<b>ملف التحديث غير مطابق</b><br>تم تجاهله حفاظاً على سلامة المنصة.'); return; }   // integrity
                         await sparkKV.set('upd_html', new TextDecoder().decode(buf)); LS.s('spark_upd', JSON.stringify({ v: m.v, tries: 0 }));
                     }
@@ -14184,7 +14212,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -14789,6 +14817,758 @@ while True:
                 ps.insertAdjacentHTML('beforeend', og('دوائر جديدة', first, firstPi) + og('مشاريع Raspberry Pi 4', firstPi, EXAMPLES.length));
                 const _lp36 = loadPresetTemplate; loadPresetTemplate = function (k) { if (/^ex:\d+$/.test(k)) return loadExample(+k.slice(3)); return _lp36(k); };
             }
+        })();
+
+// ===== Phase 37: welcome chime, empty start, typed component values, project picker, Raspberry Pi programmer & PCB =====
+        (function () {
+            const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const css = document.createElement('style'); css.textContent = `
+.sp-tag{font-size:10.5px;line-height:1.2;color:var(--sp-mut,#909aa8);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62vw}
+@media(max-width:900px){.acc-hero p{display:block!important;font-size:12.5px;margin-top:6px;opacity:.9}}
+.xv{width:66px;flex:none;background:var(--sp-bg,#0f141a);border:1px dashed #4a525e;border-radius:6px;padding:1px 5px;font:600 10.5px ui-monospace,monospace;color:#fbbf24;text-align:center}
+.xv:focus{outline:none;border-style:solid;border-color:#2f9e8f}.xv.bad{border-color:#ef4444;color:#fca5a5}
+#edEmpty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5;padding:16px}
+#edEmpty .ee{pointer-events:auto;max-width:380px;text-align:center;background:var(--sp-surf,#1c2128);border:1px solid var(--sp-line,#353c46);border-radius:18px;padding:20px 18px;box-shadow:0 18px 50px rgba(0,0,0,.25)}
+#edEmpty .ee i.big{font-size:30px;color:#c8741f}#edEmpty h3{font-weight:800;font-size:16px;margin:8px 0 4px;color:var(--sp-txt,#e5e7eb)}#edEmpty p{font-size:12.5px;color:var(--sp-mut,#9aa3af);line-height:1.8}
+#edEmpty .eb{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}#edEmpty .eb button{height:38px;padding:0 14px;border-radius:11px;font-weight:700;font-size:13px;border:1px solid var(--sp-line,#353c46);background:var(--sp-bg,#11161c);color:var(--sp-txt,#e5e7eb)}
+#edEmpty .eb button.pri{background:#c8741f;border-color:#c8741f;color:#fff}
+#pjPick{display:flex;align-items:center;gap:8px;max-width:min(440px,92vw);height:40px;padding:0 12px;border-radius:13px;border:1px solid var(--sp-line,#353c46);background:var(--sp-surf,#1c2128);color:var(--sp-txt,#e5e7eb);font-weight:700;font-size:13.5px;cursor:pointer}
+#pjPick .ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:rgba(200,116,31,.15);font-size:15px;flex:none}#pjPick .tx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;text-align:right}#pjPick .fa-chevron-down{opacity:.6;font-size:11px}
+.pk-ov{position:fixed;inset:0;z-index:300;background:rgba(8,10,14,.55);display:flex;align-items:center;justify-content:center;padding:14px}
+.pk{width:min(760px,100%);max-height:86vh;display:flex;flex-direction:column;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#e5e7eb);border:1px solid var(--sp-line,#353c46);border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4)}
+.pk-h{flex:none;display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--sp-line,#353c46)}.pk-h b{font-size:16px;flex:1}.pk-h button{width:36px;height:36px;border-radius:10px;border:1px solid var(--sp-line,#353c46);background:transparent;color:inherit}
+.pk-s{flex:none;padding:10px 16px}.pk-s input{width:100%;height:40px;border-radius:12px;border:1px solid var(--sp-line,#353c46);background:var(--sp-bg,#11161c);color:inherit;padding:0 12px;font-size:14px}
+.pk-c{flex:none;display:flex;gap:6px;overflow-x:auto;padding:0 16px 10px;scrollbar-width:none}.pk-c button{flex:none;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--sp-line,#353c46);background:transparent;color:var(--sp-mut,#9aa3af);font-weight:700;font-size:12.5px}.pk-c button.on{background:#c8741f;border-color:#c8741f;color:#fff}
+.pk-b{overflow:auto;padding:4px 16px 18px}.pk-g{margin-top:12px}.pk-g h4{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--sp-mut,#9aa3af);margin-bottom:8px}.pk-g h4 em{font-style:normal;font-size:11px;opacity:.7}
+.pk-l{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.pk-i{display:flex;align-items:center;gap:10px;text-align:right;padding:10px;border-radius:14px;border:1px solid var(--sp-line,#353c46);background:var(--sp-bg,#11161c);color:inherit;cursor:pointer;min-height:58px}
+.pk-i:hover,.pk-i:focus-visible{border-color:#c8741f;outline:none}.pk-i .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:19px;flex:none}
+.pk-i b{display:block;font-size:13.5px;line-height:1.45;font-weight:700}.pk-i small{display:block;font-size:11px;color:var(--sp-mut,#9aa3af);margin-top:2px}
+@media(max-width:640px){.pk-ov{align-items:flex-end;padding:0}.pk{border-radius:20px 20px 0 0;max-height:90vh}.pk-l{grid-template-columns:1fr}}
+.pi-sh{position:fixed;inset:0;z-index:310;background:rgba(8,10,14,.55);display:flex;align-items:center;justify-content:center;padding:14px}
+.pi-sh .bx{width:min(640px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#e5e7eb);border:1px solid var(--sp-line,#353c46);border-radius:18px;padding:16px}
+.pi-sh h3{font-weight:800;font-size:16px;display:flex;align-items:center;gap:8px}.pi-sh .st{border:1px solid var(--sp-line,#353c46);border-radius:14px;padding:12px;margin-top:10px}.pi-sh .st b{font-size:13.5px}
+.pi-sh p,.pi-sh li{font-size:12.5px;line-height:1.85;color:var(--sp-mut,#a3acb8)}.pi-sh code,.pi-sh pre{font:12px ui-monospace,monospace;background:var(--sp-bg,#0f141a);border:1px solid var(--sp-line,#353c46);border-radius:8px;padding:2px 6px;color:#5eead4;direction:ltr;unicode-bidi:isolate}
+.pi-sh pre{display:block;padding:8px;white-space:pre-wrap;max-height:180px;overflow:auto;text-align:left}
+.pi-sh .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.pi-sh input{height:38px;border-radius:10px;border:1px solid var(--sp-line,#353c46);background:var(--sp-bg,#11161c);color:inherit;padding:0 10px;font-size:13px;direction:ltr}
+.pi-sh .bt{height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--sp-line,#353c46);background:var(--sp-bg,#11161c);color:inherit;font-weight:700;font-size:13px}.pi-sh .bt.go{background:#16a34a;border-color:#16a34a;color:#fff}.pi-sh .bt.pri{background:#c8741f;border-color:#c8741f;color:#fff}
+`; document.head.appendChild(css);
+
+            // ---------- 1) welcome chime ----------
+            if (typeof SET !== 'undefined' && SET.chime === undefined) SET.chime = true;
+            let chimed = false; const t0 = Date.now();
+            function chime(force) {
+                if (chimed && !force) return; try {
+                    if (!force && typeof SET !== 'undefined' && SET.chime === false) return;
+                    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; const ac = new AC();
+                    const go = () => {
+                        if (chimed && !force) return; chimed = true; force = false; const st = ac.currentTime + 0.04, m = ac.createGain(); m.gain.value = 0.14; m.connect(ac.destination);
+                        [[523.25, 0], [659.25, 0.11], [783.99, 0.22], [1046.5, 0.36]].forEach(([f, dt], i) => {
+                            const g = ac.createGain(); g.connect(m); const s = st + dt, d = i === 3 ? 1.2 : 0.5;
+                            [[f, 1], [f * 2, 0.16], [f * 3, 0.05]].forEach(([fr, a]) => { const o = ac.createOscillator(), h = ac.createGain(); o.type = 'sine'; o.frequency.value = fr; h.gain.value = a; o.connect(h); h.connect(g); o.start(s); o.stop(s + d + 0.05); });
+                            g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(1, s + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, s + d);
+                        });
+                        setTimeout(() => { try { ac.close(); } catch (e) { } }, 2600);
+                    };
+                    if (ac.state === 'running') return go();
+                    const once = () => { removeEventListener('pointerdown', once, true); removeEventListener('keydown', once, true); if (Date.now() - t0 < 25000 || force) ac.resume().then(go).catch(() => { }); };
+                    ac.resume().then(() => { if (ac.state === 'running') go(); }).catch(() => { });
+                    addEventListener('pointerdown', once, true); addEventListener('keydown', once, true);
+                } catch (e) { }
+            }
+            window.sparkChime = () => chime(true);
+            addEventListener('load', () => setTimeout(chime, 300));
+
+            // ---------- 2) Arabic tagline under the name ----------
+            function tagline() { const h1 = document.querySelector('header h1'); if (!h1 || document.querySelector('.sp-tag')) return; const box = h1.parentElement; const t = document.createElement('div'); t.className = 'sp-tag'; t.textContent = 'منصة عربية للمحاكاة والإلكترونيات والروبوتات'; box.insertAdjacentElement('afterend', t); }
+
+            // ---------- 3) the app opens on an empty workspace ----------
+            const BLANK = '// مشروع جديد — أضف العناصر من المكتبة ثم اكتب الكود هنا\nvoid setup() {\n  \n}\n\nvoid loop() {\n  \n}\n';
+            let booted = false;
+            function emptyBoard() {
+                try { clearWorkspace(); } catch (e) { } state.activePreset = ''; state.presetCpp = null;
+                try { state.codeStrings.cpp = BLANK; const ta = $('codeTextarea'); if (ta) ta.value = BLANK; if (state.activeCodeTab !== 'cpp') switchCodeTab('cpp'); vmCompile(BLANK); idePost(); } catch (e) { }
+                pjLabel('', ''); emptyState();
+            }
+            const _lpt = loadPresetTemplate; loadPresetTemplate = function (k) { if (!booted && k === 'irrigation') return emptyBoard(); booted = true; const r = _lpt.apply(this, arguments); pjSync(k); return r; };
+            const _ts = toggleSimulation; toggleSimulation = function () { if (!booted && !state.running) return; return _ts.apply(this, arguments); };
+            addEventListener('load', () => setTimeout(() => { booted = true; }, 0));
+            function emptyState() {
+                const vp = $('canvasViewport'); if (!vp) return; const host = vp.parentElement; let e = $('edEmpty');
+                if (!e) { e = document.createElement('div'); e.id = 'edEmpty'; e.innerHTML = `<div class="ee"><i class="fa-solid fa-microchip big"></i><h3>ساحة العمل جاهزة</h3><p>ابدأ مشروعك: اختر مشروعاً جاهزاً، أو أضف العناصر من المكتبة واسحب الأسلاك بين المنافذ.</p><div class="eb"><button class="pri" onclick="pjOpen()"><i class="fa-solid fa-folder-open ml-1"></i>المشاريع الجاهزة</button><button onclick="if(window.innerWidth<1024)switchMobileView('library');else{const s=document.querySelector('#libraryListContainer');s&&s.scrollIntoView({behavior:'smooth'})}"><i class="fa-solid fa-boxes-stacked ml-1"></i>العناصر</button><button onclick="window.edOpen&&edOpen()"><i class="fa-solid fa-robot ml-1"></i>Edison</button></div></div>`; if (getComputedStyle(host).position === 'static') host.style.position = 'relative'; host.appendChild(e); }
+                e.style.display = state.components.length ? 'none' : 'flex';
+            }
+            const _rac = renderAllComponents; renderAllComponents = function () { const r = _rac.apply(this, arguments); try { emptyState(); } catch (e) { } return r; };
+
+            // ---------- 4) type any value by hand (4.7k, 100n, 9V ...) ----------
+            const SI = { p: 1e-12, n: 1e-9, u: 1e-6, 'µ': 1e-6, 'μ': 1e-6, m: 1e-3, '': 1, k: 1e3, K: 1e3, M: 1e6, G: 1e9 };
+            function parseSI(str) {
+                let s = String(str == null ? '' : str).trim().replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[،,]/g, '.').replace(/\s+/g, '').replace(/(ohms?|Ω|F|H|V|A|Hz|W|s)$/i, m => /^m$/.test(m) ? m : '');
+                let m = s.match(/^(\d+)([pnuµμmkKMG])(\d+)$/); if (m) s = m[1] + '.' + m[3] + m[2];
+                m = s.match(/^([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)([pnuµμmkKMG]?)$/); if (!m) return NaN; return parseFloat(m[1]) * SI[m[2]];
+            }
+            function fmtSI(v) { v = +v; if (!isFinite(v)) return '?'; const a = Math.abs(v); const P = [[1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p']]; for (const [f, s] of P) if (a >= f * 0.9999 || f === 1e-12) return +(v / f).toPrecision(3) + s; return String(v); }
+            const UNIT = k => /^ohms?$|^r$/i.test(k) ? 'Ω' : /^F$|^c$/.test(k) ? 'F' : /^L$/.test(k) ? 'H' : /^(v|vz|vf|vset|vnom|volt)/i.test(k) ? 'V' : /^(rating|i|amp)$/i.test(k) ? 'A' : /^f$|freq/i.test(k) ? 'Hz' : '';
+            const BNOM = { bat_aa: 1.5, bat_9v: 9, bat_18650: 3.7, bat_lipo2s: 7.4, bat_pb12: 12, bat_coin: 3 };
+            window.edSetVal = (id, k, raw, lo, hi, el) => {
+                const v = parseSI(raw); lo = lo === undefined ? 0 : lo; const ok = isFinite(v) && v >= lo && (hi === undefined || v <= hi) && (lo > 0 || hi !== undefined || v > 0);
+                if (el) el.classList.toggle('bad', !ok); if (!ok) { try { appendSerialLog('[القيم] «' + raw + '» غير مقبولة' + (hi !== undefined ? ' (المدى ' + fmtSI(lo) + ' – ' + fmtSI(hi) + ')' : '')); } catch (e) { } return; }
+                const c = compById(id); if (!c) return; c.state[k] = v; try { pushUndo && pushUndo(); } catch (e) { } evaluateCircuitPhysics(); refreshComponentBodiesLive();
+            };
+            const IN = (id, k, lo, hi, ph) => `<input class="xv" dir="ltr" inputmode="decimal" placeholder="${ph || '✎'}" title="اكتب قيمة يدوية مثل 4.7k أو 100n أو 9" ${STOP} onclick="event.stopPropagation()" onkeydown="event.stopPropagation();if(event.key==='Enter')this.blur()" onchange="edSetVal('${id}','${k}',this.value,${lo === undefined ? 'undefined' : lo},${hi === undefined ? 'undefined' : hi},this)">`;
+            const _eb = extBody; extBody = function (c) {
+                let h = _eb.apply(this, arguments); const d = EXT[c.type]; if (!d || d.grid) return h; const s = c.state, id = c.id;
+                (d.sel || []).forEach(q => {
+                    if (!q.o || !q.o.every(o => isFinite(+o[1]))) return; const tag = `extSet('${id}','${q.k}',this.value)"`, i = h.indexOf(tag); if (i < 0) return; const j = h.indexOf('</select>', i); if (j < 0) return;
+                    const u = UNIT(q.k), cur = s[q.k]; let mid = h.slice(i, j); if (cur != null && !q.o.some(o => String(o[1]) === String(cur))) mid = mid.replace(/ selected/g, '') + `<option value="${cur}" selected>✎ ${fmtSI(cur)}${u}</option>`;
+                    h = h.slice(0, i) + mid + '</select>' + IN(id, q.k, 0, undefined, '✎ ' + (u || 'قيمة')) + h.slice(j + 9);
+                });
+                (d.vals || []).forEach(v => { const tag = `oninput="extSet('${id}','${v.k}',this.value,'${v.u || ''}')"`, i = h.indexOf(tag); if (i < 0) return; const j = h.indexOf('>', i); h = h.slice(0, j + 1) + `<div class="flex justify-end mt-0.5">${IN(id, v.k, +v.min, +v.max, (v.u || '✎') + ' ' + fmtSI(+v.min) + '–' + fmtSI(+v.max))}</div>` + h.slice(j + 1); });
+                if (BNOM[c.type]) { const k = h.lastIndexOf('</div>'); h = h.slice(0, k) + `<div class="flex items-center justify-between gap-2 text-[10px]"><span class="text-slate-400">الجهد الاسمي</span><span class="font-mono text-amber-300">${fmtSI(s.vnom || BNOM[c.type])}V</span>${IN(id, 'vnom', 0.1, 60, '✎ V')}</div>` + h.slice(k); }
+                return h;
+            };
+            Object.keys(BNOM).forEach(t => { const E = EXT[t]; if (!E || !E.stamp2 || E._vn) return; E._vn = 1; const o = E.stamp2; E.stamp2 = (c, A, pv, s) => { if (!(s.vnom > 0)) return o(c, A, pv, s); const kf = s.vnom / BNOM[t], A2 = Object.create(A); A2.S = (cc, p, v, r) => A.S(cc, p, v * kf, r); return o(c, A2, pv, s); }; });
+
+            // ---------- 5) organised project picker ----------
+            const CAT = [
+                ['lab', '🧪', 'المختبرات الأساسية', '#f59e0b'], ['new', '🔌', 'دوائر إلكترونية', '#22c55e'], ['pi', '🍓', 'Raspberry Pi 4', '#e11d48'], ['edison', '🟠', 'روبوت Edison V2.0', '#f97316'],
+                ['esp', '📡', 'ESP32 وإنترنت الأشياء', '#0ea5e9'], ['robot', '🤖', 'الروبوتات والحركة', '#5a7fb0'], ['ges', '✋', 'الإيماءات والكاميرا', '#14b8a6'], ['ard', '⚡', 'أمثلة Arduino', '#2f9e8f']
+            ];
+            const EMO = /^(\p{Extended_Pictographic}|\p{Emoji_Presentation}|[\u{1F1E6}-\u{1F1FF}]{2})(\uFE0F|\u200D\p{Extended_Pictographic})*\s*/u;
+            function pjItems() {
+                const out = [], seen = new Set(), ps = $('presetSelect'), ex = $('exSelect');
+                if (ps) [...ps.children].forEach(ch => {
+                    if (ch.tagName === 'OPTION' && ch.value) out.push({ v: ch.value, l: ch.textContent.trim(), c: 'lab' });
+                    if (ch.tagName === 'OPTGROUP') { const pi = /Pi/.test(ch.label); [...ch.children].forEach(o => { out.push({ v: o.value, l: o.textContent.trim(), c: pi ? 'pi' : 'new' }); if (/^ex:/.test(o.value)) seen.add(+o.value.slice(3)); }); }
+                });
+                if (ex) [...ex.options].forEach(o => { if (o.value === '' || seen.has(+o.value)) return; const n = o.textContent.trim(), c = /Pi 4/.test(n) ? 'pi' : /ESP32|WiFi|MQTT|IoT|إنترنت|ويب|بلوتوث|BLE/i.test(n) ? 'esp' : /إيماء|كاميرا|يد |gesture/i.test(n) ? 'ges' : /روبوت|استوديو|سيارة|ذراع|مروحية|robot/i.test(n) ? 'robot' : 'ard'; out.push({ v: 'x:' + o.value, l: n, c }); });
+                out.push({ v: 'edison', l: '🟠 بيئة Edison V2.0 — المحاكي والتحكم بالروبوت الحقيقي', c: 'edison' });
+                return out;
+            }
+            let pjCat = 'all';
+            window.pjOpen = function () {
+                const all = pjItems(); let q = ''; const ov = document.createElement('div'); ov.className = 'pk-ov'; ov.dir = 'rtl';
+                const cats = CAT.filter(c => all.some(i => i.c === c[0]));
+                ov.innerHTML = `<div class="pk" role="dialog" aria-label="المشاريع الجاهزة"><div class="pk-h"><i class="fa-solid fa-folder-open" style="color:#c8741f"></i><b>المشاريع الجاهزة</b><span style="font-size:12px;opacity:.6">${all.length} مشروعاً</span><button aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="pk-s"><input type="search" placeholder="ابحث: ري، حساس، Raspberry، LED…"></div><div class="pk-c"><button data-c="all">الكل</button>${cats.map(c => `<button data-c="${c[0]}">${c[1]} ${c[2]}</button>`).join('')}</div><div class="pk-b"></div></div>`;
+                const body = ov.querySelector('.pk-b'), close = () => ov.remove();
+                const draw = () => {
+                    const qq = q.trim().toLowerCase(); body.innerHTML = cats.filter(c => pjCat === 'all' || pjCat === c[0]).map(c => {
+                        const it = all.filter(i => i.c === c[0] && (!qq || i.l.toLowerCase().includes(qq))); if (!it.length) return '';
+                        return `<div class="pk-g"><h4><span style="font-size:16px">${c[1]}</span>${c[2]} <em>(${it.length})</em></h4><div class="pk-l">${it.map(i => { const m = i.l.match(EMO), ic = m ? m[1] : c[1], t = m ? i.l.slice(m[0].length) : i.l, sp = t.split(/\s[:—–]\s|:\s/), ttl = sp.length > 1 ? sp.slice(1).join(' — ') : sp[0], sub = sp.length > 1 ? sp[0] : ''; return `<button class="pk-i" data-v="${esc(i.v)}" data-l="${esc(i.l)}"><span class="ic" style="background:${c[3]}22">${ic}</span><span style="min-width:0"><b>${esc(ttl)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}</span></button>`; }).join('')}</div></div>`;
+                    }).join('') || '<p style="text-align:center;opacity:.6;padding:30px">لا توجد نتائج</p>';
+                    ov.querySelectorAll('.pk-c button').forEach(b => b.classList.toggle('on', b.dataset.c === pjCat));
+                };
+                ov.addEventListener('click', e => {
+                    if (e.target === ov || e.target.closest('.pk-h button')) return close();
+                    const cb = e.target.closest('.pk-c button'); if (cb) { pjCat = cb.dataset.c; return draw(); }
+                    const it = e.target.closest('.pk-i'); if (!it) return; close(); pjLoad(it.dataset.v, it.dataset.l);
+                });
+                ov.querySelector('input').addEventListener('input', e => { q = e.target.value; draw(); });
+                document.addEventListener('keydown', function k(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', k); } });
+                document.body.appendChild(ov); draw(); if (window.innerWidth > 700) ov.querySelector('input').focus();
+            };
+            function pjLoad(v, l) {
+                if (v === 'edison') { if (window.edOpen) edOpen(); return; }
+                if (/^x:/.test(v)) { loadExample(+v.slice(2)); pjLabel(l, ''); return; }
+                const ps = $('presetSelect'); if (ps) ps.value = v; loadPresetTemplate(v); pjLabel(l, '');
+            }
+            function pjLabel(l) { const b = $('pjPick'); if (!b) return; const m = (l || '').match(EMO); b.querySelector('.ic').textContent = m ? m[1] : '📂'; b.querySelector('.tx').textContent = l ? (m ? l.slice(m[0].length) : l) : 'اختر مشروعاً جاهزاً'; }
+            function pjSync(k) { const ps = $('presetSelect'); if (!ps) return; const o = [...ps.options].find(x => x.value === k); if (o) pjLabel(o.textContent.trim()); }
+            const _lex = loadExample; loadExample = function (i) { const r = _lex.apply(this, arguments); try { const e = EXAMPLES[i]; if (e) pjLabel(e.name); } catch (er) { } booted = true; return r; };
+            function pjMount() {
+                const ps = $('presetSelect'); if (!ps || $('pjPick')) return; ps.style.display = 'none';
+                const b = document.createElement('button'); b.id = 'pjPick'; b.type = 'button'; b.title = 'المشاريع الجاهزة'; b.innerHTML = '<span class="ic">📂</span><span class="tx">اختر مشروعاً جاهزاً</span><i class="fa-solid fa-chevron-down"></i>'; b.onclick = () => pjOpen();
+                ps.insertAdjacentElement('beforebegin', b); if (state.components.length && state.activePreset) pjSync(state.activePreset);
+            }
+
+            // ---------- 6) Raspberry Pi: Python editor look, real-board programmer, PCB footprints ----------
+            const isPy = src => !/\bvoid\s+(setup|loop)\s*\(/.test(src) && /(^|\n)\s*(import |from \w+ import |while True|def |print\()/.test(src);
+            const hasPi = () => state.components.some(c => c.type === 'rpi4');
+            function piUI() {
+                const ta = $('codeTextarea'), py = !!(ta && isPy(ta.value)), on = py || hasPi(); window.__pyHL = py;
+                const t = $('tabBtn-cpp'); if (t) { const want = on ? '<i class="fa-brands fa-python ml-1"></i>Python · Raspberry Pi' : '<i class="fa-solid fa-code ml-1"></i>Arduino C++'; if (t.dataset.k !== String(on)) { t.dataset.k = String(on); t.innerHTML = want; } }
+                const b = $('piRunBtn'); if (b) b.style.display = on ? '' : 'none';
+            }
+            const PYK = /^(def|class|import|from|as|while|for|in|if|elif|else|try|except|finally|return|break|continue|pass|True|False|None|and|or|not|lambda|global|nonlocal|with|yield|is|del|assert|raise|async|await)$/;
+            const PYF = /^(print|range|len|int|float|str|abs|min|max|round|sleep|input|bool|list|dict|tuple|enumerate|sum|any|all|open|time)$/;
+            const _hl = hlLine; hlLine = function (src) {
+                if (!window.__pyHL) return _hl(src); const e = x => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); let out = '', m;
+                const re = /(#.*$)|([fFrRbB]?(?:"""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.|[^"\\])*"?|'(?:\\.|[^'\\])*'?))|(\b0[xXbBoO][0-9a-fA-F]+\b|\b\d+\.?\d*\b)|([A-Za-z_]\w*)|([^\w\s"'#]+|\s+)/g;
+                while ((m = re.exec(src))) { if (m[1]) out += '<span class="hc">' + e(m[1]) + '</span>'; else if (m[2]) out += '<span class="hs">' + e(m[2]) + '</span>'; else if (m[3]) out += '<span class="hn">' + m[3] + '</span>'; else if (m[4]) { const w = m[4]; out += PYK.test(w) ? '<span class="hk">' + w + '</span>' : PYF.test(w) ? '<span class="hf">' + w + '</span>' : /^[A-Z][A-Z0-9_]+$/.test(w) ? '<span class="hK">' + w + '</span>' : /^[A-Z]/.test(w) ? '<span class="hT">' + w + '</span>' : e(w); } else out += e(m[0]); }
+                return out;
+            };
+            const _ub = vmUpdateBadge; vmUpdateBadge = function () { const r = _ub.apply(this, arguments); try { piUI(); } catch (e) { } return r; };
+            const _rac2 = renderAllComponents; renderAllComponents = function () { const r = _rac2.apply(this, arguments); try { piUI(); } catch (e) { } return r; };
+
+            const AGENT = String.raw`#!/usr/bin/env python3
+# SPARK Pi Agent — يستقبل الكود من منصة SPARKSimLab ويشغّله على Raspberry Pi
+# التشغيل:  python3 spark_agent.py        (يعرض رمز PIN وعنوان الراسبري)
+import http.server, json, os, random, signal, socket, subprocess, sys, threading
+from urllib.parse import urlparse, parse_qs
+PORT = int(os.environ.get('SPARK_PORT', '8765'))
+PIN = os.environ.get('SPARK_PIN') or '%06d' % random.SystemRandom().randint(0, 999999)
+HOME = os.path.join(os.path.expanduser('~'), 'spark'); os.makedirs(HOME, exist_ok=True)
+LIB = r'''__LIB__'''
+lock = threading.Lock(); buf = []; base = [0]; proc = [None]
+def log(s):
+    with lock:
+        buf.append(s)
+        if len(buf) > 3000: del buf[:1000]; base[0] += 1000
+def pump(p):
+    for ln in p.stdout: log(ln.rstrip('\n'))
+    log('■ انتهى البرنامج (رمز الخروج %s)' % p.wait())
+def running(): return bool(proc[0] and proc[0].poll() is None)
+def stop():
+    p = proc[0]
+    if p and p.poll() is None:
+        try: os.killpg(p.pid, signal.SIGTERM)
+        except Exception: p.terminate()
+        try: p.wait(3)
+        except Exception:
+            try: os.killpg(p.pid, signal.SIGKILL)
+            except Exception: pass
+        log('■ أُوقف البرنامج')
+    proc[0] = None
+def run(code):
+    stop()
+    with open(os.path.join(HOME, 'main.py'), 'w', encoding='utf-8') as f: f.write(code)
+    with open(os.path.join(HOME, 'spark_pi.py'), 'w', encoding='utf-8') as f: f.write(LIB)
+    env = dict(os.environ, PYTHONIOENCODING='utf-8'); env.setdefault('DISPLAY', ':0')
+    proc[0] = subprocess.Popen([sys.executable, '-u', 'main.py'], cwd=HOME, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, start_new_session=True, env=env)
+    log('▶ بدأ تشغيل main.py'); threading.Thread(target=pump, args=(proc[0],), daemon=True).start()
+def model():
+    try: return open('/proc/device-tree/model').read().strip('\x00\n')
+    except Exception: return sys.platform
+class H(http.server.BaseHTTPRequestHandler):
+    def out(self, code, obj):
+        b = json.dumps(obj, ensure_ascii=False).encode('utf-8'); self.send_response(code)
+        for k, v in (('Access-Control-Allow-Origin', '*'), ('Access-Control-Allow-Headers', 'Content-Type, X-Spark-Pin'), ('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'), ('Access-Control-Allow-Private-Network', 'true'), ('Content-Type', 'application/json; charset=utf-8'), ('Content-Length', str(len(b)))): self.send_header(k, v)
+        self.end_headers(); self.wfile.write(b)
+    def ok(self): return self.headers.get('X-Spark-Pin', '') == PIN
+    def do_OPTIONS(self): self.out(204, {})
+    def do_GET(self):
+        u = urlparse(self.path)
+        if u.path == '/ping': return self.out(200, {'ok': True, 'name': socket.gethostname(), 'model': model(), 'auth': self.ok(), 'running': running()})
+        if not self.ok(): return self.out(403, {'err': 'pin'})
+        if u.path == '/out':
+            n = int(parse_qs(u.query).get('since', ['0'])[0])
+            with lock: i = max(0, n - base[0]); ls = buf[i:]; nx = base[0] + len(buf)
+            return self.out(200, {'lines': ls, 'next': nx, 'running': running()})
+        self.out(404, {'err': 'not found'})
+    def do_POST(self):
+        if not self.ok(): return self.out(403, {'err': 'pin'})
+        d = json.loads(self.rfile.read(int(self.headers.get('Content-Length') or 0)) or b'{}')
+        if self.path == '/run': run(d.get('code', '')); return self.out(200, {'ok': True})
+        if self.path == '/stop': stop(); return self.out(200, {'ok': True})
+        self.out(404, {'err': 'not found'})
+    def log_message(self, *a): pass
+def ips():
+    r = set()
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.connect(('10.255.255.255', 1)); r.add(s.getsockname()[0]); s.close()
+    except Exception: pass
+    return sorted(r) or ['127.0.0.1']
+if __name__ == '__main__':
+    print('=' * 46); print('  SPARK Pi Agent — جاهز لاستقبال الكود'); print('  الجهاز : %s (%s)' % (socket.gethostname(), model()))
+    for ip in ips(): print('  العنوان: %s   أو  %s.local' % (ip, socket.gethostname()))
+    print('  المنفذ : %d' % PORT); print('  رمز PIN: %s' % PIN); print('=' * 46); print('  (Ctrl+C للإيقاف)')
+    try: http.server.ThreadingHTTPServer(('0.0.0.0', PORT), H).serve_forever()
+    except KeyboardInterrupt: stop()
+`;
+            const PILIB = String.raw`# spark_pi.py — شاشة اللمس كما في محاكي SPARKSimLab (TouchScreen) على Raspberry Pi الحقيقي
+import os, threading, time
+try:
+    import tkinter as tk
+except Exception:
+    tk = None
+class TouchScreen:
+    def __init__(self, fullscreen=True):
+        self._t = 'Raspberry Pi'; self._rows = {}; self._g = {}; self._sw = {}; self._bt = {}; self._down = set(); self._last = None; self._ok = False
+        if tk and os.environ.get('DISPLAY'):
+            ev = threading.Event(); threading.Thread(target=self._ui, args=(fullscreen, ev), daemon=True).start(); ev.wait(4)
+        if not self._ok: print('[spark_pi] لا توجد شاشة رسومية — سيُطبع المحتوى هنا في الطرفية')
+    def _ui(self, fs, ev):
+        try:
+            r = self._r = tk.Tk(); r.title('SPARK'); r.configure(bg='#11161c')
+            if fs: r.attributes('-fullscreen', True)
+            r.bind('<Escape>', lambda e: r.attributes('-fullscreen', False))
+            self._tl = tk.Label(r, font=('DejaVu Sans', 26, 'bold'), fg='#f5f7fa', bg='#c8741f', pady=10); self._tl.pack(fill='x')
+            self._body = tk.Frame(r, bg='#11161c'); self._body.pack(fill='both', expand=True, padx=16, pady=10)
+            self._btns = tk.Frame(r, bg='#11161c'); self._btns.pack(fill='x', padx=16, pady=12); self._w = {}; self._ok = True
+        except Exception as e:
+            print('[spark_pi] تعذّر فتح الشاشة:', e); ev.set(); return
+        ev.set(); self._tick(); r.mainloop()
+    def _tick(self):
+        try:
+            self._tl.config(text=self._t); w = self._w
+            for k in sorted(self._rows):
+                lb = w.get(('r', k))
+                if not lb: lb = w[('r', k)] = tk.Label(self._body, font=('DejaVu Sans', 20), fg='#e5e7eb', bg='#11161c', anchor='e', justify='right'); lb.pack(fill='x', pady=4)
+                lb.config(text=self._rows[k])
+            for n, (v, mx) in self._g.items():
+                cv = w.get(('g', n))
+                if not cv: cv = w[('g', n)] = tk.Canvas(self._body, height=46, bg='#11161c', highlightthickness=0); cv.pack(fill='x', pady=6)
+                cv.delete('all'); W = max(cv.winfo_width(), 200); p = max(0, min(1, float(v) / float(mx or 1)))
+                cv.create_rectangle(4, 22, W - 4, 40, fill='#2a313b', outline=''); cv.create_rectangle(4, 22, 4 + (W - 8) * p, 40, fill='#2f9e8f', outline='')
+                cv.create_text(W - 6, 10, text='%s: %s' % (n, v), anchor='e', fill='#e5e7eb', font=('DejaVu Sans', 14))
+            for n in list(self._sw) + list(self._bt):
+                b = w.get(('b', n))
+                if not b:
+                    b = w[('b', n)] = tk.Button(self._btns, text=n, font=('DejaVu Sans', 20, 'bold'), relief='flat', padx=22, pady=16, fg='#fff', activeforeground='#fff')
+                    if n in self._sw: b.config(command=lambda n=n: self._sw.__setitem__(n, 0 if self._sw[n] else 1))
+                    else: b.bind('<ButtonPress-1>', lambda e, n=n: self._down.add(n))
+                    b.pack(side='right', padx=6, expand=True, fill='x')
+                on = self._sw.get(n, 0) if n in self._sw else 0
+                b.config(bg='#16a34a' if on else '#353c46', activebackground='#16a34a' if on else '#4a525e')
+            self._r.after(80, self._tick)
+        except Exception:
+            pass
+    def _echo(self):
+        if self._ok: return
+        s = '%s | %s' % (self._t, ' | '.join(self._rows[k] for k in sorted(self._rows)))
+        if s != self._last: self._last = s; print(s)
+    def title(self, t): self._t = str(t); self._echo()
+    def text(self, row, s): self._rows[int(row)] = str(s); self._echo()
+    def gauge(self, name, value, maximum=100): self._g[str(name)] = (value, maximum)
+    def switch(self, name):
+        self._sw.setdefault(str(name), 0); return self._sw[str(name)]
+    def button(self, name):
+        n = str(name); self._bt.setdefault(n, 0)
+        if n in self._down: self._down.discard(n); return True
+        return False
+`;
+            const agentFile = () => AGENT.replace('__LIB__', PILIB.replace(/'''/g, '"""'));
+            const PI = { host: localStorage.getItem('spark_pi_host') || 'raspberrypi.local', pin: localStorage.getItem('spark_pi_pin') || '', since: 0, tm: 0 };
+            const piUrl = p => 'http://' + PI.host.replace(/^https?:\/\//, '').replace(/\/.*$/, '') + (/:\d+$/.test(PI.host) ? '' : ':8765') + p;
+            async function piFetch(p, body) { const r = await fetch(piUrl(p), { method: body ? 'POST' : 'GET', headers: Object.assign({ 'X-Spark-Pin': PI.pin }, body ? { 'Content-Type': 'application/json' } : {}), body: body ? JSON.stringify(body) : undefined, cache: 'no-store' }); return r.json().catch(() => ({})).then(j => (j._st = r.status, j)); }
+            window.piOpen = function () {
+                const old = $('piSh'); if (old) old.remove(); const w = document.createElement('div'); w.id = 'piSh'; w.className = 'pi-sh'; w.dir = 'rtl'; const httpsWeb = location.protocol === 'https:' && !/appassets/.test(location.host);
+                w.innerHTML = `<div class="bx"><div style="display:flex;align-items:center;gap:8px"><h3 style="flex:1">🍓 تشغيل الكود على Raspberry Pi حقيقي</h3><button class="bt" onclick="piClose()" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="st"><b>1) ثبّت «وكيل SPARK» على الراسبري (مرة واحدة)</b><p>انقل الملف إلى الراسبري ثم شغّله من الطرفية. سيعرض <b>عنوان الجهاز</b> و<b>رمز PIN</b>. الحاسوب/الهاتف والراسبري يجب أن يكونا على نفس شبكة الواي فاي.</p><pre>python3 spark_agent.py</pre><div class="row"><button class="bt pri" onclick="piDl('agent')"><i class="fa-solid fa-download ml-1"></i>تنزيل spark_agent.py</button></div></div>
+<div class="st"><b>2) الاتصال</b><div class="row"><input id="piHost" placeholder="raspberrypi.local أو 192.168.1.20" value="${esc(PI.host)}" style="flex:2;min-width:180px"><input id="piPin" placeholder="PIN" inputmode="numeric" value="${esc(PI.pin)}" style="width:110px"><button class="bt" onclick="piPing()">فحص الاتصال</button></div><p id="piSt" style="margin-top:6px">${httpsWeb ? '⚠ هذه الصفحة على https والمتصفح يمنع الاتصال المباشر بالراسبري؛ استخدم تطبيق أندرويد أو ويندوز، أو نزّل الملفات في الخطوة 4.' : 'أدخل العنوان والرمز ثم افحص الاتصال.'}</p></div>
+<div class="st"><b>3) الرفع والتشغيل</b><p>يُرفع الكود الحالي من المحرر باسم <code>~/spark/main.py</code> ويعمل فوراً بمكتبة <code>gpiozero</code> الحقيقية، وتظهر مخرجاته هنا. مكتبة الشاشة <code>spark_pi</code> تُنسخ معه لتعمل شاشة اللمس 7 بوصة.</p><div class="row"><button class="bt go" onclick="piRun()"><i class="fa-solid fa-play ml-1"></i>رفع وتشغيل</button><button class="bt" onclick="piStop()"><i class="fa-solid fa-stop ml-1"></i>إيقاف</button></div><pre id="piOut">—</pre></div>
+<div class="st"><b>4) بدون شبكة؟</b><p>نزّل الملفين وانسخهما للراسبري بذاكرة USB، ثم شغّل <code>python3 main.py</code>.</p><div class="row"><button class="bt" onclick="piDl('main')">main.py</button><button class="bt" onclick="piDl('lib')">spark_pi.py</button><button class="bt" onclick="piCopy()">نسخ الكود</button></div></div>
+<p style="margin-top:10px">ملاحظة سلامة: منافذ GPIO تعمل على 3.3V فقط — لا توصل 5V مباشرة لأي منفذ، واستخدم مقسّم جهد مع الحساسات التي تعطي 5V.</p></div>`;
+                w.addEventListener('click', e => { if (e.target === w) piClose(); }); document.body.appendChild(w);
+            };
+            window.piClose = () => { clearInterval(PI.tm); const w = $('piSh'); if (w) w.remove(); };
+            const code = () => { const ta = $('codeTextarea'); return ta ? ta.value : (state.codeStrings.cpp || ''); };
+            window.piDl = k => { try { if (k === 'agent') saveFile('spark_agent.py', agentFile(), 'text/x-python'); else if (k === 'lib') saveFile('spark_pi.py', PILIB, 'text/x-python'); else saveFile('main.py', code(), 'text/x-python'); } catch (e) { } };
+            window.piCopy = () => { try { navigator.clipboard.writeText(code()); const s = $('piSt'); if (s) s.textContent = '✓ نُسخ الكود'; } catch (e) { } };
+            const say = t => { const s = $('piSt'); if (s) s.innerHTML = t; };
+            const keep = () => { PI.host = ($('piHost') || {}).value || PI.host; PI.pin = (($('piPin') || {}).value || '').trim(); try { localStorage.setItem('spark_pi_host', PI.host); localStorage.setItem('spark_pi_pin', PI.pin); } catch (e) { } };
+            window.piPing = async () => { keep(); say('جارٍ الاتصال…'); try { const j = await piFetch('/ping'); if (!j.ok) throw 0; say(j.auth ? `✅ متصل بـ <b>${esc(j.name)}</b> — ${esc(j.model)}` : `⚠ وُجد <b>${esc(j.name)}</b> لكن رمز PIN غير صحيح`); return j.auth; } catch (e) { say('❌ تعذّر الوصول إلى الراسبري. تأكد أن الوكيل يعمل، وأن الجهازين على نفس الشبكة، وجرّب عنوان IP بدل raspberrypi.local.'); return false; } };
+            async function poll() { try { const j = await piFetch('/out?since=' + PI.since); if (j._st === 403) return; const o = $('piOut'); if (o && j.lines && j.lines.length) { o.textContent = (o.textContent === '—' ? '' : o.textContent + '\n') + j.lines.join('\n'); o.scrollTop = o.scrollHeight; } if (j.next != null) PI.since = j.next; if (!j.running && j.lines && !j.lines.length) { } } catch (e) { } }
+            window.piRun = async () => { keep(); if (!(await piPing())) return; try { const o = $('piOut'); if (o) o.textContent = '—'; const j0 = await piFetch('/out?since=0'); PI.since = j0.next || 0; const j = await piFetch('/run', { code: code() }); if (!j.ok) throw 0; say('▶ يعمل على الراسبري الآن'); clearInterval(PI.tm); PI.tm = setInterval(poll, 700); poll(); } catch (e) { say('❌ فشل الرفع'); } };
+            window.piStop = async () => { keep(); try { await piFetch('/stop', {}); say('■ أُوقف'); setTimeout(poll, 400); } catch (e) { say('❌ تعذّر الإيقاف'); } };
+            function piBtn() { const ex = $('exSelect'), tb = ex && ex.parentNode; if (!tb || $('piRunBtn')) return; tb.insertAdjacentHTML('beforeend', '<button id="piRunBtn" onclick="piOpen()" style="display:none" class="px-2 py-1 rounded-lg text-[11px] font-bold border bg-rose-700 border-rose-400 text-white" title="رفع الكود وتشغيله على Raspberry Pi حقيقي">🍓 تشغيل على Pi حقيقي</button>'); }
+            // PCB: the Pi becomes a 40-pin HAT header, MCP3008 a DIP-16, the 7" display a power plug
+            try {
+                PCB_DIP.mcp3008 = [16, { 1: 'CH0', 2: 'CH1', 3: 'CH2', 4: 'CH3', 9: 'GND', 10: 'CS', 11: 'DIN', 12: 'DOUT', 13: 'CLK', 14: 'GND', 15: 'VREF', 16: 'VDD' }]; PCB_PART.mcp3008 = 'MCP3008';
+                PCB_CONN.rpi4 = [['hdr', '3V3,SDA,SCL,G4,GND,G17,G27,G22,3V3,G10,G9,G11,GND,,G5,G6,G13,G19,G26,GND'], ['hdr', '5V,5V,GND,G14,G15,G18,GND,G23,G24,GND,G25,G8,G7,,GND,G12,GND,G16,G20,G21']]; PCB_PART.rpi4 = 'RPI-HAT 2x20';
+                PCB_CONN.rpi_touch7 = [['jst', '5V,GND']];
+            } catch (e) { }
+
+            // ---------- boot ----------
+            addEventListener('load', () => setTimeout(() => { tagline(); pjMount(); piBtn(); piUI(); emptyState(); const ta = $('codeTextarea'); if (ta) ta.addEventListener('input', () => { const p = isPy(ta.value); if (p !== !!window.__pyHL) piUI(); }); }, 400));
+        })();
+
+// ===== Phase 38: Edison V2.0 robot — 2D simulator, EdPy (Python) programming, missions, real-robot link =====
+        (function () {
+            const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const LSg = k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, LSs = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } };
+            const st = document.createElement('style'); st.textContent = `
+#edOv{position:fixed;inset:0;z-index:240;background:var(--sp-bg,#11161c);color:var(--sp-txt,#e5e7eb);display:flex;flex-direction:column;font-family:inherit}
+#edOv .eh{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--sp-line,#353c46);background:var(--sp-surf,#1c2128)}
+#edOv .eh .lg{width:38px;height:38px;border-radius:11px;background:#f97316;display:grid;place-items:center;color:#fff;font-size:18px;flex:none}
+#edOv .eh b{font-size:16px;display:block}#edOv .eh small{font-size:11.5px;color:var(--sp-mut,#9aa3af)}#edOv .eh .x{margin-inline-start:auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--sp-line,#353c46);background:transparent;color:inherit;font-size:16px}
+#edOv .et{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid var(--sp-line,#353c46);scrollbar-width:none}
+#edOv .et button{flex:none;height:36px;padding:0 14px;border-radius:11px;border:1px solid var(--sp-line,#353c46);background:transparent;color:var(--sp-mut,#9aa3af);font-weight:700;font-size:13px}#edOv .et button.on{background:#f97316;border-color:#f97316;color:#fff}
+#edOv .em{flex:1;min-height:0;display:grid;grid-template-columns:1fr;overflow:hidden}
+#edOv .ep{display:none;min-height:0;overflow:auto;padding:12px}#edOv .ep.on{display:flex;flex-direction:column}
+@media(min-width:1100px){#edOv .em{grid-template-columns:minmax(0,1.25fr) minmax(380px,1fr)}#edOv .ep[data-p=arena]{display:flex;flex-direction:column;border-inline-end:1px solid var(--sp-line,#353c46)}#edOv .et button[data-p=arena]{display:none}}
+#edOv .tl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+#edOv .pill{height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--sp-line,#353c46);background:transparent;color:inherit;font-weight:700;font-size:12.5px}#edOv .pill.on{background:#353c46;border-color:#6b7684}
+#edOv .cvw{position:relative;flex:1;min-height:260px;border-radius:16px;overflow:hidden;border:1px solid var(--sp-line,#353c46);background:#0b0f14;touch-action:none}
+#edOv canvas{position:absolute;inset:0;width:100%;height:100%}
+#edOv .hud{position:absolute;top:8px;inset-inline-start:8px;display:flex;flex-wrap:wrap;gap:5px;max-width:calc(100% - 16px);pointer-events:none}
+#edOv .hud span{font:600 11px ui-monospace,monospace;background:rgba(15,20,26,.78);color:#e5e7eb;border-radius:8px;padding:3px 7px;unicode-bidi:plaintext}
+#edOv .ok{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;font-weight:800;border-radius:12px;padding:8px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none;white-space:nowrap}
+#edOv .ctl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}#edOv .b{height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--sp-line,#353c46);background:var(--sp-surf,#1c2128);color:inherit;font-weight:700;font-size:13.5px}
+#edOv .b.go{background:#16a34a;border-color:#16a34a;color:#fff}#edOv .b.stop{background:#dc2626;border-color:#dc2626;color:#fff}#edOv .b.or{background:#f97316;border-color:#f97316;color:#fff}
+#edOv .rm{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}#edOv .rm button{height:50px;border-radius:12px;border:1px solid var(--sp-line,#353c46);background:var(--sp-surf,#1c2128);color:inherit;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;user-select:none;-webkit-user-select:none;touch-action:none}
+#edOv .rm button i{font-size:16px;font-style:normal}#edOv .rm button.dn{background:#f97316;color:#fff}
+#edOv .cd{flex:1;min-height:240px;display:flex;border:1px solid var(--sp-line,#353c46);border-radius:14px;overflow:hidden;background:#0f141a;direction:ltr}
+#edOv .gut{width:38px;flex:none;padding:10px 0;text-align:right;font:13px/1.6 ui-monospace,monospace;color:#5b6573;background:#0b0f14;overflow:hidden;user-select:none}#edOv .gut div{padding-right:8px}#edOv .gut div.er{background:#7f1d1d;color:#fff}
+#edOv textarea{flex:1;resize:none;border:0;outline:0;background:transparent;color:#d0d6de;font:13px/1.6 ui-monospace,monospace;padding:10px;white-space:pre;tab-size:4;overflow:auto}
+#edOv .con{margin-top:8px;height:120px;overflow:auto;border:1px solid var(--sp-line,#353c46);border-radius:12px;background:#0b0f14;font:12px/1.6 ui-monospace,monospace;padding:8px;white-space:pre-wrap;direction:ltr;text-align:left}
+#edOv .con div{unicode-bidi:plaintext}#edOv .con .e{color:#fca5a5}#edOv .con .s{color:#86efac}#edOv .con .w{color:#fcd34d}
+#edOv .mc{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+#edOv .mi{border:1px solid var(--sp-line,#353c46);border-radius:16px;padding:12px;background:var(--sp-surf,#1c2128);display:flex;flex-direction:column;gap:6px}
+#edOv .mi h4{font-weight:800;font-size:14.5px;display:flex;align-items:center;gap:8px}#edOv .mi p{font-size:12.5px;line-height:1.8;color:var(--sp-mut,#a3acb8);flex:1}#edOv .mi .dn{color:#22c55e;font-size:12px;font-weight:800}
+#edOv .rs{border:1px solid var(--sp-line,#353c46);border-radius:16px;padding:14px;background:var(--sp-surf,#1c2128);margin-bottom:10px}#edOv .rs h4{font-weight:800;font-size:15px;margin-bottom:6px}
+#edOv .rs li,#edOv .rs p{font-size:13px;line-height:1.95;color:var(--sp-mut,#b3bcc8)}#edOv .rs ol{padding-inline-start:20px;list-style:decimal}#edOv .rs ul{padding-inline-start:20px;list-style:disc}#edOv .rs a{color:#fb923c;text-decoration:underline}
+#edOv .tag{display:inline-block;font-size:11px;font-weight:800;border-radius:8px;padding:2px 8px;background:#353c46;color:#d0d6de}#edOv .tag.g{background:#14532d;color:#86efac}#edOv .tag.r{background:#7f1d1d;color:#fecaca}
+`; document.head.appendChild(st);
+
+            // ---------------- Ed API (EdPy names) ----------------
+            const NOTE = (n, o) => { const i = { C: -9, D: -7, E: -5, F: -4, G: -2, A: 0, B: 2 }[n[0]] + (n.length > 1 ? 1 : 0); return Math.round(440 * Math.pow(2, (i + (o - 4) * 12) / 12)); };
+            const K = {
+                V1: 1, V2: 2, V3: 3, CM: 1, INCH: 2, TIME: 3, TEMPO_VERY_SLOW: 1000, TEMPO_SLOW: 500, TEMPO_MEDIUM: 250, TEMPO_FAST: 70, TEMPO_VERY_FAST: 1,
+                ON: 1, OFF: 0, STOP: 0, FORWARD: 1, BACKWARD: 2, FORWARD_LEFT: 3, FORWARD_RIGHT: 4, BACKWARD_LEFT: 5, BACKWARD_RIGHT: 6, SPIN_LEFT: 7, SPIN_RIGHT: 8, DISTANCE_UNLIMITED: 0,
+                MOTOR_LEFT: 0, MOTOR_RIGHT: 1, TIME_MILLISECONDS: 0, TIME_SECONDS: 1, OBSTACLE_NONE: 0, OBSTACLE_LEFT: 1, OBSTACLE_RIGHT: 2, OBSTACLE_AHEAD: 3,
+                LINE_ON_WHITE: 0, LINE_ON_BLACK: 1, CLAP_NOT_DETECTED: 0, CLAP_DETECTED: 1, KEYPAD_NONE: 0, KEYPAD_TRIANGLE: 1, KEYPAD_ROUND: 2, REMOTE_CODE_NONE: 255,
+                DRIVE_NO_STRAIN: 0, DRIVE_STRAIN_DETECTED: 1, MUSIC_NOT_FINISHED: 0, MUSIC_FINISHED: 1, NOTE_REST: 0,
+                NOTE_WHOLE: 2000, NOTE_HALF: 1000, NOTE_QUARTER: 500, NOTE_EIGHTH: 250, NOTE_SIXTEENTH: 125
+            };
+            for (let i = 1; i <= 10; i++) K['SPEED_' + i] = i; K.SPEED_FULL = 10; for (let i = 0; i < 8; i++) K['REMOTE_CODE_' + i] = i;
+            'C,C_SHARP,D,D_SHARP,E,F,F_SHARP,G,G_SHARP,A,A_SHARP,B'.split(',').forEach(n => { for (let o = 4; o <= 8; o++) K['NOTE_' + n + '_' + o] = NOTE(n.replace('_SHARP', '#').replace(/^(\w)#$/, '$1#'), o); });
+            const EVENTS = ['EVENT_OBSTACLE_ANY', 'EVENT_OBSTACLE_LEFT', 'EVENT_OBSTACLE_RIGHT', 'EVENT_OBSTACLE_AHEAD', 'EVENT_CLAP_DETECTED', 'EVENT_KEYPAD_TRIANGLE', 'EVENT_KEYPAD_ROUND', 'EVENT_REMOTE_CODE', 'EVENT_LINE_TRACKER_ON_WHITE', 'EVENT_LINE_TRACKER_ON_BLACK', 'EVENT_LINE_TRACKER_SURFACE_CHANGE', 'EVENT_TIMER_FINISHED', 'EVENT_DRIVE_STRAIN', 'EVENT_TUNE_FINISHED'];
+            EVENTS.forEach(e => K[e] = e); for (let i = 0; i < 8; i++) K['EVENT_REMOTE_CODE_' + i] = 'EVENT_REMOTE_CODE_' + i;
+            const FN = new Set(['Drive', 'DriveLeftMotor', 'DriveRightMotor', 'TimeWait', 'LeftLed', 'RightLed', 'PlayBeep', 'PlayMyBeep', 'PlayTone', 'PlayTune', 'TuneString', 'ReadMusicEnd', 'ObstacleDetectionBeam', 'ReadObstacleDetection', 'LineTrackerLed', 'ReadLineState', 'ReadLineTracker', 'ReadLeftLightLevel', 'ReadRightLightLevel', 'ReadClapSensor', 'ReadKeypad', 'ReadKeyPad', 'ReadRemote', 'ReadDriveLoad', 'ReadDistance', 'SetDistance', 'ResetDistance', 'StartCountDown', 'ReadCountDown', 'RegisterEventHandler', 'List', 'SendIRData', 'ReadIRData']);
+            const PROPS = new Set(['EdisonVersion', 'DistanceUnits', 'Tempo']);
+
+            // ---------------- EdPy (Python subset) → JavaScript ----------------
+            function compile(src) {
+                const raw = String(src).replace(/\r/g, '').split('\n'), lines = [];
+                // logical lines with indentation, comments removed, brackets joined
+                for (let i = 0; i < raw.length; i++) {
+                    let t = raw[i], ln = i + 1, depth = 0, out = '', q = null;
+                    for (; ;) {
+                        for (let j = 0; j < t.length; j++) { const ch = t[j]; if (q) { out += ch; if (ch === '\\') { out += t[++j] || ''; continue; } if (ch === q) q = null; continue; } if (ch === '#') break; if (ch === '"' || ch === "'") q = ch; if ('([{'.includes(ch)) depth++; if (')]}'.includes(ch)) depth--; out += ch; }
+                        if ((depth > 0 || /\\\s*$/.test(out)) && i + 1 < raw.length) { out = out.replace(/\\\s*$/, ' '); t = raw[++i]; continue; } break;
+                    }
+                    if (!out.trim()) continue; const m = out.match(/^[ \t]*/)[0]; lines.push({ ind: m.replace(/\t/g, '    ').length, s: out.trim(), ln });
+                }
+                const fns = new Set(); lines.forEach(L => { const m = L.s.match(/^def\s+([A-Za-z_]\w*)\s*\(/); if (m) fns.add(m[1]); });
+                const E = (ln, msg) => { throw { ln, msg }; };
+                const stack = [{ ind: 0, k: 'mod' }], modVars = new Set(); let fn = null, expectIndent = false;
+                const TOK = /\s*(?:(\d+\.\d*|\.\d+|\d+)|([A-Za-z_]\w*)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|(\*\*=|\/\/=|\*\*|\/\/|==|!=|<=|>=|\+=|-=|\*=|\/=|%=|<<|>>|[-+*\/%<>=()\[\],:.~&|^]))/y;
+                const lex = (s, ln) => { const t = []; TOK.lastIndex = 0; let m; while (TOK.lastIndex < s.length) { const p = TOK.lastIndex; m = TOK.exec(s); if (!m || TOK.lastIndex === p) { if (/^\s*$/.test(s.slice(p))) break; E(ln, 'رمز غير مفهوم: «' + s.slice(p).trim().slice(0, 12) + '»'); } t.push(m[1] ? { t: 'n', v: m[1] } : m[2] ? { t: 'id', v: m[2] } : m[3] ? { t: 's', v: m[3] } : { t: 'o', v: m[4] }); } return t; };
+                const id = n => '$' + n;
+                function expr(T, ln) {
+                    let i = 0; const pk = () => T[i], nx = () => T[i++], is = (v, t) => T[i] && T[i].v === v && (!t || T[i].t === t);
+                    const BIN = { or: [1, (a, b) => `(${a} || ${b})`], and: [2, (a, b) => `(${a} && ${b})`], '==': [4, (a, b) => `(${a} === ${b})`], '!=': [4, (a, b) => `(${a} !== ${b})`], '<': [4], '>': [4], '<=': [4], '>=': [4], '|': [5], '^': [6], '&': [7], '<<': [8], '>>': [8], '+': [9], '-': [9], '*': [10], '/': [10, (a, b) => `__div(${a}, ${b})`], '//': [10, (a, b) => `Math.floor(${a} / ${b})`], '%': [10, (a, b) => `__mod(${a}, ${b})`], '**': [12, (a, b) => `Math.pow(${a}, ${b})`, 1] };
+                    function bin(minp) {
+                        let L = un(); for (; ;) {
+                            const t = pk(); if (!t || t.t === 's' || t.t === 'n') break; const B = BIN[t.v]; if (!B || (t.t === 'id' && !/^(and|or)$/.test(t.v)) || B[0] < minp) break; nx();
+                            const R = bin(B[2] ? B[0] : B[0] + 1); L = B[1] ? B[1](L, R) : `(${L} ${t.v} ${R})`;
+                        } return L;
+                    }
+                    function un() { if (is('not', 'id')) { nx(); return `(!${bin(4)})`; } if (is('-', 'o')) { nx(); return `(-${bin(11)})`; } if (is('+', 'o')) { nx(); return bin(11); } if (is('~', 'o')) { nx(); return `(~${bin(11)})`; } return post(prim()); }
+                    function args() { const a = []; if (is(')')) { nx(); return a; } for (; ;) { a.push(bin(0)); if (is(',')) { nx(); if (is(')')) { nx(); break; } continue; } if (is(')')) { nx(); break; } E(ln, 'متوقع «)» أو «,»'); } return a; }
+                    function prim() {
+                        const t = nx(); if (!t) E(ln, 'التعبير ناقص');
+                        if (t.t === 'n') return t.v; if (t.t === 's') return JSON.stringify(t.v.slice(1, -1).replace(/\\(.)/g, '$1'));
+                        if (t.v === '(') { const e = bin(0); if (!is(')')) E(ln, 'متوقع «)»'); nx(); return `(${e})`; }
+                        if (t.v === '[') { const a = []; if (is(']')) { nx(); return '[]'; } for (; ;) { a.push(bin(0)); if (is(',')) { nx(); continue; } if (is(']')) { nx(); break; } E(ln, 'متوقع «]»'); } return `[${a.join(', ')}]`; }
+                        if (t.t === 'id') {
+                            if (t.v === 'True') return 'true'; if (t.v === 'False') return 'false'; if (t.v === 'None') return 'null';
+                            if (t.v === 'Ed') { if (!is('.')) E(ln, 'استخدم Ed.اسم_الأمر'); nx(); const m = nx(); if (!m || m.t !== 'id') E(ln, 'متوقع اسم بعد Ed.'); if (FN.has(m.v)) { if (!is('(')) E(ln, 'Ed.' + m.v + ' أمر يحتاج قوسين ()'); nx(); return `(await Ed.${m.v}(${args().join(', ')}))`; } if (m.v in K || PROPS.has(m.v)) return `Ed.${m.v}`; E(ln, 'Ed.' + m.v + ' غير معروف في EdPy'); }
+                            if (is('(')) {
+                                nx(); const a = args(), n = t.v;
+                                if (fns.has(n)) return `(await ${id(n)}(${a.join(', ')}))`;
+                                const BI = { abs: 'Math.abs', min: 'Math.min', max: 'Math.max', int: '__int', len: '__len', print: '__print', str: 'String', range: '__range', bool: 'Boolean', round: 'Math.round' };
+                                if (BI[n]) return `${BI[n]}(${a.join(', ')})`; E(ln, 'الدالة «' + n + '» غير معرّفة');
+                            }
+                            return id(t.v);
+                        }
+                        E(ln, 'رمز غير متوقع «' + t.v + '»');
+                    }
+                    function post(b) { for (; ;) { if (is('[', 'o')) { nx(); const e = bin(0); if (!is(']')) E(ln, 'متوقع «]»'); nx(); b = `${b}[${e}]`; continue; } if (is('.', 'o')) E(ln, 'الخصائص بالنقطة غير مدعومة هنا'); break; } return b; }
+                    const r = bin(0); if (i < T.length) E(ln, 'رمز زائد «' + T[i].v + '»'); return r;
+                }
+                const top = [], defs = []; const emit = l => (fn ? defs : top).push(l), lastOut = () => { const o = fn ? defs : top; return o[o.length - 1]; };
+                const declare = n => { if (fn) { if (!fn.glob.has(n) && !fn.par.has(n)) fn.loc.add(n); } else modVars.add(n); };
+                const closeBlock = b => { emit('}'); if (b.k === 'def') { defs[fn.decl] = fn.loc.size ? 'let ' + [...fn.loc].map(id).join(', ') + ';' : ''; fn = null; } };
+                for (let k = 0; k < lines.length; k++) {
+                    const L = lines[k], ln = L.ln; let tp = stack[stack.length - 1];
+                    if (expectIndent) { if (L.ind <= tp.ind) E(ln, 'متوقع سطر بمسافة بادئة بعد «:»'); stack.push({ ind: L.ind, k: expectIndent }); expectIndent = false; }
+                    else if (L.ind > tp.ind) E(ln, 'مسافة بادئة غير متوقعة');
+                    else while (L.ind < stack[stack.length - 1].ind) { closeBlock(stack.pop()); if (L.ind > stack[stack.length - 1].ind) E(ln, 'المسافة البادئة غير متسقة'); }
+                    const s = L.s, T = lex(s, ln), w = T[0] && T[0].v, pre = `__ln = ${ln}; `;
+                    const block = (head, kind) => { if (!s.endsWith(':')) E(ln, 'متوقع «:» في نهاية السطر'); emit(head + ' {'); expectIndent = kind || 'blk'; };
+                    const cond = () => { if (T.length < 3) E(ln, 'الشرط ناقص'); return expr(T.slice(1, -1), ln); };
+                    if (w === 'import' || w === 'from') { if (!/^(import\s+\w+|from\s+\w+\s+import\s+.+)$/.test(s)) E(ln, 'صيغة import غير صحيحة'); continue; }
+                    if (w === 'def') { if (fn || stack.length > 1) E(ln, 'تعريف الدوال يكون في المستوى الأعلى فقط'); const m = s.match(/^def\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*:$/); if (!m) E(ln, 'صيغة def غير صحيحة — مثال: def avoid():'); const par = m[2].split(',').map(x => x.trim()).filter(Boolean); fn = { name: m[1], par: new Set(par), loc: new Set(), glob: new Set() }; defs.push(`async function ${id(m[1])}(${par.map(id).join(', ')}) {`); fn.decl = defs.length; defs.push(''); expectIndent = 'def'; continue; }
+                    if (w === 'global') { if (!fn) continue; s.slice(6).split(',').forEach(x => { x = x.trim(); if (x) { fn.glob.add(x); modVars.add(x); } }); continue; }
+                    if (w === 'while') { block(`${pre}while (${cond()})`); emit('await __y();'); continue; }
+                    if (w === 'if') { block(`${pre}if (${cond()})`); continue; }
+                    if (w === 'elif') { if (lastOut() !== '}') E(ln, '«elif» بدون «if» قبلها'); block(`else if ((__ln = ${ln}, ${cond()}))`); continue; }
+                    if (w === 'else') { if (s.replace(/\s/g, '') !== 'else:') E(ln, 'صيغة else غير صحيحة'); if (lastOut() !== '}') E(ln, '«else» بدون «if» قبلها'); block('else'); continue; }
+                    if (w === 'for') { const m = s.match(/^for\s+([A-Za-z_]\w*)\s+in\s+(.+):$/); if (!m) E(ln, 'صيغة for غير صحيحة — مثال: for i in range(4):'); declare(m[1]); block(`${pre}for (${id(m[1])} of __iter(${expr(lex(m[2], ln), ln)}))`); emit('await __y();'); continue; }
+                    if (w === 'pass') { emit(';'); continue; } if (w === 'break' || w === 'continue') { emit(w + ';'); continue; }
+                    if (w === 'return') { if (!fn) E(ln, '«return» خارج دالة'); emit(`${pre}return ${T.length > 1 ? expr(T.slice(1), ln) : 'null'};`); continue; }
+                    if (s.endsWith(':')) E(ln, 'جملة غير مدعومة في EdPy: «' + w + '»');
+                    let depth = 0, ai = -1; for (let j = 0; j < T.length; j++) { const v = T[j].v; if (T[j].t === 'o') { if ('([{'.includes(v)) depth++; else if (')]}'.includes(v)) depth--; else if (!depth && /^(=|\+=|-=|\*=|\/=|%=|\/\/=|\*\*=)$/.test(v)) { ai = j; break; } } }
+                    if (ai > 0) {
+                        const lhs = T.slice(0, ai), op = T[ai].v, rhs = expr(T.slice(ai + 1), ln); let tgt;
+                        if (lhs.length === 3 && lhs[0].v === 'Ed' && lhs[1].v === '.') { if (!PROPS.has(lhs[2].v)) E(ln, 'لا يمكن تغيير Ed.' + lhs[2].v); tgt = 'Ed.' + lhs[2].v; }
+                        else if (lhs.length === 1 && lhs[0].t === 'id') { if (/^(True|False|None|Ed)$/.test(lhs[0].v)) E(ln, 'لا يمكن الإسناد إلى ' + lhs[0].v); declare(lhs[0].v); tgt = id(lhs[0].v); }
+                        else if (lhs[0].t === 'id' && lhs[1] && lhs[1].v === '[' && lhs[lhs.length - 1].v === ']') tgt = id(lhs[0].v) + '[' + expr(lhs.slice(2, -1), ln) + ']';
+                        else E(ln, 'الطرف الأيسر للإسناد غير صحيح');
+                        const o2 = op.slice(0, -1), v = op === '=' ? rhs : o2 === '/' ? `__div(${tgt}, ${rhs})` : o2 === '//' ? `Math.floor(${tgt} / ${rhs})` : o2 === '%' ? `__mod(${tgt}, ${rhs})` : o2 === '**' ? `Math.pow(${tgt}, ${rhs})` : `(${tgt} ${o2} ${rhs})`;
+                        emit(`${pre}${tgt} = ${v};`); continue;
+                    }
+                    emit(`${pre}${expr(T, ln)};`);
+                }
+                if (expectIndent) E(lines.length ? lines[lines.length - 1].ln : 1, 'متوقع سطر بمسافة بادئة بعد «:»');
+                while (stack.length > 1) closeBlock(stack.pop());
+                const mods = [...modVars].filter(n => !fns.has(n)).map(id);
+                return `let __ln = 0;${mods.length ? ' let ' + mods.join(', ') + ';' : ''}\n${defs.join('\n')}\n${[...fns].map(n => `__fns[${JSON.stringify(n)}] = ${id(n)};`).join('\n')}\ntry {\n${top.join('\n')}\n} catch (__e) { if (__e && typeof __e === 'object' && !__e.__stop && !__e.__ln) __e.__ln = __ln; throw __e; }`;
+            }
+            const toJS = compile;
+            const AF = Object.getPrototypeOf(async function () { }).constructor;
+
+            // ---------------- world, robot and sensors ----------------
+            const W = 180, H = 120, R = 4.4, BASE = 6.4;
+            const ED = { arena: LSg('spark_ed_ar') || 'line', pose: { x: 30, y: 60, th: 0 }, vl: 0, vr: 0, trail: [], boxes: [], torch: { x: 150, y: 60 }, led: [0, 0], beam: 0, ltLed: 0, run: false, stopReq: false, waits: [], ev: [], handlers: {}, inH: false, keypad: 0, clap: 0, remote: 255, strain: 0, dist: [0, 0], cd: 0, music: 0, goal: null, held: null, met: null, mission: +(LSg('spark_ed_m') || 0), console: [], t0: 0, lastObs: 0, lastLine: -1, irT: 0 };
+            const speed = s => 1.2 + 2.6 * Math.max(1, Math.min(10, +s || 5));
+            const ARENAS = { line: 'مسار خط', obst: 'عوائق', ring: 'حلبة', torch: 'تتبّع الضوء', free: 'ساحة حرة' };
+            const START = { line: { x: 90, y: 28.2, th: 0 }, obst: { x: 30, y: 60, th: 0 }, ring: { x: 90, y: 60, th: -0.5 }, torch: { x: 30, y: 60, th: 0 }, free: { x: 40, y: 60, th: 0 } };
+            function arenaSet(a, keepPose) { ED.arena = a; LSs('spark_ed_ar', a); ED.boxes = a === 'obst' ? [{ x: 70, y: 20, w: 14, h: 30 }, { x: 110, y: 70, w: 24, h: 14 }, { x: 140, y: 18, w: 16, h: 16 }, { x: 60, y: 86, w: 18, h: 18 }] : []; if (!keepPose) resetPose(); draw(); }
+            function resetPose() { const s = START[ED.arena] || START.free; ED.pose = { x: s.x, y: s.y, th: s.th }; ED.trail = []; ED.vl = ED.vr = 0; }
+            const lineD = (x, y) => x < 55 ? Math.abs(Math.hypot(x - 55, y - 60) - 30) : x > 125 ? Math.abs(Math.hypot(x - 125, y - 60) - 30) : Math.min(Math.abs(y - 30), Math.abs(y - 90));
+            function black(x, y) { if (ED.arena === 'line') return lineD(x, y) <= 1.6; if (ED.arena === 'ring') return Math.hypot(x - 90, y - 60) > 50; return false; }
+            const walls = () => ED.arena === 'obst' ? [{ x: -50, y: -50, w: W + 100, h: 52 }, { x: -50, y: H - 2, w: W + 100, h: 52 }, { x: -50, y: -50, w: 52, h: H + 100 }, { x: W - 2, y: -50, w: 52, h: H + 100 }] : [];
+            function hitRect(x, y, r, b) { const cx = Math.max(b.x, Math.min(x, b.x + b.w)), cy = Math.max(b.y, Math.min(y, b.y + b.h)); return Math.hypot(x - cx, y - cy) < r; }
+            function blocked(x, y) { if (x < R || y < R || x > W - R || y > H - R) return true; return ED.boxes.concat(walls()).some(b => hitRect(x, y, R, b)); }
+            function ray(ox, oy, a, max) { const dx = Math.cos(a), dy = Math.sin(a); let best = max; ED.boxes.concat(walls()).forEach(b => { let t0 = 0, t1 = max; for (const [o, d, lo, hi] of [[ox, dx, b.x, b.x + b.w], [oy, dy, b.y, b.y + b.h]]) { if (Math.abs(d) < 1e-9) { if (o < lo || o > hi) { t0 = 1; t1 = 0; } continue; } let ta = (lo - o) / d, tb = (hi - o) / d; if (ta > tb) [ta, tb] = [tb, ta]; t0 = Math.max(t0, ta); t1 = Math.min(t1, tb); } if (t0 <= t1 && t0 < best) best = t0; }); return best; }
+            const fwd = (d, side) => { const p = ED.pose, a = p.th; return { x: p.x + Math.cos(a) * d + Math.cos(a - Math.PI / 2) * (side || 0), y: p.y + Math.sin(a) * d + Math.sin(a - Math.PI / 2) * (side || 0) }; };
+            function obst() { if (!ED.beam) return 0; const f = fwd(3.6), side = da => { let m = 99; for (const k of [-10, 0, 10]) m = Math.min(m, ray(f.x, f.y, ED.pose.th + (da + k) * Math.PI / 180, 14)); return m < 14; }; const l = side(-22), r = side(22); return l && r ? 3 : l ? 1 : r ? 2 : 0; }
+            function lineState() { const s = fwd(3.4); return black(s.x, s.y) ? 1 : 0; }
+            function light(side) { const s = fwd(3.4, side === 'L' ? 2.6 : -2.6), amb = ED.arena === 'torch' ? 25 : 260; if (ED.arena !== 'torch') return amb + Math.round(Math.random() * 6); const dx = ED.torch.x - s.x, dy = ED.torch.y - s.y, d = Math.hypot(dx, dy), c = Math.cos(Math.atan2(dy, dx) - ED.pose.th - (side === 'L' ? -0.5 : 0.5)); return Math.min(1023, Math.round(amb + Math.max(0, c + 0.25) * 90000 / (d * d + 120))); }
+
+            // ---------------- sound ----------------
+            let AC = null; const ac = () => { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { } return AC; };
+            function tone(f, ms, at) { const a = ac(); if (!a || !f) return; const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + (at || 0) / 1000; o.type = 'square'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.05, t + 0.01); g.gain.setValueAtTime(0.05, t + ms / 1000 - 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + ms / 1000); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + ms / 1000 + 0.02); }
+            function tune(str) { const D = { 1: 2000, 2: 1000, 4: 500, 8: 250, 6: 125 }, N = { c: 'C', d: 'D', e: 'E', f: 'F', g: 'G', a: 'A', b: 'B' }; let at = 0; const s = String(str || ''); for (let i = 0; i + 1 < s.length; i += 2) { const ch = s[i], du = (D[s[i + 1]] || 500) * (ED.tempo || 250) / 500; if (ch === 'z') break; if (N[ch.toLowerCase()]) tone(NOTE(N[ch.toLowerCase()], ch === ch.toUpperCase() ? 7 : 6), du * 0.9, at); at += du; } ED.music = performance.now() + at; ED.met && (ED.met.beeps++); }
+
+            // ---------------- Ed runtime ----------------
+            function units(d) { const u = Ed.DistanceUnits; return u === K.INCH ? d * 2.54 : d; }
+            function wait(ms) { return new Promise((res, rej) => { const w = { t: performance.now() + ms, res, rej }; ED.waits.push(w); }); }
+            function setDrive(dir, sp, d) {
+                const v = speed(sp), m = { 1: [1, 1], 2: [-1, -1], 3: [0, 1], 4: [1, 0], 5: [0, -1], 6: [-1, 0], 7: [-1, 1], 8: [1, -1], 0: [0, 0] }[dir] || [0, 0];
+                ED.vl = m[0] * v; ED.vr = m[1] * v; ED.goal = null; if (dir === 0 || !d) return Promise.resolve();
+                const turn = dir >= 3, time = Ed.DistanceUnits === K.TIME;
+                return new Promise((res, rej) => { ED.goal = { kind: time ? 'time' : turn ? 'turn' : 'dist', left: time ? d / 1000 : turn ? Math.abs(d) * Math.PI / 180 : units(Math.abs(d)), stuck: 0, res, rej }; });
+            }
+            const Ed = Object.assign({}, K, {
+                EdisonVersion: 2, DistanceUnits: 1, Tempo: 250,
+                Drive: (dir, sp, d) => setDrive(+dir, sp, +d || 0),
+                DriveLeftMotor: (dir, sp, d) => { const v = speed(sp) * (dir === K.FORWARD ? 1 : dir === K.BACKWARD ? -1 : 0); ED.vl = v; if (!d) return; return new Promise((res, rej) => { ED.goal = { kind: Ed.DistanceUnits === K.TIME ? 'time' : 'wl', left: Ed.DistanceUnits === K.TIME ? d / 1000 : units(d), stuck: 0, res, rej, motor: 0 }; }); },
+                DriveRightMotor: (dir, sp, d) => { const v = speed(sp) * (dir === K.FORWARD ? 1 : dir === K.BACKWARD ? -1 : 0); ED.vr = v; if (!d) return; return new Promise((res, rej) => { ED.goal = { kind: Ed.DistanceUnits === K.TIME ? 'time' : 'wr', left: Ed.DistanceUnits === K.TIME ? d / 1000 : units(d), stuck: 0, res, rej, motor: 1 }; }); },
+                TimeWait: (n, u) => wait(u === K.TIME_SECONDS ? n * 1000 : n),
+                LeftLed: s => { ED.led[0] = s ? 1 : 0; if (s && ED.met) ED.met.ledL = 1; }, RightLed: s => { ED.led[1] = s ? 1 : 0; if (s && ED.met) ED.met.ledR = 1; },
+                PlayBeep: () => { tone(3500, 120); ED.music = performance.now() + 150; if (ED.met) ED.met.beeps++; }, PlayMyBeep: f => { tone(+f || 1000, 150); ED.music = performance.now() + 160; if (ED.met) ED.met.beeps++; },
+                PlayTone: (f, ms) => { tone(+f, +ms || 500); ED.music = performance.now() + (+ms || 500); if (ED.met) ED.met.beeps++; },
+                TuneString: (n, s) => String(s === undefined ? n : s), PlayTune: s => tune(s), ReadMusicEnd: () => performance.now() >= ED.music ? K.MUSIC_FINISHED : K.MUSIC_NOT_FINISHED,
+                ObstacleDetectionBeam: s => { ED.beam = s ? 1 : 0; }, ReadObstacleDetection: () => obst(),
+                LineTrackerLed: s => { ED.ltLed = s ? 1 : 0; }, ReadLineState: () => { if (!ED.ltLed) warnOnce('lt', 'شغّل حساس الخط أولاً: Ed.LineTrackerLed(Ed.ON)'); return ED.ltLed ? lineState() : 0; }, ReadLineTracker: () => ED.ltLed ? (lineState() ? 40 + Math.round(Math.random() * 20) : 280 + Math.round(Math.random() * 40)) : 0,
+                ReadLeftLightLevel: () => light('L'), ReadRightLightLevel: () => light('R'),
+                ReadClapSensor: () => { const c = ED.clap; ED.clap = 0; return c ? K.CLAP_DETECTED : K.CLAP_NOT_DETECTED; },
+                ReadKeypad: () => { const k = ED.keypad; ED.keypad = 0; return k; }, ReadKeyPad: () => Ed.ReadKeypad(),
+                ReadRemote: () => { const r = ED.remote; ED.remote = 255; return r; },
+                ReadDriveLoad: () => { const s = ED.strain; ED.strain = 0; return s ? K.DRIVE_STRAIN_DETECTED : K.DRIVE_NO_STRAIN; },
+                ReadDistance: m => Math.round(ED.dist[m === K.MOTOR_RIGHT ? 1 : 0] / (Ed.DistanceUnits === K.INCH ? 2.54 : 1)), SetDistance: (m, d) => { ED.dist[m === K.MOTOR_RIGHT ? 1 : 0] = units(+d || 0); }, ResetDistance: () => { ED.dist = [0, 0]; },
+                StartCountDown: (n, u) => { ED.cd = performance.now() + (u === K.TIME_SECONDS ? n * 1000 : n); ED.cdF = 0; }, ReadCountDown: u => { const r = Math.max(0, ED.cd - performance.now()); return Math.round(u === K.TIME_SECONDS ? r / 1000 : r); },
+                RegisterEventHandler: (e, name) => { ED.handlers[e] = String(name); },
+                List: (n, init) => { const a = Array.isArray(init) ? init.slice(0, n) : []; while (a.length < n) a.push(0); return a; },
+                SendIRData: () => { warnOnce('ir', 'SendIRData: التواصل بين روبوتين غير متاح في المحاكي'); }, ReadIRData: () => 0
+            });
+            const warned = {}; function warnOnce(k, m) { if (warned[k]) return; warned[k] = 1; log(m, 'w'); }
+            function fire(e) { ED.ev.push(e); }
+            async function __y() {
+                if (ED.stopReq) throw { __stop: 1 };
+                if (!ED.inH && ED.ev.length) { const evs = ED.ev.splice(0); for (const e of evs) { const h = ED.handlers[e]; if (h && fns[h]) { ED.inH = true; try { await fns[h](); } finally { ED.inH = false; } } } }
+                if (performance.now() - (ED.ly || 0) > 12) { ED.ly = performance.now(); await new Promise(r => setTimeout(r, 0)); if (ED.stopReq) throw { __stop: 1 }; }
+            }
+            let fns = {};
+            const HLP = { __y, __range: (a, b, c) => { if (b === undefined) { b = a; a = 0; } c = c || 1; const r = []; for (let i = a; c > 0 ? i < b : i > b; i += c) { r.push(i); if (r.length > 1e5) break; } return r; }, __iter: x => Array.isArray(x) ? x : [], __div: (a, b) => { if (!b) throw new Error('قسمة على صفر'); const q = a / b; return Number.isInteger(a) && Number.isInteger(b) ? Math.trunc(q) : q; }, __mod: (a, b) => ((a % b) + b) % b, __int: x => Math.trunc(+x || 0), __len: x => (x && x.length) || 0, __print: (...a) => { log(a.join(' ')); warnOnce('print', 'ملاحظة: print() تعمل في المحاكي فقط — روبوت Edison لا يملك شاشة.'); } };
+
+            async function run() {
+                if (ED.run) return; const src = $('edCode').value; LSs('spark_ed_code', src); let js;
+                try { js = toJS(src); } catch (e) { markErr(e.ln); log((e.ln ? 'سطر ' + e.ln + ': ' : '') + (e.msg || e.message || e), 'e'); tab('code'); return; }
+                markErr(0); ED.console.length = 0; conDraw(); log('▶ تشغيل البرنامج في المحاكي', 's');
+                Object.assign(Ed, { EdisonVersion: 2, DistanceUnits: 1, Tempo: 250 }); Object.keys(warned).forEach(k => delete warned[k]);
+                Object.assign(ED, { run: true, stopReq: false, waits: [], ev: [], handlers: {}, inH: false, led: [0, 0], beam: 0, ltLed: 0, strain: 0, dist: [0, 0], goal: null, vl: 0, vr: 0, t0: performance.now(), lastObs: 0, lastLine: -1, cd: 0, cdF: 1 });
+                ED.met = { start: { x: ED.pose.x, y: ED.pose.y }, maxD: 0, path: 0, turn: 0, hits: 0, onLine: 0, mov: 0, ledL: 0, ledR: 0, beeps: 0, claps: 0, firstClap: 0, firstMove: 0, remotes: 0, out: 0, done: 0, t: 0 };
+                fns = {}; ui();
+                try { const f = new AF('Ed', '__fns', ...Object.keys(HLP), js + '\n'); await f(Ed, fns, ...Object.values(HLP)); ED.met.done = 1; log('■ انتهى البرنامج', 's'); }
+                catch (e) { if (!(e && e.__stop)) { const ln = (e && e.__ln) || 0; log('خطأ أثناء التشغيل' + (ln ? ' (سطر ' + ln + ')' : '') + ': ' + (e && e.message ? e.message.replace(/\$(\w+) is not defined/, 'المتغير «$1» غير معرّف') : e), 'e'); } else log('■ أوقفت البرنامج', 'w'); }
+                ED.run = false; ED.vl = ED.vr = 0; ED.goal = null; ED.waits = []; check(true); ui();
+            }
+            function stop() { if (!ED.run) return; ED.stopReq = true; ED.waits.forEach(w => w.rej({ __stop: 1 })); ED.waits = []; if (ED.goal) { ED.goal.rej({ __stop: 1 }); ED.goal = null; } ED.vl = ED.vr = 0; }
+
+            // ---------------- physics loop ----------------
+            let raf = 0, last = 0;
+            function step(now) {
+                raf = requestAnimationFrame(step); const dt = Math.min(0.05, (now - last) / 1000 || 0.016); last = now; if (!$('edOv')) return cancelAnimationFrame(raf);
+                // waits
+                if (ED.waits.length) ED.waits = ED.waits.filter(w => { if (now >= w.t) { w.res(); return false; } return true; });
+                // manual (remote) driving when no program runs
+                if (!ED.run && ED.held != null) { const v = speed(6), M = [[1, 1], [-1, -1], [1, -1], [-1, 1], [1, 0], [0, 1]][ED.held]; if (M) { ED.vl = M[0] * v; ED.vr = M[1] * v; } } else if (!ED.run) { ED.vl = ED.vr = 0; }
+                const p = ED.pose, v = (ED.vl + ED.vr) / 2, w = (ED.vl - ED.vr) / BASE, nx = p.x + Math.cos(p.th) * v * dt, ny = p.y + Math.sin(p.th) * v * dt, nth = p.th + w * dt;
+                let moved = 0; if (!blocked(nx, ny)) { moved = Math.hypot(nx - p.x, ny - p.y); p.x = nx; p.y = ny; } else if (Math.abs(v) > 0.01) { ED.strain = 1; if (ED.run) { fire('EVENT_DRIVE_STRAIN'); if (ED.met && !ED.met.hitNow) { ED.met.hits++; ED.met.hitNow = 1; } } }
+                if (moved && ED.met) ED.met.hitNow = 0;
+                const dth = nth - p.th; p.th = nth; const dl = ED.vl * dt, dr = ED.vr * dt; ED.dist[0] += Math.abs(dl); ED.dist[1] += Math.abs(dr);
+                if (moved > 0.001 || Math.abs(dth) > 0.0005) { const t = ED.trail; if (!t.length || Math.hypot(t[t.length - 1][0] - p.x, t[t.length - 1][1] - p.y) > 0.8) { t.push([p.x, p.y]); if (t.length > 900) t.shift(); } }
+                // drive goals
+                const g = ED.goal; if (g) {
+                    const prog = g.kind === 'time' ? dt : g.kind === 'turn' ? Math.abs(dth) : g.kind === 'wl' ? Math.abs(dl) : g.kind === 'wr' ? Math.abs(dr) : moved;
+                    g.left -= prog; if (prog < 1e-4 && g.kind !== 'time') g.stuck += dt; else g.stuck = 0;
+                    if (g.left <= 0 || g.stuck > 1.5) { if (g.stuck > 1.5) { ED.strain = 1; fire('EVENT_DRIVE_STRAIN'); } if (g.motor === 0) ED.vl = 0; else if (g.motor === 1) ED.vr = 0; else ED.vl = ED.vr = 0; ED.goal = null; g.res(); }
+                }
+                // events + metrics
+                if (ED.run) {
+                    const o = obst(); if (o && !ED.lastObs) { fire('EVENT_OBSTACLE_ANY'); fire(o === 1 ? 'EVENT_OBSTACLE_LEFT' : o === 2 ? 'EVENT_OBSTACLE_RIGHT' : 'EVENT_OBSTACLE_AHEAD'); } ED.lastObs = o;
+                    if (ED.ltLed) { const l = lineState(); if (ED.lastLine >= 0 && l !== ED.lastLine) { fire('EVENT_LINE_TRACKER_SURFACE_CHANGE'); fire(l ? 'EVENT_LINE_TRACKER_ON_BLACK' : 'EVENT_LINE_TRACKER_ON_WHITE'); } ED.lastLine = l; }
+                    if (ED.cd && !ED.cdF && now >= ED.cd) { ED.cdF = 1; fire('EVENT_TIMER_FINISHED'); }
+                    const m = ED.met; if (m) { m.t = (now - ED.t0) / 1000; m.path += moved; m.turn += dth; m.maxD = Math.max(m.maxD, Math.hypot(p.x - m.start.x, p.y - m.start.y)); if (moved > 0.001) { m.mov += dt; if (!m.firstMove) m.firstMove = now; if (ED.arena === 'line' && lineD(fwd(3.4).x, fwd(3.4).y) < 6) m.onLine += dt; } if (ED.arena === 'ring' && Math.hypot(p.x - 90, p.y - 60) > 54) m.out = 1; check(false); }
+                }
+                draw(); hud();
+            }
+
+            // ---------------- drawing ----------------
+            let cv, cx, sc = 1, ox = 0, oy = 0;
+            function fit() { if (!cv) return; const r = cv.parentElement.getBoundingClientRect(), d = window.devicePixelRatio || 1; cv.width = Math.max(10, r.width * d); cv.height = Math.max(10, r.height * d); sc = Math.min(r.width / (W + 8), r.height / (H + 8)) * d; ox = (cv.width - W * sc) / 2; oy = (cv.height - H * sc) / 2; draw(); }
+            const X = x => ox + x * sc, Y = y => oy + y * sc;
+            function draw() {
+                if (!cx) return; const c = cx, dark = ED.arena === 'torch'; c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#0b0f14'; c.fillRect(0, 0, cv.width, cv.height);
+                c.fillStyle = dark ? '#1f2530' : ED.arena === 'ring' ? '#15171b' : '#f4f2ea'; c.fillRect(X(0), Y(0), W * sc, H * sc);
+                if (ED.arena === 'ring') { c.fillStyle = '#f4f2ea'; c.beginPath(); c.arc(X(90), Y(60), 50 * sc, 0, 7); c.fill(); }
+                if (!dark && ED.arena !== 'ring') { c.strokeStyle = 'rgba(0,0,0,.06)'; c.lineWidth = 1; for (let x = 10; x < W; x += 10) { c.beginPath(); c.moveTo(X(x), Y(0)); c.lineTo(X(x), Y(H)); c.stroke(); } for (let y = 10; y < H; y += 10) { c.beginPath(); c.moveTo(X(0), Y(y)); c.lineTo(X(W), Y(y)); c.stroke(); } }
+                if (ED.arena === 'line') { c.strokeStyle = '#111'; c.lineWidth = 3.2 * sc; c.beginPath(); c.moveTo(X(55), Y(30)); c.lineTo(X(125), Y(30)); c.arc(X(125), Y(60), 30 * sc, -Math.PI / 2, Math.PI / 2); c.lineTo(X(55), Y(90)); c.arc(X(55), Y(60), 30 * sc, Math.PI / 2, Math.PI * 1.5); c.stroke(); }
+                if (ED.arena === 'obst') { c.fillStyle = '#5b4636'; walls().forEach(b => c.fillRect(X(Math.max(0, b.x)), Y(Math.max(0, b.y)), Math.min(W, b.x + b.w) - Math.max(0, b.x) > 0 ? (Math.min(W, b.x + b.w) - Math.max(0, b.x)) * sc : 0, (Math.min(H, b.y + b.h) - Math.max(0, b.y)) * sc)); }
+                ED.boxes.forEach(b => { c.fillStyle = '#8b6b4e'; c.fillRect(X(b.x), Y(b.y), b.w * sc, b.h * sc); c.strokeStyle = '#5b4636'; c.lineWidth = 2; c.strokeRect(X(b.x), Y(b.y), b.w * sc, b.h * sc); });
+                if (ED.arena === 'torch') { const g = c.createRadialGradient(X(ED.torch.x), Y(ED.torch.y), 0, X(ED.torch.x), Y(ED.torch.y), 45 * sc); g.addColorStop(0, 'rgba(255,236,150,.85)'); g.addColorStop(1, 'rgba(255,236,150,0)'); c.fillStyle = g; c.beginPath(); c.arc(X(ED.torch.x), Y(ED.torch.y), 45 * sc, 0, 7); c.fill(); c.fillStyle = '#fde047'; c.beginPath(); c.arc(X(ED.torch.x), Y(ED.torch.y), 3.5 * sc, 0, 7); c.fill(); c.fillStyle = '#111'; c.font = `${Math.max(10, 3.2 * sc)}px sans-serif`; c.textAlign = 'center'; c.fillText('🔦', X(ED.torch.x), Y(ED.torch.y - 6)); }
+                // trail
+                if (ED.trail.length > 1) { c.strokeStyle = 'rgba(249,115,22,.55)'; c.lineWidth = Math.max(1, 0.5 * sc); c.beginPath(); ED.trail.forEach((q, i) => i ? c.lineTo(X(q[0]), Y(q[1])) : c.moveTo(X(q[0]), Y(q[1]))); c.stroke(); }
+                // robot
+                const p = ED.pose; c.save(); c.translate(X(p.x), Y(p.y)); c.rotate(p.th); c.scale(sc, sc);
+                if (ED.beam) { c.fillStyle = 'rgba(239,68,68,.16)'; [-22, 22].forEach(a => { c.beginPath(); c.moveTo(3.6, 0); c.arc(3.6, 0, 14, (a - 12) * Math.PI / 180, (a + 12) * Math.PI / 180); c.closePath(); c.fill(); }); }
+                c.fillStyle = '#111827'; c.fillRect(-3.2, -4.9, 6.4, 1.3); c.fillRect(-3.2, 3.6, 6.4, 1.3);
+                c.fillStyle = '#f97316'; c.beginPath(); c.roundRect ? c.roundRect(-4, -3.8, 8, 7.6, 1.4) : c.rect(-4, -3.8, 8, 7.6); c.fill(); c.strokeStyle = '#9a3412'; c.lineWidth = 0.25; c.stroke();
+                c.fillStyle = 'rgba(255,255,255,.22)'; for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) { c.beginPath(); c.arc(i * 2.2 - 0.6, j * 2.2, 0.55, 0, 7); c.fill(); }
+                [[-1.4, ED.led[0]], [1.4, ED.led[1]]].forEach(([yy, on]) => { c.fillStyle = on ? '#ff2d2d' : '#5b1010'; if (on) { c.shadowColor = '#ff2d2d'; c.shadowBlur = 6; } c.beginPath(); c.arc(3.4, -yy, 0.7, 0, 7); c.fill(); c.shadowBlur = 0; });
+                if (ED.ltLed) { c.fillStyle = 'rgba(255,40,40,.75)'; c.beginPath(); c.arc(3.4, 0, 0.55, 0, 7); c.fill(); }
+                c.restore();
+            }
+            function hud() {
+                const h = $('edHud'); if (!h || (ED.hT && performance.now() - ED.hT < 150)) return; ED.hT = performance.now(); const o = ED.beam ? ['—', '◀ يسار', 'يمين ▶', '▲ أمام'][obst()] : 'مطفأ';
+                h.innerHTML = `<span>LED ${ED.led[0] ? '🔴' : '⚫'}${ED.led[1] ? '🔴' : '⚫'}</span><span>خط: ${ED.ltLed ? (lineState() ? 'أسود' : 'أبيض') : 'مطفأ'}</span><span>عائق: ${o}</span><span>ضوء L/R: ${light('L')}/${light('R')}</span>${ED.met ? `<span>⏱ ${ED.met.t.toFixed(1)}s</span>` : ''}`;
+            }
+
+            // ---------------- missions ----------------
+            const HEAD = '#-------------Setup----------------\n\nimport Ed\n\nEd.EdisonVersion = Ed.V2\n\nEd.DistanceUnits = Ed.CM\nEd.Tempo = Ed.TEMPO_MEDIUM\n\n#--------Your code below-----------\n';
+            const MS = [
+                { n: 'انطلق وعُد', ic: '🚗', a: 'free', g: 'تقدّم 30 سم ثم ارجع إلى نقطة البداية.', c: 'Ed.Drive(Ed.FORWARD, Ed.SPEED_5, 30)\nEd.Drive(Ed.BACKWARD, Ed.SPEED_5, 30)\n', ok: (m, end) => end && m.maxD >= 25 && dist0(m) < 6 },
+                { n: 'ارسم مربعاً', ic: '⬜', a: 'free', g: 'تحرّك في مسار مربع ضلعه 20 سم وعُد للبداية.', c: 'for side in range(4):\n    Ed.Drive(Ed.FORWARD, Ed.SPEED_6, 20)\n    Ed.Drive(Ed.SPIN_RIGHT, Ed.SPEED_4, 90)\n', ok: (m, end) => end && m.path >= 70 && Math.abs(Math.abs(m.turn) - 2 * Math.PI) < 0.6 && dist0(m) < 8 },
+                { n: 'أضواء وأصوات', ic: '🚨', a: 'free', g: 'شغّل الضوءين الأيسر والأيمن بالتناوب مع صفارة.', c: 'for i in range(3):\n    Ed.LeftLed(Ed.ON)\n    Ed.RightLed(Ed.OFF)\n    Ed.PlayBeep()\n    Ed.TimeWait(400, Ed.TIME_MILLISECONDS)\n    Ed.LeftLed(Ed.OFF)\n    Ed.RightLed(Ed.ON)\n    Ed.PlayBeep()\n    Ed.TimeWait(400, Ed.TIME_MILLISECONDS)\nEd.RightLed(Ed.OFF)\n', ok: m => m.ledL && m.ledR && m.beeps >= 2 },
+                { n: 'انطلق بالتصفيق', ic: '👏', a: 'free', g: 'انتظر التصفيق ثم تحرّك. اضغط زر 👏 في المحاكي (أو صفّق قرب الروبوت الحقيقي).', c: '# انتظر التصفيق ثم انطلق\nwhile Ed.ReadClapSensor() != Ed.CLAP_DETECTED:\n    pass\nEd.PlayBeep()\nEd.Drive(Ed.FORWARD, Ed.SPEED_6, 25)\n', ok: m => m.claps >= 1 && m.firstMove > m.firstClap && m.path >= 10 },
+                { n: 'تتبّع الخط', ic: '〰️', a: 'line', g: 'اتبع حافة الخط الأسود 15 ثانية دون أن تضيع.', c: '# يتبع الحافة الخارجية للخط مع اتجاه عقارب الساعة\nEd.LineTrackerLed(Ed.ON)\nwhile True:\n    if Ed.ReadLineState() == Ed.LINE_ON_BLACK:\n        Ed.Drive(Ed.FORWARD_LEFT, Ed.SPEED_4, Ed.DISTANCE_UNLIMITED)\n    else:\n        Ed.Drive(Ed.FORWARD_RIGHT, Ed.SPEED_4, Ed.DISTANCE_UNLIMITED)\n', ok: m => m.mov > 15 && m.onLine / m.mov > 0.7 },
+                { n: 'تجنّب العوائق', ic: '🧱', a: 'obst', g: 'تجوّل 20 ثانية وقطع 150 سم دون أن تصطدم.', c: 'Ed.ObstacleDetectionBeam(Ed.ON)\nEd.Drive(Ed.FORWARD, Ed.SPEED_5, Ed.DISTANCE_UNLIMITED)\nwhile True:\n    obstacle = Ed.ReadObstacleDetection()\n    if obstacle != Ed.OBSTACLE_NONE:\n        Ed.PlayBeep()\n        Ed.Drive(Ed.BACKWARD, Ed.SPEED_5, 5)\n        if obstacle == Ed.OBSTACLE_LEFT:\n            Ed.Drive(Ed.SPIN_RIGHT, Ed.SPEED_5, 60)\n        else:\n            Ed.Drive(Ed.SPIN_LEFT, Ed.SPEED_5, 60)\n        Ed.Drive(Ed.FORWARD, Ed.SPEED_5, Ed.DISTANCE_UNLIMITED)\n', ok: m => m.t > 20 && m.path >= 150 && m.hits === 0 },
+                { n: 'اتبع الضوء', ic: '🔦', a: 'torch', g: 'اتجه نحو المصباح حتى تصل إليه. اسحب المصباح لتغيير مكانه.', c: 'while True:\n    left = Ed.ReadLeftLightLevel()\n    right = Ed.ReadRightLightLevel()\n    if left > right + 20:\n        Ed.Drive(Ed.FORWARD_LEFT, Ed.SPEED_5, Ed.DISTANCE_UNLIMITED)\n    elif right > left + 20:\n        Ed.Drive(Ed.FORWARD_RIGHT, Ed.SPEED_5, Ed.DISTANCE_UNLIMITED)\n    else:\n        Ed.Drive(Ed.FORWARD, Ed.SPEED_5, Ed.DISTANCE_UNLIMITED)\n', ok: () => Math.hypot(ED.pose.x - ED.torch.x, ED.pose.y - ED.torch.y) < 14 },
+                { n: 'ابقَ داخل الحلبة', ic: '⭕', a: 'ring', g: 'تجوّل 20 ثانية داخل الحلبة البيضاء وارتد عن الحدود السوداء.', c: 'Ed.LineTrackerLed(Ed.ON)\nEd.Drive(Ed.FORWARD, Ed.SPEED_6, Ed.DISTANCE_UNLIMITED)\nwhile True:\n    if Ed.ReadLineState() == Ed.LINE_ON_BLACK:\n        Ed.Drive(Ed.BACKWARD, Ed.SPEED_6, 8)\n        Ed.Drive(Ed.SPIN_RIGHT, Ed.SPEED_6, 135)\n        Ed.Drive(Ed.FORWARD, Ed.SPEED_6, Ed.DISTANCE_UNLIMITED)\n', ok: m => m.t > 20 && m.path >= 80 && !m.out },
+                { n: 'تحكم عن بُعد ببرنامجك', ic: '🎮', a: 'free', g: 'برنامج يستجيب لأزرار الريموت 0–4. استخدم أزرار الريموت أسفل الساحة.', c: '# أزرار الريموت: 0 أمام · 1 خلف · 2 دوران يمين · 3 دوران يسار · 4 صفارة\nwhile True:\n    code = Ed.ReadRemote()\n    if code == Ed.REMOTE_CODE_0:\n        Ed.Drive(Ed.FORWARD, Ed.SPEED_7, 10)\n    elif code == Ed.REMOTE_CODE_1:\n        Ed.Drive(Ed.BACKWARD, Ed.SPEED_7, 10)\n    elif code == Ed.REMOTE_CODE_2:\n        Ed.Drive(Ed.SPIN_RIGHT, Ed.SPEED_7, 45)\n    elif code == Ed.REMOTE_CODE_3:\n        Ed.Drive(Ed.SPIN_LEFT, Ed.SPEED_7, 45)\n    elif code == Ed.REMOTE_CODE_4:\n        Ed.PlayBeep()\n', ok: m => m.remotes >= 3 && m.path >= 20 }
+            ];
+            const dist0 = m => Math.hypot(ED.pose.x - m.start.x, ED.pose.y - m.start.y);
+            const done = () => { try { return JSON.parse(LSg('spark_ed_done') || '[]'); } catch (e) { return []; } };
+            function check(end) { const M = MS[ED.mission], m = ED.met; if (!M || !m || m.won) return; if (M.a !== ED.arena) return; if (M.ok(m, end)) { m.won = 1; const d = done(); if (!d.includes(ED.mission)) { d.push(ED.mission); LSs('spark_ed_done', JSON.stringify(d)); } const b = $('edOk'); if (b) { b.textContent = '🏆 أنجزت المهمة: ' + M.n; b.style.display = 'block'; setTimeout(() => { b.style.display = 'none'; }, 4500); } log('🏆 أنجزت المهمة «' + M.n + '»', 's'); tone(1046, 120); tone(1318, 120, 130); tone(1568, 260, 260); missDraw(); } }
+            function loadMission(i) { ED.mission = i; LSs('spark_ed_m', String(i)); const M = MS[i]; stop(); $('edCode').value = HEAD + '\n' + M.c; LSs('spark_ed_code', $('edCode').value); gut(); arenaSet(M.a); log('🎯 المهمة: ' + M.n + ' — ' + M.g, 'w'); tab('arena'); missDraw(); tools(); }
+
+            // ---------------- UI ----------------
+            function log(t, k) { ED.console.push([t, k || '']); if (ED.console.length > 200) ED.console.shift(); conDraw(); }
+            function conDraw() { const c = $('edCon'); if (!c) return; c.innerHTML = ED.console.map(([t, k]) => `<div class="${k}">${esc(t)}</div>`).join(''); c.scrollTop = c.scrollHeight; }
+            function markErr(ln) { ED.err = ln; gut(); }
+            function gut() { const ta = $('edCode'), g = $('edGut'); if (!ta || !g) return; const n = ta.value.split('\n').length; g.innerHTML = Array.from({ length: n }, (_, i) => `<div class="${i + 1 === ED.err ? 'er' : ''}">${i + 1}</div>`).join(''); g.scrollTop = ta.scrollTop; }
+            function ui() { const r = $('edRun'), s = $('edStop'); if (r) r.disabled = ED.run; if (s) s.disabled = !ED.run; if (r) r.style.opacity = ED.run ? .5 : 1; }
+            function tab(p) { ED.tab = p; document.querySelectorAll('#edOv .et button').forEach(b => b.classList.toggle('on', b.dataset.p === p)); document.querySelectorAll('#edOv .ep').forEach(s => s.classList.toggle('on', s.dataset.p === p)); if (p === 'arena') setTimeout(fit, 30); }
+            function tools() { const t = $('edAr'); if (t) t.innerHTML = Object.keys(ARENAS).map(k => `<button class="pill ${k === ED.arena ? 'on' : ''}" data-a="${k}">${ARENAS[k]}</button>`).join('') + `<button class="pill" data-r="-1" title="تدوير">↺</button><button class="pill" data-r="1" title="تدوير">↻</button><button class="pill" data-z="1">⟲ البداية</button>`; }
+            function missDraw() { const el = $('edMs'); if (!el) return; const d = done(); el.innerHTML = `<p style="font-size:13px;color:var(--sp-mut,#9aa3af);margin-bottom:10px">أنجزت ${d.length} من ${MS.length} مهام. كل مهمة تحمّل الساحة والكود — عدّل الكود وشغّله، ثم انقله إلى روبوتك الحقيقي من تبويب «الروبوت الحقيقي».</p><div class="mc">${MS.map((M, i) => `<div class="mi"><h4><span style="font-size:20px">${M.ic}</span>${i + 1}. ${esc(M.n)}</h4><p>${esc(M.g)}<br><span class="tag">${ARENAS[M.a]}</span></p>${d.includes(i) ? '<span class="dn">✓ أُنجزت</span>' : ''}<button class="b ${i === ED.mission ? 'or' : ''}" data-m="${i}">${i === ED.mission ? 'المهمة الحالية — إعادة التحميل' : 'ابدأ المهمة'}</button></div>`).join('')}</div>`; }
+            const RB = [['⬆', 'أمام'], ['⬇', 'خلف'], ['⟳', 'دوران يمين'], ['⟲', 'دوران يسار'], ['↱', 'انعطاف يمين'], ['↰', 'انعطاف يسار'], ['🔔', 'صفارة'], ['🎵', 'لحن']];
+            const irOK = () => { try { return !!(window.SparkAndroid && SparkAndroid.irHas && SparkAndroid.irHas()); } catch (e) { return false; } };
+            function sony(cmd, addr) { const p = [2400, 600]; let tot = 3000; for (let i = 0; i < 12; i++) { const b = i < 7 ? (cmd >> i) & 1 : (addr >> (i - 7)) & 1, on = b ? 1200 : 600; p.push(on, 600); tot += on + 600; } p[p.length - 1] += Math.max(600, 45000 - tot); return p; }
+            function irSend(i) { if (!irOK()) return; try { const f = sony(i, 1); SparkAndroid.irSend(40000, f.concat(f, f).join(',')); } catch (e) { } }
+            function press(i, down) {
+                document.querySelectorAll('#edRm button').forEach(b => b.classList.toggle('dn', down && +b.dataset.k === i));
+                if (!down) { ED.held = null; clearInterval(ED.irT); return; }
+                if (ED.run) { ED.remote = i; fire('EVENT_REMOTE_CODE'); fire('EVENT_REMOTE_CODE_' + i); if (ED.met) ED.met.remotes++; }
+                else if (i < 6) ED.held = i; else if (i === 6) tone(3500, 150); else tune('c4e4g4C2');
+                irSend(i); clearInterval(ED.irT); if (irOK()) ED.irT = setInterval(() => irSend(i), 140);
+            }
+            window.edOpen = function () {
+                if ($('edOv')) return; try { sxHome(); } catch (e) { }
+                const o = document.createElement('div'); o.id = 'edOv'; o.dir = 'rtl'; const ir = irOK();
+                o.innerHTML = `<div class="eh"><div class="lg">🤖</div><div><b>Edison V2.0</b><small>محاكي الروبوت · برمجة EdPy (Python) · ربط الروبوت الحقيقي</small></div><button class="x" onclick="edClose()" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></div>
+<nav class="et">${[['arena', '🏁 الساحة'], ['code', '💻 الكود'], ['miss', '🎯 المهام'], ['real', '🔗 الروبوت الحقيقي']].map(([k, l]) => `<button data-p="${k}">${l}</button>`).join('')}</nav>
+<div class="em">
+<section class="ep" data-p="arena"><div class="tl" id="edAr"></div><div class="cvw" id="edCvw"><canvas id="edCv"></canvas><div class="hud" id="edHud"></div><div class="ok" id="edOk"></div></div>
+<div class="ctl"><button class="b go" id="edRun"><i class="fa-solid fa-play ml-1"></i>تشغيل</button><button class="b stop" id="edStop"><i class="fa-solid fa-stop ml-1"></i>إيقاف</button><button class="b" id="edClap">👏 تصفيق</button><button class="b" id="edTri" title="زر التشغيل ▶ على الروبوت">▶ زر</button><button class="b" id="edRnd" title="الزر الدائري ● على الروبوت">● زر</button></div>
+<div style="font-size:12px;color:var(--sp-mut,#9aa3af);margin-top:8px">🎮 الريموت ${ir ? '<span class="tag g">📡 يرسل أيضاً بالأشعة تحت الحمراء من هاتفك</span>' : ''} — اضغط مطوّلاً للقيادة في المحاكي، وأثناء تشغيل برنامجك يُقرأ الزر بـ <code>Ed.ReadRemote()</code> (الرمز 0–7).</div>
+<div class="rm" id="edRm">${RB.map((b, i) => `<button data-k="${i}"><i>${b[0]}</i>${i} · ${b[1]}</button>`).join('')}</div></section>
+<section class="ep" data-p="code"><div class="tl"><button class="b go" onclick="edRun()"><i class="fa-solid fa-play ml-1"></i>تشغيل في المحاكي</button><button class="b" onclick="edCheck()">✔ تحقق</button><button class="b or" onclick="edToReal()">📤 إرسال للروبوت</button><button class="b" onclick="edReset()">↺ قالب جديد</button></div>
+<div class="cd"><div class="gut" id="edGut"></div><textarea id="edCode" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off"></textarea></div><div class="con" id="edCon"></div></section>
+<section class="ep" data-p="miss" id="edMs"></section>
+<section class="ep" data-p="real"><div id="edReal"></div></section></div>`;
+                document.body.appendChild(o);
+                $('edReal').innerHTML = realHTML(ir);
+                cv = $('edCv'); cx = cv.getContext('2d'); const ta = $('edCode'); ta.value = LSg('spark_ed_code') || (HEAD + '\n' + MS[ED.mission].c);
+                ta.addEventListener('input', () => { gut(); LSs('spark_ed_code', ta.value); }); ta.addEventListener('scroll', () => { const g = $('edGut'); if (g) g.scrollTop = ta.scrollTop; });
+                ta.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Tab') { e.preventDefault(); document.execCommand('insertText', false, '    '); } else if (e.key === 'Enter') { const s = ta.selectionStart, line = ta.value.slice(0, s).split('\n').pop(), ind = line.match(/^\s*/)[0] + (/:\s*$/.test(line) ? '    ' : ''); e.preventDefault(); document.execCommand('insertText', false, '\n' + ind); } });
+                o.querySelector('.et').addEventListener('click', e => { const b = e.target.closest('button'); if (b) tab(b.dataset.p); });
+                $('edAr').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.a) { stop(); arenaSet(b.dataset.a); tools(); } if (b.dataset.r) { ED.pose.th += +b.dataset.r * Math.PI / 12; draw(); } if (b.dataset.z) { stop(); resetPose(); draw(); } });
+                $('edRun').onclick = () => run(); $('edStop').onclick = () => stop();
+                $('edClap').onclick = () => { ED.clap = 1; if (ED.met) { ED.met.claps++; if (!ED.met.firstClap) ED.met.firstClap = performance.now(); } fire('EVENT_CLAP_DETECTED'); };
+                $('edTri').onclick = () => { if (!ED.run) return run(); ED.keypad = K.KEYPAD_TRIANGLE; fire('EVENT_KEYPAD_TRIANGLE'); };
+                $('edRnd').onclick = () => { ED.keypad = K.KEYPAD_ROUND; fire('EVENT_KEYPAD_ROUND'); };
+                const rm = $('edRm'); rm.addEventListener('pointerdown', e => { const b = e.target.closest('button'); if (!b) return; e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (er) { } press(+b.dataset.k, true); });
+                ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => rm.addEventListener(t, () => press(-1, false)));
+                $('edMs').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (b) loadMission(+b.dataset.m); });
+                // drag robot / torch / boxes
+                let drag = null; const pt = e => { const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1; return { x: ((e.clientX - r.left) * d - ox) / sc, y: ((e.clientY - r.top) * d - oy) / sc }; };
+                cv.addEventListener('pointerdown', e => { const q = pt(e); if (ED.arena === 'torch' && Math.hypot(q.x - ED.torch.x, q.y - ED.torch.y) < 7) drag = { k: 't' }; else if (Math.hypot(q.x - ED.pose.x, q.y - ED.pose.y) < 6) drag = { k: 'r' }; else { const b = ED.boxes.find(b => q.x >= b.x && q.x <= b.x + b.w && q.y >= b.y && q.y <= b.y + b.h); if (b) drag = { k: 'b', b, dx: q.x - b.x, dy: q.y - b.y }; } if (drag) { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (er) { } } });
+                cv.addEventListener('pointermove', e => { if (!drag) return; const q = pt(e), cl = (v, a, b) => Math.max(a, Math.min(b, v)); if (drag.k === 't') { ED.torch.x = cl(q.x, 4, W - 4); ED.torch.y = cl(q.y, 4, H - 4); } else if (drag.k === 'r') { ED.pose.x = cl(q.x, R, W - R); ED.pose.y = cl(q.y, R, H - R); ED.trail = []; if (ED.met) ED.met.start = { x: ED.pose.x, y: ED.pose.y }; } else { drag.b.x = cl(q.x - drag.dx, 0, W - drag.b.w); drag.b.y = cl(q.y - drag.dy, 0, H - drag.b.h); } draw(); });
+                ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => { drag = null; }));
+                document.addEventListener('keydown', edKey, true);
+                arenaSet(ED.arena, false); tools(); missDraw(); gut(); conDraw(); ui(); tab(window.innerWidth >= 1100 ? 'code' : 'arena'); fit(); addEventListener('resize', fit); last = performance.now(); raf = requestAnimationFrame(step);
+                if (!ED.console.length) log('مرحباً! اختر مهمة من «المهام» أو اكتب برنامجك بلغة EdPy ثم اضغط تشغيل.', 's');
+                try { sxNavMark('edison'); } catch (e) { }
+            };
+            function edKey(e) { if (!$('edOv')) return document.removeEventListener('keydown', edKey, true); if (e.key === 'Escape' && !/TEXTAREA|INPUT/.test(e.target.tagName)) edClose(); }
+            window.edClose = () => { stop(); cancelAnimationFrame(raf); removeEventListener('resize', fit); const o = $('edOv'); if (o) o.remove(); cv = cx = null; try { sxNavMark(null); } catch (e) { } };
+            window.edRun = () => { tab(window.innerWidth >= 1100 ? ED.tab : 'arena'); run(); };
+            window.edCheck = () => { try { toJS($('edCode').value); markErr(0); const src = $('edCode').value, w = []; if (!/^\s*import\s+Ed\b/m.test(src)) w.push('أضف السطر import Ed في البداية'); if (!/Ed\.EdisonVersion\s*=\s*Ed\.V2/.test(src)) w.push('أضف Ed.EdisonVersion = Ed.V2'); if (/\bprint\s*\(/.test(src)) w.push('print() غير مدعومة على الروبوت الحقيقي'); log(w.length ? '⚠ الكود صحيح للمحاكي، لكن قبل نقله للروبوت: ' + w.join(' · ') : '✔ الكود سليم وجاهز للمحاكي وللروبوت', w.length ? 'w' : 's'); } catch (e) { markErr(e.ln); log('سطر ' + e.ln + ': ' + e.msg, 'e'); } };
+            window.edReset = () => { if (!confirmLike()) return; $('edCode').value = HEAD + '\n'; gut(); LSs('spark_ed_code', $('edCode').value); };
+            const confirmLike = () => { const b = $('edCon'); if (!ED._rq) { ED._rq = Date.now(); log('اضغط «قالب جديد» مرة أخرى خلال 3 ثوانٍ لمسح الكود.', 'w'); setTimeout(() => { ED._rq = 0; }, 3000); return false; } ED._rq = 0; return true; };
+            window.edToReal = () => { edCheck(); tab('real'); };
+            window.edCopyOpen = () => { const src = $('edCode') ? $('edCode').value : ''; try { navigator.clipboard.writeText(src); } catch (e) { } const a = document.createElement('a'); a.href = 'https://www.edpyapp.com/'; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); log('📋 نُسخ الكود — الصقه في EdPy ثم اضغط «Program Edison»', 's'); };
+            window.edIrTest = () => { if (!irOK()) return log('هاتفك لا يحتوي باعث أشعة تحت حمراء (IR) أو التطبيق لا يستطيع الوصول إليه.', 'w'); irSend(0); log('📡 أُرسلت إشارة اختبار (زر 0)', 's'); };
+            function realHTML(ir) {
+                return `<div class="rs"><h4>📤 نقل برنامجك إلى Edison V2.0</h4><p>يستقبل Edison V2.0 البرامج عبر <b>كابل EdComm</b> الموصول بمنفذ السماعة. المترجم الرسمي (EdPy من شركة Microbric) هو الذي يحوّل الكود إلى إشارة صوتية، لذلك ننقل الكود إليه بضغطة واحدة:</p>
+<ol><li>صِل كابل EdComm بمنفذ السماعة في الهاتف أو الحاسوب (أو بمحوّل USB-C إلى 3.5 ملم)، وارفع الصوت إلى أقصى حد وأوقف مؤثرات الصوت.</li><li>ضع طرف الكابل على منفذ البرمجة أسفل Edison (حساس الخط).</li><li>اضغط الزر الدائري ● على Edison <b>مرة واحدة</b>.</li><li>اضغط الزر أدناه: يُنسخ كودك ويفتح EdPy — الصق الكود مكان الموجود ثم اضغط <b>Program Edison</b>.</li><li>عند سماع صوت النجاح افصل الكابل واضغط زر التشغيل ▶ على Edison.</li></ol>
+<div class="ctl"><button class="b or" onclick="edCopyOpen()">📋 نسخ الكود وفتح EdPy</button><button class="b" onclick="edCheck()">✔ فحص التوافق</button></div></div>
+<div class="rs"><h4>📡 قيادة Edison من هاتفك (أشعة تحت حمراء) ${ir ? '<span class="tag g">هاتفك يدعمها</span>' : '<span class="tag r">غير متاحة على هذا الجهاز</span>'}</h4>
+<p>${ir ? 'هاتفك يحتوي باعث أشعة تحت حمراء، فأزرار الريموت في تبويب «الساحة» ترسل إشارات حقيقية يفهمها Edison بعد تعليمه إياها مرة واحدة:' : 'تعمل هذه الميزة في تطبيق أندرويد على الهواتف التي فيها باعث IR (مثل كثير من هواتف شاومي). البديل: ريموت تلفاز عادي أو ريموت عام مضبوط على كود Sony DVD.'}</p>
+<ol><li>اطبع باركودات «IR learn» الثمانية من صفحة الباركود الرسمية (بلا تكبير أو تصغير، على ورق غير لامع).</li><li>ضع Edison بجانب الباركود من جهته اليمنى، واضغط الزر الدائري ● <b>3 مرات</b> فيمشي ويقرأ الباركود.</li><li>بعد قراءة كل باركود وجّه الهاتف نحو Edison واضغط زر الريموت المقابل في SPARK (أمام، خلف، دوران يمين…) حتى يصدر صوت التأكيد.</li><li>بعد تعليم الأزرار الثمانية قُد Edison بالضغط المطوّل على أزرار الريموت.</li></ol>
+<div class="ctl">${ir ? '<button class="b" onclick="edIrTest()">📡 إرسال إشارة اختبار</button>' : ''}<a class="b" style="display:inline-flex;align-items:center" href="https://meetedison.com/barcodes/" target="_blank" rel="noopener">🧾 صفحة الباركود الرسمية</a></div></div>
+<div class="rs"><h4>🧾 البرامج الجاهزة في Edison (بالباركود)</h4><p>تجنب العوائق · تتبع الخط · اتبع الضوء · القيادة بالتصفيق · الارتداد داخل الحدود · مصارعة السومو. تُقرأ بنفس الطريقة (● ثلاث مرات بجانب الباركود)، ثم اضغط ▶ مرة واحدة للتشغيل. هذه البرامج نفسها موجودة كمهام في المحاكي لتفهم كيف تعمل وتعدّلها.</p></div>
+<div class="rs"><h4>🛠 مشاكل شائعة</h4><ul><li><b>لا يكتمل النقل:</b> ارفع الصوت لأقصى حد، أوقف المعادل ومؤثرات الصوت، تأكد أن الكابل داخل المنفذ بالكامل، واستبدل البطاريات إن كانت ضعيفة.</li><li><b>يمشي منحرفاً:</b> استخدم باركود معايرة القيادة (Drive calibration).</li><li><b>لا يرى العوائق جيداً:</b> استخدم باركود معايرة كشف العوائق.</li><li><b>لا يقرأ الباركود:</b> تأكد من تركيب الزلّاجة أسفل الروبوت، وابدأ على سطح أبيض بجانب الباركود، وتجنّب الإضاءة القوية.</li></ul>
+<p>مراجع: <a href="https://meetedison.com/robot-programming-software/edpy/" target="_blank" rel="noopener">EdPy</a> · <a href="https://meetedison.com/barcodes/" target="_blank" rel="noopener">الباركود</a> · <a href="https://meetedison.com/?p=1855" target="_blank" rel="noopener">استكشاف أخطاء Edison V2.0</a></p></div>`;
+            }
+
+            // ---------------- platform hooks: nav tab, picker, menu ----------------
+            window.sxNavMark = k => { if (!k) { try { SX.navDone = false; sxNavSync(); } catch (e) { } document.querySelectorAll('#sxNav .sx-tab[data-n="edison"]').forEach(b => b.classList.remove('on')); return; } document.querySelectorAll('#sxNav .sx-tab').forEach(b => b.classList.toggle('on', b.dataset.n === k)); };
+            try { const _h = sxHome; sxHome = function () { if ($('edOv')) edClose(); return _h.apply(this, arguments); }; } catch (e) { }
+            function navAdd() {
+                if (typeof SX_NAV === 'undefined' || SX_NAV.some(n => n[0] === 'edison')) return; SX_NAV.push(['edison', 'fa-robot', 'Edison V2.0', () => edOpen()]);
+                const nav = $('sxNav'), rb = nav && nav.querySelector('.sx-tab[data-n="robot"]'); if (!nav) return;
+                const b = document.createElement('button'); b.className = 'sx-tab'; b.setAttribute('role', 'tab'); b.dataset.n = 'edison'; b.dataset.i = String(SX_NAV.length - 1); b.innerHTML = '<i class="fa-solid fa-robot" style="color:#f97316"></i>Edison V2.0';
+                if (rb) rb.insertAdjacentElement('afterend', b); else nav.appendChild(b);
+            }
+            addEventListener('load', () => setTimeout(navAdd, 1600));
+            window.SPARK_EDISON = { compile: toJS, ED, Ed, MS, run, stop };
         })();
 
         window.onload = function () {
