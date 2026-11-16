@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.6.6',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='2.7.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -12088,7 +12088,7 @@ ${lk ? `<text x="0" y="36" text-anchor="middle" font-size="9" font-weight="700" 
         const PCB = { on: false, view: '2d', layers: 2, pour: true, holes: true, style: 'design', show: { top: true, bot: true, silk: true, pour: true, rats: true }, man: {}, d: null, z: 0, vb: null, sel: null, T3: null, sig: '' };
         try { const o = JSON.parse(localStorage.getItem('spark_pcb_v1') || '{}'); ['layers', 'pour', 'holes', 'view', 'style'].forEach(k => { if (o[k] !== undefined) PCB[k] = o[k]; }); if (o.show) Object.assign(PCB.show, o.show); } catch (e) { }
         function pcbSaveCfg() { try { localStorage.setItem('spark_pcb_v1', JSON.stringify({ layers: PCB.layers, pour: PCB.pour, holes: PCB.holes, view: PCB.view, style: PCB.style, show: PCB.show })); } catch (e) { } }
-        const PCB_G = 0.635, PCB_CLR = 0.3, PCB_W = { S: 0.5, P: 1.0 }, PCB_VIA = { d: 1.2, dr: 0.6 }, PCB_EDGE = 0.6;
+        let PCB_CLR = 0.3; const PCB_G = 0.635, PCB_W = { S: 0.5, P: 1.0 }, PCB_VIA = { d: 1.2, dr: 0.6 }, PCB_EDGE = 0.6;
         // ---------- tiny stroke font for silkscreen (works in SVG, Gerber and 3D textures) ----------
         const PCB_FONT = {
             '0': [[0, 0, 4, 0, 4, 6, 0, 6, 0, 0], [0, 6, 4, 0]], '1': [[1, 1, 2, 0, 2, 6], [1, 6, 3, 6]], '2': [[0, 1, 1, 0, 3, 0, 4, 1, 4, 2, 0, 6, 4, 6]], '3': [[0, 0, 4, 0, 2, 2.5, 3, 2.5, 4, 3.5, 4, 5, 3, 6, 1, 6, 0, 5]],
@@ -12238,6 +12238,14 @@ ${lk ? `<text x="0" y="36" text-anchor="middle" font-size="9" font-weight="700" 
             return { k: 'uno', ref: 'A', val: 'ARDUINO UNO R3', cls: 'mcu', pads, fixed: true, box: [-W / 2, -H / 2, W / 2, H / 2], boxes: [strip(0.84, 1.74, -H / 2 + 2.54), strip(1.9, 2.6, -H / 2 + 2.54), strip(1.1, 1.8, H / 2 - 2.54), strip(2.0, 2.5, H / 2 - 2.54)], silk: [], m: { W, H },
                 holes: [[X(0.55), H / 2 - 2.54], [X(0.6), H / 2 - 50.8], [X(2.6), H / 2 - 7.62], [X(2.6), H / 2 - 35.56]] };
         }
+        // Raspberry Pi HAT: 65 x 56.5 mm, 2x20 header on the real grid (pin 1 inner row, SD-card end), M2.5 holes on 58 x 49 mm
+        function pcbPiFoot(c) {
+            const W = 65, H = 56.5, has = new Set(COMPONENT_CATALOG[c.type].pins.map(p => p.id)), pads = [];
+            const N = ['3V3', '5V', 'SDA', '5V', 'SCL', 'GND', 'G4', 'G14', 'GND', 'G15', 'G17', 'G18', 'G27', 'GND', 'G22', 'G23', '3V3', 'G24', 'G10', 'GND', 'G9', 'G25', 'G11', 'G8', 'GND', 'G7', 'ID_SD', 'ID_SC', 'G5', 'GND', 'G6', 'G12', 'G13', 'GND', 'G19', 'G16', 'G26', 'G20', 'GND', 'G21'];
+            N.forEach((p, i) => { const odd = i % 2 === 0; pads.push({ pin: has.has(p) ? p : null, lab: p === 'SDA' ? 'G2' : p === 'SCL' ? 'G3' : p, x: 8.37 + 2.54 * (i >> 1) - W / 2, y: (odd ? 4.77 : 2.23) - H / 2, d: 1.5, dr: 1.0, sh: i === 0 ? 's' : 'c', ly: odd ? 2.7 : 8.2 }); });
+            return { k: 'pihat', ref: 'J', val: 'RASPBERRY PI HAT 2x20', cls: 'mcu', pads, fixed: true, box: [-W / 2, -H / 2, W / 2, H / 2], boxes: [[8.37 - W / 2 - 1.4, 0.4 - H / 2, 56.63 - W / 2 + 1.4, 12.2 - H / 2]], silk: [pcbRect(8.37 - W / 2 - 1.5, 0.8 - H / 2, 56.63 - W / 2 + 1.5, 6.2 - H / 2)], m: { W, H },
+                holes: [[-29, 3.5 - H / 2], [29, 3.5 - H / 2], [-29, 52.5 - H / 2], [29, 52.5 - H / 2]] };
+        }
         // ---------- netlist ----------
         function pcbNetlist() {
             const par = {}, f = k => { while (par[k] !== undefined && par[k] !== k) { par[k] = par[par[k]] === undefined ? par[k] : par[par[k]]; k = par[k]; } return k; }, key = (id, p) => id + '|' + p, U = (a, b) => { par[a] = par[a] || a; par[b] = par[b] || b; const ra = f(a), rb = f(b); if (ra !== rb) par[ra] = rb; };
@@ -12247,9 +12255,9 @@ ${lk ? `<text x="0" y="36" text-anchor="middle" font-size="9" font-weight="700" 
         }
         // ---------- build: parts, nets, board ----------
         function pcbBuild() {
-            const root = pcbNetlist(), parts = [], cnt = {}, uno = state.components.find(c => c.type === 'arduino_uno');
+            const root = pcbNetlist(), parts = [], cnt = {}, uno = state.components.find(c => c.type === 'arduino_uno'), pi = uno ? null : state.components.find(c => c.type === 'rpi4'), sh = uno ? { k: 'uno', W: 68.58, H: 53.34, n: 'درع Arduino Uno' } : pi ? { k: 'pihat', W: 65, H: 56.5, rx: 3, n: 'Raspberry Pi HAT' } : null;
             state.components.forEach(c => {
-                if (PCB_SKIP.test(c.type) || !COMPONENT_CATALOG[c.type]) return; const fp = c.type === 'arduino_uno' && c !== uno ? pcbConnFoot('arduino_uno', COMPONENT_CATALOG.arduino_uno, [['hdr', COMPONENT_CATALOG.arduino_uno.pins.map(p => p.id).join(',')]]) : pcbFoot(c); if (!fp) return;
+                if (PCB_SKIP.test(c.type) || !COMPONENT_CATALOG[c.type]) return; const fp = c.type === 'arduino_uno' && c !== uno ? pcbConnFoot('arduino_uno', COMPONENT_CATALOG.arduino_uno, [['hdr', COMPONENT_CATALOG.arduino_uno.pins.map(p => p.id).join(',')]]) : c === pi ? pcbPiFoot(c) : pcbFoot(c); if (!fp) return;
                 cnt[fp.ref] = (cnt[fp.ref] || 0) + 1; parts.push({ c, fp, ref: fp.ref + cnt[fp.ref], x: 0, y: 0, r: 0 });
             });
             // nets
@@ -12266,7 +12274,7 @@ ${lk ? `<text x="0" y="36" text-anchor="middle" font-size="9" font-weight="700" 
             let k = 1; netArr.forEach(n => { if (!n.name) n.name = 'N' + (k++); });
             const gs = netArr.filter(n => n.name === 'GND' && n.pads.length); let merged = 0;
             if (gs.length > 1) { const g0 = gs[0]; gs.slice(1).forEach(n => { n.pads.forEach(([pi, di]) => { parts[pi].fp.pads[di].net = g0.id; g0.pads.push([pi, di]); }); n.pads = []; n.name = 'GND_merged'; merged++; }); }
-            return { parts, nets: netArr, uno: !!uno, gndMerged: merged };
+            return { parts, nets: netArr, uno: !!sh, sh, gndMerged: merged };
         }
         // ---------- geometry helpers ----------
         function pcbRot(x, y, r) { switch (r & 3) { case 1: return [-y, x]; case 2: return [-x, -y]; case 3: return [y, -x]; default: return [x, y]; } }
@@ -12277,7 +12285,7 @@ ${lk ? `<text x="0" y="36" text-anchor="middle" font-size="9" font-weight="700" 
         function pcbPlace(D) {
             const parts = D.parts, nets = D.nets, B = D.board, sn = v => Math.round(v / 1.27) * 1.27, M = 1.0;
             const fixed = parts.filter(P => P.fp.fixed), mov = parts.filter(P => !P.fp.fixed);
-            fixed.forEach(P => { P.x = P.fp.k === 'uno' ? 34.29 : B.W / 2; P.y = P.fp.k === 'uno' ? 26.67 : B.H / 2; P.r = 0; P.placed = true; });
+            fixed.forEach(P => { P.x = D.sh ? D.sh.W / 2 : B.W / 2; P.y = D.sh ? D.sh.H / 2 : B.H / 2; P.r = 0; P.placed = true; });
             const keep = D.holes.map(([x, y]) => [x - 3.4, y - 3.4, x + 3.4, y + 3.4]);
             const deg = P => P.fp.pads.reduce((s, pd) => s + (pd.net >= 0 ? nets[pd.net].pads.length - 1 : 0), 0), area = P => (P.fp.box[2] - P.fp.box[0]) * (P.fp.box[3] - P.fp.box[1]);
             mov.sort((a, b) => (b.fp.cls === 'mcu') - (a.fp.cls === 'mcu') || area(b) - area(a) * 0.6 - (deg(b) - deg(a)) * 4);
@@ -12410,18 +12418,18 @@ ${lk ? `<text x="0" y="36" text-anchor="middle" font-size="9" font-weight="700" 
         }
         // ---------- full pipeline ----------
         function pcbRun() {
-            const t0 = performance.now(), D = pcbBuild(); if (!D.parts.length) return { empty: true }; const TB = 7000 + Math.max(0, D.parts.length - 12) * 500;
+            const t0 = performance.now(), D = pcbBuild(); if (!D.parts.length) return { empty: true }; { const hat = D.sh && D.sh.k === 'pihat'; PCB_W.S = hat ? 0.3 : 0.5; PCB_W.P = hat ? 0.4 : 1.0; PCB_CLR = hat ? 0.2 : 0.3; } const TB = 7000 + Math.max(0, D.parts.length - 12) * 500;
             const area = D.parts.reduce((s, P) => s + (P.fp.box[2] - P.fp.box[0] + 2) * (P.fp.box[3] - P.fp.box[1] + 2), 0), maxW = Math.max(...D.parts.map(P => Math.max(P.fp.box[2] - P.fp.box[0], P.fp.box[3] - P.fp.box[1]))) + 4;
             let W, H;
-            if (D.uno) { W = 68.58; H = 53.34; } else { const A = area * 1.75 + 80; W = Math.max(30, maxW, Math.sqrt(A * 1.35)); H = Math.max(24, Math.min(maxW, W), A / W); }
+            if (D.uno) { W = D.sh.W; H = D.sh.H; } else { const A = area * 1.75 + 80; W = Math.max(30, maxW, Math.sqrt(A * 1.35)); H = Math.max(24, Math.min(maxW, W), A / W); }
             let best = null;
             for (let grow = 0; grow < 6; grow++) {
-                D.board = { W: Math.ceil(W / 1.27) * 1.27, H: Math.ceil(H / 1.27) * 1.27, uno: D.uno };
-                D.holes = D.uno ? (PCB.holes ? D.parts.find(P => P.fp.k === 'uno').fp.holes.map(([x, y]) => [x + 34.29, y + 26.67]) : []) : (PCB.holes && D.board.W >= 30 && D.board.H >= 24 ? [[3.5, 3.5], [D.board.W - 3.5, 3.5], [3.5, D.board.H - 3.5], [D.board.W - 3.5, D.board.H - 3.5]] : []);
+                D.board = D.uno ? { W: Math.max(D.sh.W, W), H: Math.max(D.sh.H, H), uno: true, rx: D.sh.rx || 0, sh: D.sh.k } : { W: Math.ceil(W / 1.27) * 1.27, H: Math.ceil(H / 1.27) * 1.27, uno: false };
+                D.holes = D.uno ? (PCB.holes ? D.parts.find(P => P.fp.fixed && P.fp.holes).fp.holes.map(([x, y]) => [x + D.sh.W / 2, y + D.sh.H / 2]) : []) : (PCB.holes && D.board.W >= 30 && D.board.H >= 24 ? [[3.5, 3.5], [D.board.W - 3.5, 3.5], [3.5, D.board.H - 3.5], [D.board.W - 3.5, D.board.H - 3.5]] : []);
                 D.parts.forEach(P => P.placed = false);
-                if (D.uno) D.parts.filter(P => P.fp.fixed).forEach(P => { P.x = 68.58 / 2; P.y = 53.34 / 2; });
+                if (D.uno) D.parts.filter(P => P.fp.fixed).forEach(P => { P.x = D.sh.W / 2; P.y = D.sh.H / 2; });
                 if (pcbPlace(D)) {
-                    if (D.uno) D.parts.filter(P => P.fp.fixed).forEach(P => { P.x = 68.58 / 2; P.y = 53.34 / 2; });
+                    if (D.uno) D.parts.filter(P => P.fp.fixed).forEach(P => { P.x = D.sh.W / 2; P.y = D.sh.H / 2; });
                     // shrink the board to its content (+ margin), keep only mounting holes that do not collide
                     let undo = null;
                     if (!D.uno) {
@@ -12438,7 +12446,7 @@ ${lk ? `<text x="0" y="36" text-anchor="middle" font-size="9" font-weight="700" 
                     if (!best || sc < best.sc) best = { sc, D: Object.assign({}, D, { parts: D.parts.map(P => Object.assign({}, P)), board: Object.assign({}, D.board) }), R };
                     if (!R.fails.length || PCB.layers === 1 && grow >= 1 || performance.now() - t0 > TB) break;
                 }
-                if (D.uno) { W += 12.7; } else { W *= 1.12; H *= 1.1; }
+                if (D.uno) { if (D.sh.k === 'pihat') H += 10.16; else W += 12.7; } else { W *= 1.12; H *= 1.1; }
             }
             if (!best) return { empty: true, fail: true };
             const { D: BD, R } = best, gnd = BD.nets.find(n => n.name === 'GND'); R.pour = pcbPour(BD, R, gnd ? gnd.id : -1); R.drc = pcbDRC(R);
@@ -12555,7 +12563,7 @@ html.light .pcb-chip{background:rgba(255,255,255,.9);color:#323863}
             if (S.gndMerged) notes.push(`وُحِّدت ${S.gndMerged + 1} مجموعات أرضي GND غير موصولة ببعضها في شبكة أرضي واحدة (كما في أي لوحة حقيقية).`);
             if (PCB.layers === 2 && S.routed < S.conns) notes.push('بعض الوصلات لم تُوجَّه — جرّب «ترتيب وتوجيه تلقائي» أو حرّك العناصر.');
             return `<div class="pcb-info ${PCB.mini ? 'mini' : ''}" id="pcbInfo"><div style="display:flex;align-items:center;gap:8px;font-weight:800;margin-bottom:2px;cursor:pointer" onclick="PCB.mini=!PCB.mini;$('pcbInfo').classList.toggle('mini')" title="تصغير/توسيع">${ok ? '<span style="color:rgb(52 211 153)">● جاهزة للتصنيع</span>' : PCB.layers === 1 && S.drc === 0 ? '<span style="color:rgb(251 191 36)">● جاهزة مع جسور</span>' : '<span style="color:rgb(248 113 113)">● تحتاج مراجعة</span>'}<span style="margin-inline-start:auto;font-weight:600;opacity:.75"><bdi dir="ltr">${S.W.toFixed(0)}×${S.H.toFixed(0)} mm · ${S.routed}/${S.conns}</bdi></span><i class="fa-solid fa-chevron-down" style="opacity:.6"></i></div><div class="pcb-more">
-<div>المقاس: <b>${S.W.toFixed(1)} × ${S.H.toFixed(1)} مم</b>${D.uno ? ' (درع Arduino Uno)' : ''} · ${PCB.layers === 2 ? 'طبقتان' : 'طبقة واحدة'}</div>
+<div>المقاس: <b>${S.W.toFixed(1)} × ${S.H.toFixed(1)} مم</b>${D.uno ? ' (' + (D.sh ? D.sh.n : 'درع Arduino Uno') + ')' : ''} · ${PCB.layers === 2 ? 'طبقتان' : 'طبقة واحدة'}</div>
 <div>العناصر: <b>${S.parts}</b> · الشبكات: <b>${S.nets}</b> · الوصلات: <b>${S.routed}/${S.conns}</b></div>
 <div>طول المسارات: <b>${S.len} مم</b> · فتحات Via: <b>${S.vias}</b> · فحص المسافات DRC: <b>${S.drc ? S.drc + ' ⚠' : '0 ✓'}</b></div>
 <div style="opacity:.75">مسار الإشارة ${PCB_W.S}مم · التغذية ${PCB_W.P}مم · الخلوص ${PCB_CLR}مم</div>${notes.map(n => `<div style="color:rgb(251 191 36)">• ${n}</div>`).join('')}
@@ -12565,15 +12573,16 @@ ${PCB.view === '2d' ? '<div style="opacity:.6;font-size:10.5px">اسحب أي ع
         function pcbPath(pl) { return 'M' + pl.map(p => p[0].toFixed(3) + ' ' + p[1].toFixed(3)).join('L'); }
         function pcbXf(P, pl) { return pl.map(([x, y]) => { const [a, b] = pcbRot(x, y, P.r); return [P.x + a, P.y + b]; }); }
         function pcbPinLabels(P, D, out) {
-            P.fp.pads.forEach(pd => { if (!pd.lab) return; const [x, y] = pcbPadXY(P, pd), dy = P.fp.k === 'uno' ? (y < D.board.H / 2 ? 2.3 : -2.3) : 0, dx = P.fp.k === 'esp32' ? (pd.x < 0 ? 3.0 : -3.0) * (P.r === 2 ? -1 : 1) : 0; pcbText(pd.lab.replace(/^G(\d)/, '$1'), x + dx, y + dy, 0.7, P.fp.k === 'uno' ? -Math.PI / 2 : 0).forEach(pl => out.push(pl)); });
+            P.fp.pads.forEach(pd => { if (!pd.lab) return; const [x, y] = pcbPadXY(P, pd), dy = pd.ly != null ? pd.ly : P.fp.k === 'uno' ? (y < D.board.H / 2 ? 2.3 : -2.3) : 0, dx = P.fp.k === 'esp32' ? (pd.x < 0 ? 3.0 : -3.0) * (P.r === 2 ? -1 : 1) : 0; pcbText(pd.lab.replace(/^G(\d)/, '$1'), x + dx, y + dy, 0.7, P.fp.k === 'uno' || P.fp.k === 'pihat' ? -Math.PI / 2 : 0).forEach(pl => out.push(pl)); });
         }
         function pcbSilk(D) {
             const out = [];
             const taken = [], allB = D.parts.map(P => pcbBoxes(P, 0)), padsA = D.R ? D.R.padList : [];
-            const clear = (r, self) => r[0] > 0.5 && r[1] > 0.5 && r[2] < D.board.W - 0.5 && r[3] < D.board.H - 0.5 && !taken.some(t => pcbOv(r, t)) && !allB.some((bs, i) => i !== self && D.parts[i].fp.k !== 'uno' && bs.some(b => pcbOv(r, b))) && !padsA.some(o => o.x > r[0] - o.h - 0.2 && o.x < r[2] + o.h + 0.2 && o.y > r[1] - o.h - 0.2 && o.y < r[3] + o.h + 0.2);
+            const clear = (r, self) => r[0] > 0.5 && r[1] > 0.5 && r[2] < D.board.W - 0.5 && r[3] < D.board.H - 0.5 && !taken.some(t => pcbOv(r, t)) && !allB.some((bs, i) => i !== self && !D.parts[i].fp.fixed && bs.some(b => pcbOv(r, b))) && !padsA.some(o => o.x > r[0] - o.h - 0.2 && o.x < r[2] + o.h + 0.2 && o.y > r[1] - o.h - 0.2 && o.y < r[3] + o.h + 0.2);
             D.parts.forEach((P, pi) => {
                 P.fp.silk.forEach(pl => out.push(pcbXf(P, pl)));
                 if (P.fp.k === 'uno') { pcbText('ARDUINO UNO R3 SHIELD', 34.29, D.board.H / 2, 1.6).forEach(pl => out.push(pl)); pcbPinLabels(P, D, out); return; }
+                if (P.fp.k === 'pihat') { pcbText('1', 5.4, 4.77, 0.9).forEach(pl => out.push(pl)); pcbPinLabels(P, D, out); return; }
                 const bx = pcbBoxes(P)[0], tw = P.ref.length * 1.1, cx = (bx[0] + bx[2]) / 2, cy = (bx[1] + bx[3]) / 2, cand = [[cx, bx[1] - 1.0], [cx, bx[3] + 1.0], [bx[0] - tw / 2 - 0.6, cy], [bx[2] + tw / 2 + 0.6, cy], [cx, cy]];
                 let spot = cand.find(([x, y]) => clear([x - tw / 2, y - 0.75, x + tw / 2, y + 0.75], pi)) || cand[4];
                 taken.push([spot[0] - tw / 2, spot[1] - 0.75, spot[0] + tw / 2, spot[1] + 0.75]);
@@ -12590,7 +12599,7 @@ ${PCB.view === '2d' ? '<div style="opacity:.6;font-size:10.5px">اسحب أي ع
             o = o || {}; const W = D.board.W, H = D.board.H, R = D.R, mono = o.mono, sh = o.show || PCB.show, real = o.real;
             const CU = mono ? ['#000', '#000'] : real ? ['#3aa86a', '#3aa86a'] : ['#e5484d', '#3e7fe0'], OP = mono ? 1 : 0.88, padC = mono ? '#000' : real ? '#d6d8dc' : '#d8a72f', silkC = mono ? '#000' : real ? '#ffffff' : '#f2ecb4', boardC = mono ? '#fff' : real ? '#11703c' : '#0e2a1e';
             const lay = o.layer, showL = L => lay ? (lay === 'B' ? L === 1 : lay === 'F' ? L === 0 : false) : (L === 0 ? sh.top && PCB.layers === 2 : sh.bot);
-            let g = `<rect x="0" y="0" width="${W}" height="${H}" rx="${D.uno ? 0 : 1}" fill="${boardC}" stroke="${mono ? '#000' : '#e8d36a'}" stroke-width="${mono ? 0.15 : 0.2}"/>`;
+            let g = `<rect x="0" y="0" width="${W}" height="${H}" rx="${D.board.rx != null ? D.board.rx : D.uno ? 0 : 1}" fill="${boardC}" stroke="${mono ? '#000' : '#e8d36a'}" stroke-width="${mono ? 0.15 : 0.2}"/>`;
             [1, 0].forEach(L => {
                 if (!showL(L)) return; const col = CU[L];
                 if (sh.pour || lay) { const rs = (R.pour || []).filter(r => r.L === L); if (rs.length) g += `<path d="${rs.map(r => `M${r.x.toFixed(3)} ${r.y.toFixed(3)}h${r.w.toFixed(3)}v${r.h.toFixed(3)}h${(-r.w).toFixed(3)}z`).join('')}" fill="${col}" opacity="${mono ? 1 : real ? 0.5 : 0.34}"/>`; }
@@ -12603,7 +12612,7 @@ ${PCB.view === '2d' ? '<div style="opacity:.6;font-size:10.5px">اسحب أي ع
                 const hc = mono ? '#fff' : '#05070f';
                 g += `<g fill="${hc}">${R.padList.map(o2 => `<circle cx="${o2.x.toFixed(3)}" cy="${o2.y.toFixed(3)}" r="${(mono ? Math.min(0.35, o2.pd.dr / 2) : o2.pd.dr / 2).toFixed(3)}"/>`).join('')}${R.vias.map(v => `<circle cx="${v.x.toFixed(3)}" cy="${v.y.toFixed(3)}" r="${mono ? 0.2 : R.via.dr / 2}"/>`).join('')}</g>`;
             }
-            g += D.holes.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.6" fill="${mono ? '#fff' : '#05070f'}" stroke="${mono ? '#000' : '#8b8f99'}" stroke-width="0.2"/>`).join('');
+            g += D.holes.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${D.board.sh === 'pihat' ? 1.375 : 1.6}" fill="${mono ? '#fff' : '#05070f'}" stroke="${mono ? '#000' : '#8b8f99'}" stroke-width="0.2"/>`).join('');
             if ((sh.silk && !lay) || lay === 'silk') g += `<g fill="none" stroke="${silkC}" stroke-width="0.15" stroke-linecap="round" stroke-linejoin="round">${pcbSilk(D).map(pl => `<path d="${pcbPath(pl)}"/>`).join('')}</g>`;
             if ((!lay && sh.rats) || (lay === 'silk' && R.one)) { const J = R.one ? R.jumpers : R.fails; g += J.filter(f => f.a && f.b).map((f, i) => `<line x1="${f.a[0]}" y1="${f.a[1]}" x2="${f.b[0]}" y2="${f.b[1]}" stroke="${mono ? '#000' : R.one ? (f.wire ? '#f59e0b' : '#ff2d55') : '#e5e7eb'}" stroke-width="${R.one ? 0.6 : 0.25}" stroke-dasharray="${R.one ? (f.wire ? 'none' : '1.2 0.8') : '0.8 0.6'}" stroke-linecap="round" opacity="0.95"><title>${R.one ? 'جسر سلكي W' + (i + 1) : 'غير موصول'}</title></line>`).join(''); }
             if (!lay && R.drc && R.drc.length) g += R.drc.map(v => `<circle cx="${v.x}" cy="${v.y}" r="1.4" fill="none" stroke="#ff2d55" stroke-width="0.3"/>`).join('');
@@ -12660,7 +12669,7 @@ ${PCB.view === '2d' ? '<div style="opacity:.6;font-size:10.5px">اسحب أي ع
             const silk = () => { const g = mk('Legend,Top'); g.body.push(g.A('C,0.150') + '*'); pcbSilk(D).forEach(pl => { g.body.push(`${XY(pl[0][0], pl[0][1])}D02*`); pl.slice(1).forEach(p => g.body.push(`${XY(p[0], p[1])}D01*`)); }); return g.out(); };
             const edge = () => { const g = mk('Profile,NP'), W = D.board.W; g.body.push(g.A('C,0.100') + '*', `${XY(0, 0)}D02*`, `${XY(W, 0)}D01*`, `${XY(W, H)}D01*`, `${XY(0, H)}D01*`, `${XY(0, 0)}D01*`); return g.out(); };
             const drill = (plated) => {
-                const tools = {}, hits = []; if (plated) { R.padList.forEach(o2 => hits.push([o2.pd.dr, o2.x, o2.y])); R.vias.forEach(v => hits.push([R.via.dr, v.x, v.y])); } else D.holes.forEach(([x, y]) => hits.push([3.2, x, y]));
+                const tools = {}, hits = []; if (plated) { R.padList.forEach(o2 => hits.push([o2.pd.dr, o2.x, o2.y])); R.vias.forEach(v => hits.push([R.via.dr, v.x, v.y])); } else D.holes.forEach(([x, y]) => hits.push([D.board.sh === 'pihat' ? 2.75 : 3.2, x, y]));
                 hits.forEach(h => { const k = h[0].toFixed(3); (tools[k] = tools[k] || []).push(h); }); const ks = Object.keys(tools).sort((a, b) => a - b);
                 return `M48\n; DRILL file SPARKSimLab ${date}\n; FORMAT={-:-/ absolute / metric / decimal}\n; #@! TF.FileFunction,${plated ? 'Plated,1,' + PCB.layers + ',PTH' : 'NonPlated,1,' + PCB.layers + ',NPTH'}\nFMAT,2\nMETRIC\n${ks.map((k, i) => `T${i + 1}C${k}`).join('\n')}\n%\nG90\nG05\n${ks.map((k, i) => `T${i + 1}\n` + tools[k].map(h => `X${h[1].toFixed(3)}Y${(H - h[2]).toFixed(3)}`).join('\n')).join('\n')}\nT0\nM30\n`;
             };
@@ -12704,7 +12713,7 @@ ${PCB.view === '2d' ? '<div style="opacity:.6;font-size:10.5px">اسحب أي ع
                 if (PP.top && PCB.layers === 2) out.push(blk('النحاس العلوي — Top copper' + (PP.mirrorTop ? ' (معكوس)' : ''), pcbSVG(D, { mono: true, layer: 'F', noHit: true, show: all, mirror: PP.mirrorTop }), 'الوجه العلوي يُطبع معكوساً للنقل الحراري. طابق الثقوب مع الوجه السفلي قبل الكي.'));
             }
             if (PP.silk) out.push(blk('دليل تركيب العناصر — Assembly', pcbSVG(D, { mono: true, layer: 'silk', noHit: true, show: all }) + D.R.padList.map(o => `<circle cx="${o.x}" cy="${o.y}" r="${o.pd.d / 2}" fill="none" stroke="#888" stroke-width="0.12"/>`).join(''), 'ضع كل عنصر في مكانه حسب الرمز (R1، D1…) وانتبه لعلامة + وللطرف المربع (الطرف 1).'));
-            if (PP.drill) { const sz = {}; D.R.padList.forEach(o => sz[o.pd.dr] = (sz[o.pd.dr] || 0) + 1); D.R.vias.forEach(() => sz[D.R.via.dr] = (sz[D.R.via.dr] || 0) + 1); out.push(blk('دليل الثقب — Drill guide', `<rect width="${W}" height="${H}" fill="none" stroke="#000" stroke-width="0.15"/>` + D.R.padList.concat(D.R.vias.map(v => ({ x: v.x, y: v.y, pd: { dr: D.R.via.dr } }))).map(o => `<circle cx="${o.x}" cy="${o.y}" r="${o.pd.dr / 2}" fill="none" stroke="#000" stroke-width="0.12"/><path d="M${o.x - 0.6} ${o.y}h1.2M${o.x} ${o.y - 0.6}v1.2" stroke="#000" stroke-width="0.08"/>`).join('') + D.holes.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.6" fill="none" stroke="#000" stroke-width="0.15"/>`).join(''), 'مقاسات البنطات: ' + Object.keys(sz).sort((a, b) => a - b).map(k => `${(+k).toFixed(1)}مم×${sz[k]}`).join('، ') + (D.holes.length ? '، ثقوب التثبيت 3.2مم×' + D.holes.length : ''))); }
+            if (PP.drill) { const sz = {}; D.R.padList.forEach(o => sz[o.pd.dr] = (sz[o.pd.dr] || 0) + 1); D.R.vias.forEach(() => sz[D.R.via.dr] = (sz[D.R.via.dr] || 0) + 1); out.push(blk('دليل الثقب — Drill guide', `<rect width="${W}" height="${H}" fill="none" stroke="#000" stroke-width="0.15"/>` + D.R.padList.concat(D.R.vias.map(v => ({ x: v.x, y: v.y, pd: { dr: D.R.via.dr } }))).map(o => `<circle cx="${o.x}" cy="${o.y}" r="${o.pd.dr / 2}" fill="none" stroke="#000" stroke-width="0.12"/><path d="M${o.x - 0.6} ${o.y}h1.2M${o.x} ${o.y - 0.6}v1.2" stroke="#000" stroke-width="0.08"/>`).join('') + D.holes.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.6" fill="none" stroke="#000" stroke-width="0.15"/>`).join(''), 'مقاسات البنطات: ' + Object.keys(sz).sort((a, b) => a - b).map(k => `${(+k).toFixed(1)}مم×${sz[k]}`).join('، ') + (D.holes.length ? '، ثقوب التثبيت ' + (D.board.sh === 'pihat' ? '2.75' : '3.2') + 'مم×' + D.holes.length : ''))); }
             const ruler = `<div style="margin-top:4mm;font:9pt Arial">مسطرة تحقق — يجب أن يكون الخط بطول 50 مم تماماً بعد الطباعة (اطبع بمقياس 100% «الحجم الفعلي»):<svg xmlns="http://www.w3.org/2000/svg" width="52mm" height="6mm" viewBox="0 0 52 6" style="display:block"><path d="M1 3h50M1 1v4M51 1v4${Array.from({ length: 9 }, (_, i) => `M${6 + i * 5} 2v2`).join('')}" stroke="#000" stroke-width="0.25" fill="none"/></svg></div>`;
             return `<div style="direction:rtl;color:#000;background:#fff"><div style="font:800 14pt Cairo,Arial;margin-bottom:2mm">SPARKSimLab — لوحة ${W.toFixed(1)}×${H.toFixed(1)} مم (${PCB.layers === 2 ? 'طبقتان' : 'طبقة واحدة'})</div><div style="font:9pt Arial;color:#333;margin-bottom:5mm">${new Date().toLocaleDateString('ar')} · المسارات ${PCB_W.S}/${PCB_W.P} مم · الخلوص ${PCB_CLR} مم${D.stats.jumpers ? ' · ' + D.stats.jumpers + ' جسور سلكية' : ''}</div>${out.join('')}${ruler}</div>`;
         }
@@ -12738,7 +12747,7 @@ ${PCB.view === '2d' ? '<div style="opacity:.6;font-size:10.5px">اسحب أي ع
             const wire = (par, a, b, r, m) => { const v = new T.Vector3(b[0] - a[0], b[1] - a[1], b[2] - a[2]), L = v.length(); if (L < 0.01) return; const c = new T.Mesh(new T.CylinderGeometry(r, r, L, 6), m || mat('lead', '#c9ced6', { metalness: 0.85, roughness: 0.3 })); c.position.set((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2); c.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), v.normalize()); par.add(c); };
             // ---- board: FR4 core with drilled holes + textured mask/copper/silk on both faces ----
             const ppm = Math.min(16, 2048 / Math.max(W, H)), shape = new T.Shape(); shape.moveTo(0, 0); shape.lineTo(W, 0); shape.lineTo(W, -H); shape.lineTo(0, -H); shape.lineTo(0, 0);
-            D.R.padList.forEach(o => { const h = new T.Path(); h.absarc(o.x, -o.y, o.pd.dr / 2, 0, Math.PI * 2, true); shape.holes.push(h); }); D.holes.forEach(([x, y]) => { const h = new T.Path(); h.absarc(x, -y, 1.6, 0, Math.PI * 2, true); shape.holes.push(h); });
+            D.R.padList.forEach(o => { const h = new T.Path(); h.absarc(o.x, -o.y, o.pd.dr / 2, 0, Math.PI * 2, true); shape.holes.push(h); }); D.holes.forEach(([x, y]) => { const h = new T.Path(); h.absarc(x, -y, D.board.sh === 'pihat' ? 1.375 : 1.6, 0, Math.PI * 2, true); shape.holes.push(h); });
             const core = new T.Mesh(new T.ExtrudeGeometry(shape, { depth: 1.56, bevelEnabled: false, curveSegments: 10 }), [mat('fr4c', '#0d5f33', { roughness: 0.6 }), mat('fr4', '#c9b98a', { roughness: 0.9 })]); core.rotation.x = -Math.PI / 2; core.position.y = 0.02; core.receiveShadow = true; core.castShadow = true; sc.add(core);
             const paint = top => p3Tex(Math.round(W * ppm), Math.round(H * ppm), (g, cw, ch) => {
                 const s = ppm, L = top ? 0 : 1, mask = '#0a522b', cuMask = '#2c9a59', silver = '#d9dbe0';
@@ -12821,6 +12830,19 @@ ${PCB.view === '2d' ? '<div style="opacity:.6;font-size:10.5px">اسحب أي ع
                         if (im) { const tl = new T.TextureLoader().load(im); tl.flipY = false; tl.center.set(0.5, 0.5); tl.rotation = Math.PI / 2; topM = new T.MeshStandardMaterial({ map: tl, roughness: 0.5 }); }
                         const mb = box(28.3, 1.6, 51.5, base, 0, 8.5 + 2.5 + 0.8, 0, g); mb.material = [base, base, topM, base, base, base]; box(16, 0.8, 18, mat('can', '#c9ced6', { metalness: 0.85, roughness: 0.3 }), 0, 8.5 + 2.5 + 2.0, -13, g); fp.pads.forEach(pd => box(0.64, 2.5, 0.64, gold, pd.x, 8.5 + 1.25, pd.y, g)); break;
                     }
+                    case 'pihat': {
+                        // the HAT sits on the Pi through a 2x20 female header (8.5 mm) on 11 mm standoffs; the Pi is 85 x 56 mm, its header shares the HAT grid
+                        unoG = new T.Group(); g.add(unoG); const top = -1.6 - 8.5 - 2.5;
+                        [-1.27, 1.27].forEach(dz => { box(50.8, 8.5, 2.54, black, 0, -1.6 - 4.25, 2.23 + 1.27 - 28.25 + dz, unoG); box(50.8, 2.5, 2.54, black, 0, top + 1.25, 2.23 + 1.27 - 28.25 + dz, unoG); });
+                        fp.pads.forEach(pd => box(0.64, 3, 0.64, gold, pd.x, 1.2, pd.y, unoG));
+                        const im = typeof phCat === 'function' ? phCat('rpi4') : null, base = mat('pib', '#1f7a3d', { roughness: 0.5 }); let topM = base; if (im) { const tl = new T.TextureLoader().load(im); tl.anisotropy = 4; tl.flipY = false; topM = new T.MeshStandardMaterial({ map: tl, roughness: 0.5 }); }
+                        const pb = box(85, 1.4, 56, base, 10, top - 0.7, -0.25, unoG); pb.material = [base, base, topM, base, base, base];
+                        const sil = mat('usb', '#c9ced6', { metalness: 0.9, roughness: 0.3 });
+                        box(21, 13.5, 16, sil, 10 + 42.5 - 8.5, top + 6.75, -28.25 + 10.25, unoG); box(17.5, 16, 13.2, sil, 10 + 42.5 - 6.7, top + 8, -28.25 + 29, unoG); box(17.5, 16, 13.2, sil, 10 + 42.5 - 6.7, top + 8, -28.25 + 47, unoG);
+                        box(9, 3.2, 7.4, sil, -32.5 + 11.2, top + 1.6, 28.25 - 3.4, unoG); box(6.5, 3, 7.5, sil, -32.5 + 26, top + 1.5, 28.25 - 3.4, unoG); box(6.5, 3, 7.5, sil, -32.5 + 39.5, top + 1.5, 28.25 - 3.4, unoG); box(7, 6, 12.5, black, -32.5 + 54, top + 3, 28.25 - 5.5, unoG);
+                        [[-29, -24.75], [29, -24.75], [-29, 24.25], [29, 24.25]].forEach(([x, z]) => box(4.5, 11, 4.5, mat('standoff', '#b08d3c', { metalness: 0.8, roughness: 0.35 }), x, -1.6 - 5.5, z, unoG));
+                        break;
+                    }
                     case 'uno': {
                         unoG = new T.Group(); g.add(unoG); const top = -1.6 - 2.5 - 8.5; fp.pads.forEach(pd => box(0.64, 11.5, 0.64, gold, pd.x, -6.5, pd.y, unoG));
                         [[0.84, 1.74, -1], [1.9, 2.6, -1], [1.1, 1.8, 1], [2.0, 2.5, 1]].forEach(([a, b, s]) => { const n = Math.round((b - a) / 0.1) + 1, cx = ((a + b) / 2) * 25.4 - 34.29, z = s * (26.67 - 2.54); box(n * 2.54, 2.5, 2.54, black, cx, -1.25 - 1.6, z, unoG); hdrF(unoG, n, cx, z, 'x').position.y = top + 4.25; });
@@ -12858,7 +12880,7 @@ ${PCB.view === '2d' ? '<div style="opacity:.6;font-size:10.5px">اسحب أي ع
             R.domElement.addEventListener('wheel', e => { e.preventDefault(); C.d = Math.max(20, Math.min(900, C.d * (e.deltaY > 0 ? 1.12 : 1 / 1.12))); }, { passive: false });
             // view buttons
             const bar = document.createElement('div'); bar.className = 'pcb-v3';
-            bar.innerHTML = `<span class="pcb-chip" onclick="P3.cam.ph=0.95;P3.cam.th=-0.65">منظر مائل</span><span class="pcb-chip" onclick="P3.cam.ph=0.09;P3.cam.th=0">من الأعلى</span><span class="pcb-chip" onclick="P3.cam.ph=Math.PI-0.12;P3.cam.th=0">من الأسفل</span><span class="pcb-chip ${P3.showParts ? '' : 'off'}" onclick="P3.showParts=!P3.showParts;P3.partsG.visible=P3.showParts;this.classList.toggle('off')">العناصر</span>${unoG ? `<span class="pcb-chip ${P3.showUno ? '' : 'off'}" onclick="P3.showUno=!P3.showUno;P3.unoG.visible=P3.showUno;this.classList.toggle('off')">لوحة Arduino</span>` : ''}<span class="pcb-chip" onclick="pcb3Shot()">📷 لقطة</span>`;
+            bar.innerHTML = `<span class="pcb-chip" onclick="P3.cam.ph=0.95;P3.cam.th=-0.65">منظر مائل</span><span class="pcb-chip" onclick="P3.cam.ph=0.09;P3.cam.th=0">من الأعلى</span><span class="pcb-chip" onclick="P3.cam.ph=Math.PI-0.12;P3.cam.th=0">من الأسفل</span><span class="pcb-chip ${P3.showParts ? '' : 'off'}" onclick="P3.showParts=!P3.showParts;P3.partsG.visible=P3.showParts;this.classList.toggle('off')">العناصر</span>${unoG ? `<span class="pcb-chip ${P3.showUno ? '' : 'off'}" onclick="P3.showUno=!P3.showUno;P3.unoG.visible=P3.showUno;this.classList.toggle('off')">${PCB.d && PCB.d.board && PCB.d.board.sh === 'pihat' ? 'لوحة Raspberry Pi' : 'لوحة Arduino'}</span>` : ''}<span class="pcb-chip" onclick="pcb3Shot()">📷 لقطة</span>`;
             host.appendChild(bar); P3.partsG = partsG; P3.R = R; P3.sc = sc; P3.camO = cam;
             P3.on = true; let lt = 0;
             const loop = t => { if (!P3.on) return; P3.raf = requestAnimationFrame(loop); place(); if (t - lt > 150) { lt = t; pcb3Live(); } R.render(sc, cam); }; P3.raf = requestAnimationFrame(loop);
@@ -13878,7 +13900,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.6.6', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.7.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14120,7 +14142,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             window.sparkAcc = Object.freeze({ info: () => ({ signedIn: !!S.a, tier: S.tier, view: S.as || S.tier, days: daysLeft(), name: S.a && S.a.name }), can: f => can(f), recheck: async () => { await resolve(); if (S.ready && S.a && !S.tier && !$('accOv')) { closeMd(); login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); } }, profile: async () => S.a ? { name: S.a.name, email: S.a.email, org: S.a.org || '', tier: S.tier || 'none', days: daysLeft() === Infinity ? 'دائم' : String(daysLeft()), ch: S.a.code ? (await sparkSha(S.a.code)).slice(0, 16) : '' } : null, trialFrom: async ts => { ts = +ts; if (!(ts > 1.6e12) || ts > Date.now() || !S.a || S.lic) return; const b = +LS.g('spark_dv') || Infinity; if (ts >= b) return; await anchor(ts); await resolve(); if (!S.tier && S.a && !$('accOv')) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }, waLink: () => wa(null, S.a) });
             // ---------- boot ----------
             try { S.a = JSON.parse(LS.g('spark_acct_v1') || 'null'); } catch (e) { }
-            const boot = async () => { try { if (S.a && SHORT.test(String(S.a.code || '').toUpperCase()) && !(await licRead())) await licList(true); } catch (e) { } await resolve(); S.ready = true; setTimeout(() => { try { sparkLicRefresh(); } catch (e) { } }, 6000); if (!S.a) login(); else if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); else if (S.tier === 'student' && !S.lic && daysLeft() <= 5) try { sxToast('متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية'); } catch (e) { } if (S.tier === 'student' && !S.lic && daysLeft() <= 7) try { sparkNotify({ id: 't:' + daysLeft(), title: 'متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية', text: 'اطلب كود تفعيل من صفحة حسابك لمتابعة العمل دون انقطاع.', ic: 'fa-hourglass-half', act: 'account' }); } catch (e) { } };
+            const boot = async () => { try { if (window.sparkVaultReady) { await window.sparkVaultReady; S.a = JSON.parse(LS.g('spark_acct_v1') || 'null'); } } catch (e) { } try { if (S.a && SHORT.test(String(S.a.code || '').toUpperCase()) && !(await licRead())) await licList(true); } catch (e) { } await resolve(); S.ready = true; setTimeout(() => { try { sparkLicRefresh(); } catch (e) { } }, 6000); if (!S.a) login(); else if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); else if (S.tier === 'student' && !S.lic && daysLeft() <= 5) try { sxToast('متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية'); } catch (e) { } if (S.tier === 'student' && !S.lic && daysLeft() <= 7) try { sparkNotify({ id: 't:' + daysLeft(), title: 'متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية', text: 'اطلب كود تفعيل من صفحة حسابك لمتابعة العمل دون انقطاع.', ic: 'fa-hourglass-half', act: 'account' }); } catch (e) { } };
             if (document.readyState === 'complete') setTimeout(boot, 200); else addEventListener('load', () => setTimeout(boot, 200));
             setInterval(() => { if (S.a && S.tier && !S.lic && daysLeft() <= 0) { resolve().then(() => { if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }); } }, 600000);
         })();
@@ -14225,7 +14247,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -14375,6 +14397,7 @@ html.lite .acc-card,html.lite .nt-pop,html.lite .mb-menu,html.lite .sx-drawer{bo
                     const sig = pins.filter(p => !/^(VCC|VIN|V\+|5V|3V3|VDD|\+|GND|G|V-|VSS|-)$/i.test(p)); if (sig.length && pins.length > 2 && !sig.some(p => u.has(p))) out.push({ lv: 'warn', id: c.id, t: '«' + nm(c) + '» موصول بالتغذية فقط — أطراف الإشارة غير موصولة.' });
                 });
                 if (!power) out.unshift({ lv: 'err', t: 'لا يوجد مصدر تغذية موصول (متحكم أو بطارية أو مصدر جهد).' });
+                try { if (window.sparkErcExtra) window.sparkErcExtra(out); } catch (e) { }
                 return out;
             }
             window.sparkERC = erc;
@@ -14430,11 +14453,11 @@ ${[[35, 35], [615, 35], [35, 525], [615, 525]].map(p => `<circle cx="${p[0]}" cy
 <rect x="476" y="206" width="104" height="120" rx="4" fill="#15171b"/><text x="528" y="272" font-size="17" text-anchor="middle" fill="#9aa3af" font-family="sans-serif">RAM</text>
 <rect x="600" y="230" width="62" height="62" rx="3" fill="#15171b"/>
 <rect x="16" y="196" width="40" height="170" rx="3" fill="#e9edf2" stroke="#59616d" stroke-width="3"/><rect x="24" y="204" width="12" height="154" fill="#2b2f36"/><text x="76" y="290" font-size="17" fill="#d9f2e1" font-family="sans-serif" transform="rotate(-90 76 290)">DISPLAY</text>
-<rect x="432" y="392" width="40" height="120" rx="3" fill="#e9edf2" stroke="#59616d" stroke-width="3"/><rect x="440" y="400" width="12" height="104" fill="#2b2f36"/><text x="490" y="470" font-size="15" fill="#d9f2e1" font-family="sans-serif" transform="rotate(-90 490 470)">CAMERA</text>
+<rect x="436" y="372" width="40" height="120" rx="3" fill="#e9edf2" stroke="#59616d" stroke-width="3"/><rect x="444" y="380" width="12" height="104" fill="#2b2f36"/><text x="494" y="450" font-size="15" fill="#d9f2e1" font-family="sans-serif" transform="rotate(-90 494 450)">CAMERA</text>
 <rect x="72" y="498" width="92" height="62" rx="8" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><text x="118" y="488" font-size="15" text-anchor="middle" fill="#d9f2e1" font-family="sans-serif">USB-C 5V</text>
-<rect x="222" y="506" width="74" height="54" rx="5" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><rect x="332" y="506" width="74" height="54" rx="5" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><text x="314" y="496" font-size="15" text-anchor="middle" fill="#d9f2e1" font-family="sans-serif">HDMI ×2</text>
-<rect x="520" y="486" width="64" height="74" rx="8" fill="#15171b"/><circle cx="552" cy="540" r="14" fill="#2b2f36"/>
-${usb(50, '#2563eb')}${usb(222, '#1f2937')}<rect x="690" y="396" width="172" height="146" rx="6" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><rect x="792" y="420" width="62" height="98" fill="#2b2f36"/>
+<rect x="227" y="506" width="66" height="54" rx="5" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><rect x="362" y="506" width="66" height="54" rx="5" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><text x="327" y="496" font-size="15" text-anchor="middle" fill="#d9f2e1" font-family="sans-serif">HDMI ×2</text>
+<rect x="508" y="486" width="64" height="74" rx="8" fill="#15171b"/><circle cx="540" cy="540" r="14" fill="#2b2f36"/>
+<rect x="658" y="22" width="204" height="160" rx="6" fill="#c9ced6" stroke="#8b929c" stroke-width="3"/><rect x="792" y="44" width="62" height="116" fill="#2b2f36"/>${usb(224, '#2563eb')}${usb(404, '#1f2937')}
 <text x="200" y="420" font-size="25" fill="#e6e9ee" font-family="sans-serif" font-weight="700">Raspberry Pi 4 Model B</text><text x="96" y="86" font-size="14" fill="#d9f2e1" font-family="sans-serif">3V3 ▸ pin 1</text></svg>`;
             const TS = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 372"><rect x="10" y="2" width="588" height="368" rx="18" fill="#0d0f13" stroke="#2b2f36" stroke-width="3"/><rect x="34" y="22" width="542" height="308" rx="4" fill="#05070a"/><rect x="0" y="112" width="16" height="148" rx="3" fill="#2b2f36"/><text x="306" y="355" font-size="14" text-anchor="middle" fill="#6b7280" font-family="sans-serif">7" Touch Display · 800×480</text></svg>`;
             const leg = y => Array.from({ length: 8 }, (_, i) => `<rect x="${27 + 33 * i}" y="${y}" width="15" height="26" rx="2" fill="#c9ced6"/>`).join('');
@@ -15176,7 +15199,8 @@ class TouchScreen:
         return False
 `;
             const agentFile = () => AGENT.replace('__LIB__', PILIB.replace(/'''/g, '"""'));
-            const PI = { host: localStorage.getItem('spark_pi_host') || 'raspberrypi.local', pin: localStorage.getItem('spark_pi_pin') || '', since: 0, tm: 0 };
+            const PI = { host: localStorage.getItem('spark_pi_host') || 'raspberrypi.local', pin: '', since: 0, tm: 0 };
+            addEventListener('load', () => (window.sparkVaultReady || Promise.resolve()).then(() => { try { PI.pin = localStorage.getItem('spark_pi_pin') || ''; } catch (e) { } }));
             const piUrl = p => 'http://' + PI.host.replace(/^https?:\/\//, '').replace(/\/.*$/, '') + (/:\d+$/.test(PI.host) ? '' : ':8765') + p;
             async function piFetch(p, body) { const r = await fetch(piUrl(p), { method: body ? 'POST' : 'GET', headers: Object.assign({ 'X-Spark-Pin': PI.pin }, body ? { 'Content-Type': 'application/json' } : {}), body: body ? JSON.stringify(body) : undefined, cache: 'no-store' }); return r.json().catch(() => ({})).then(j => (j._st = r.status, j)); }
             window.piOpen = function () {
@@ -15818,6 +15842,754 @@ class TouchScreen:
 (function () {
     const kill = () => { document.querySelectorAll('[onclick*="challengesModal"]').forEach(b => { if (!b.closest('#challengesModal')) b.remove(); }); const m = document.getElementById('challengesModal'); if (m) m.remove(); };
     kill(); addEventListener('load', () => setTimeout(kill, 0));
+})();
+
+// ===== Phase 42: assistant upgrade — a "part expert" for every catalogue part (what it is, wiring per board, code, cautions),
+//       circuit doctor, engineering / mechatronics / AI topics. Everything is local: instant and offline. =====
+(function () {
+    if (typeof KB2 === 'undefined' || typeof aiLocal !== 'function' || typeof COMPONENT_CATALOG === 'undefined') return;
+
+    // ---------- 1) more topics for the knowledge base: [keywords, title, answer, code] ----------
+    const MORE = [
+        ['كيرشوف kirchhoff kvl kcl قانون العقده الحلقه', 'قانونا كيرشوف', '**قانون التيار (KCL):** مجموع التيارات الداخلة إلى أي عقدة = مجموع الخارجة منها.\n**قانون الجهد (KVL):** مجموع فروق الجهد حول أي حلقة مغلقة = صفر.\nبهما تحلّ أي دائرة: اكتب معادلة لكل عقدة أو حلقة ثم حلّ المعادلات. مثال: مصدر 9V مع مقاومتين 1kΩ و2kΩ على التوالي → التيار 3mA، وجهد الثانية 6V.'],
+        ['ثيفينن thevenin نورتون norton مكافئ دائره مكافئه', 'مكافئ ثيفينن ونورتون', 'أي شبكة خطية بين طرفين تُختصر إلى **مصدر جهد Vth مع مقاومة Rth على التوالي** (ثيفينن) أو مصدر تيار In مع Rn على التوازي (نورتون).\n- Vth = جهد الدائرة المفتوحة بين الطرفين.\n- Rth = المقاومة المرئية بعد إطفاء المصادر المستقلة (الجهد قصر، التيار فتح).\n- In = Vth / Rth.\nأقصى قدرة تنتقل للحمل عندما RL = Rth.'],
+        ['مرشح filter rc low pass high تردد القطع cutoff فلتر', 'مرشحات RC وتردد القطع', 'مرشح **تمرير منخفض**: مقاومة على التوالي ثم مكثف إلى الأرضي — يمرر الترددات المنخفضة ويضعف العالية. **تمرير عالٍ**: العكس.\nتردد القطع: **fc = 1 / (2π·R·C)** وعنده يهبط الخرج إلى 0.707 من الدخل (−3dB).\nمثال: R=10kΩ و C=100nF → fc ≈ 159Hz. يفيد لتنعيم قراءة حساس تماثلي أو تحويل PWM إلى جهد شبه ثابت.'],
+        ['ثابت الزمن time constant tau rc شحن تفريغ مكثف', 'ثابت الزمن RC', 'τ = R × C (بالثواني). بعد τ واحد يصل المكثف إلى 63% من الجهد النهائي، وبعد 5τ يُعدّ مشحوناً (99%).\nمعادلة الشحن: V(t) = Vs·(1 − e^(−t/τ))، والتفريغ: V(t) = V0·e^(−t/τ).\nمثال: 10kΩ مع 100µF → τ = 1 ثانية.'],
+        ['مضخم عمليات opamp op-amp عاكس غير عاكس كسب gain lm358 تابع', 'مضخم العمليات (Op-Amp)', 'قاعدتان مع التغذية العكسية السالبة: لا تيار يدخل المدخلين، وجهدا المدخلين متساويان.\n- **غير عاكس:** الكسب = 1 + Rf/Rg.\n- **عاكس:** الكسب = −Rf/Rin.\n- **تابع الجهد (Buffer):** كسب 1، يعزل الحساس عن الحمل.\n- **مقارن:** بدون تغذية عكسية، الخرج عالٍ إذا V+ > V−.\nLM358 يعمل من مصدر واحد 3–32V لكن خرجه لا يصل للموجب (≈ Vcc−1.5V)؛ استخدم Rail-to-Rail مع 3.3V.'],
+        ['ترانزستور مفتاح switch تشبع قاعده مقاومه القاعده حساب hfe', 'الترانزستور كمفتاح', 'لتشغيل حمل بتيار Ic من منفذ متحكم:\n1. NPN: الباعث للأرضي، الحمل بين الموجب والمجمع.\n2. تيار القاعدة Ib ≥ Ic / (hFE/5) لضمان التشبع.\n3. Rb = (Vpin − 0.7) / Ib. مثال: حمل 200mA، hFE=100 → Ib=10mA → Rb ≈ (5−0.7)/0.01 = 430Ω (اختر 390Ω).\nللأحمال الحثية (محرك، ريلاي، صمام) أضف دايود 1N4007 عكسياً على طرفي الحمل. فوق 1A استخدم MOSFET منطقي مثل IRLZ44N.'],
+        ['دايود حمايه flyback freewheeling حثي ملف ريلاي محرك ارتداد', 'دايود الحماية للأحمال الحثية', 'الملف يخزّن طاقة، وعند قطع التيار يولّد جهداً عكسياً عالياً (مئات الفولتات) يحرق الترانزستور. ضع دايوداً (1N4007 أو شوتكي للسرعات العالية) **على التوازي مع الحمل**، كاثوده على الموجب. يلزم مع كل ريلاي ومحرك وصمام وملف.'],
+        ['قنطره h-bridge h bridge اتجاه محرك l298n عكس', 'قنطرة H والتحكم باتجاه المحرك', 'أربعة مفاتيح حول المحرك: تشغيل قطرين متقابلين يحدد الاتجاه. IN1=HIGH و IN2=LOW للأمام، والعكس للخلف، وكلاهما LOW توقف حر، وكلاهما HIGH فرملة. السرعة عبر PWM على منفذ التفعيل EN.\nL298N يخسر ≈2V (ثنائي القطبية)؛ TB6612 و DRV8833 أكفأ (MOSFET). وحّد الأرضي بين المتحكم ومصدر المحرك دائماً.'],
+        ['محرك خطوي stepper خطوه microstep a4988 nema17 درايفر', 'المحركات الخطوية', 'يتحرك بخطوات ثابتة (شائع: 1.8° = 200 خطوة/دورة). 28BYJ-48 أحادي القطبية مع ULN2003 (≈2048 خطوة/دورة بسبب علبة التروس). NEMA17 ثنائي القطبية مع A4988/DRV8825: منفذ STEP لكل خطوة و DIR للاتجاه، و Microstepping حتى 1/16 لحركة أنعم.\nاضبط حد التيار في الدرايفر قبل التشغيل، ولا تفصل المحرك والدرايفر مغذّى.'],
+        ['انكودر encoder دوران سرعه rpm نبضات quadrature', 'قياس السرعة بالإنكودر', 'الإنكودر يعطي نبضات مع الدوران. القناتان A و B (Quadrature) تحددان الاتجاه. السرعة: RPM = (النبضات في الثانية × 60) / (نبضات الدورة × نسبة التروس).\nاقرأ النبضات بالمقاطعات (attachInterrupt) لا بـ digitalRead داخل loop، واحسب السرعة كل 100ms.'],
+        ['pid تحكم تناسبي تكاملي تفاضلي ضبط kp ki kd tuning', 'المتحكم PID وضبطه', 'الخطأ e = المطلوب − المقاس. الخرج = Kp·e + Ki·∫e + Kd·de/dt.\n- **P** يستجيب للخطأ الحالي (زيادته تسرّع وتسبب اهتزازاً).\n- **I** يزيل الخطأ الثابت (زيادته تسبب تجاوزاً).\n- **D** يخمد الاهتزاز (حساس للضجيج).\nضبط عملي: صفّر Ki و Kd، ارفع Kp حتى يبدأ الاهتزاز ثم خذ نصفه، ارفع Ki حتى يزول الخطأ الثابت، ثم أضف Kd قليلاً. حدّد التكامل (Anti-windup) وثبّت زمن العينة.',
+            'double kp=2.0, ki=0.5, kd=0.1, integ=0, prev=0;\nunsigned long last=0;\nvoid loop(){\n  if (millis()-last >= 20) {            // زمن عينة ثابت 20ms\n    double dt=(millis()-last)/1000.0; last=millis();\n    double e = target - readSensor();\n    integ = constrain(integ + e*dt, -100, 100);   // Anti-windup\n    double out = kp*e + ki*integ + kd*(e-prev)/dt; prev=e;\n    analogWrite(9, constrain(out, 0, 255));\n  }\n}'],
+        ['كينماتيكا kinematics ذراع روبوت امامية عكسية inverse forward زوايا', 'كينماتيكا الذراع الروبوتية', '**الأمامية:** من زوايا المفاصل إلى موضع الطرف. لذراع مستوٍ بوصلتين L1 و L2: x = L1·cosθ1 + L2·cos(θ1+θ2)، y = L1·sinθ1 + L2·sin(θ1+θ2).\n**العكسية:** من الموضع إلى الزوايا: cosθ2 = (x²+y²−L1²−L2²)/(2·L1·L2)، ثم θ1 = atan2(y,x) − atan2(L2·sinθ2, L1+L2·cosθ2).\nإذا خرجت قيمة cosθ2 عن [−1,1] فالنقطة خارج مجال الوصول.'],
+        ['روبوت تفاضلي differential drive عجلتين دوران سرعه العجلات', 'حركة الروبوت التفاضلي', 'عجلتان مستقلتان: v = (vR + vL)/2 للسرعة الخطية، ω = (vR − vL)/L للدوران (L المسافة بين العجلتين). سرعتان متساويتان = خط مستقيم، متعاكستان = دوران في المكان.\nللتحكم الدقيق استخدم إنكودر لكل عجلة مع PID للسرعة.'],
+        ['adc دقه بت resolution تحويل تماثلي رقمي 10bit 12bit مرجع', 'دقة المحوّل ADC', 'عدد المستويات = 2^n. Uno: 10 بت (0–1023) على 5V → الخطوة 4.9mV. ESP32: 12 بت (0–4095) على 3.3V → 0.8mV. الجهد = القراءة × Vref / (2^n − 1).\nلتقليل الضجيج: خذ متوسط عدة قراءات، وأضف مكثف 100nF على مدخل الحساس. الراسبري باي بلا ADC: استخدم MCP3008.'],
+        ['pwm تردد دوره التشغيل duty cycle تنعيم متوسط الجهد', 'PWM ودورة التشغيل', 'نبضات بتردد ثابت وعرض متغير. متوسط الجهد = Vcc × Duty. في Uno: analogWrite(pin, 0–255) بتردد ≈490Hz (المنفذان 5 و6 ≈980Hz). في ESP32: ledcWrite بدقة وتردد تختارهما. للحصول على جهد شبه ثابت أضف مرشح RC؛ وللمحركات استخدم تردداً فوق 20kHz لتفادي الصفير.'],
+        ['مقاطعه interrupt timer مؤقت isr volatile', 'المقاطعات والمؤقتات', 'المقاطعة تنفّذ دالة قصيرة (ISR) فور حدوث حدث دون انتظار loop. في Uno المنفذان 2 و3 فقط. اجعل ISR قصيرة جداً، لا تستخدم delay ولا Serial داخلها، وعرّف المتغيرات المشتركة volatile.',
+            'volatile unsigned long pulses = 0;\nvoid count(){ pulses++; }\nvoid setup(){ pinMode(2, INPUT_PULLUP); attachInterrupt(digitalPinToInterrupt(2), count, RISING); Serial.begin(9600); }\nvoid loop(){ noInterrupts(); unsigned long p = pulses; pulses = 0; interrupts(); Serial.println(p); delay(1000); }'],
+        ['مقارنه i2c spi uart فرق بروتوكول اتصال اسرع', 'مقارنة UART و I2C و SPI', '- **UART:** سلكان (TX/RX)، نقطة لنقطة، غير متزامن، يلزم توحيد السرعة (Baud).\n- **I2C:** سلكان (SDA/SCL) لعدة أجهزة بعناوين، مقاومات رفع 4.7kΩ، حتى 400kHz عادة.\n- **SPI:** أربعة أسلاك (MOSI/MISO/SCK + CS لكل جهاز)، الأسرع (ميغاهرتزات)، للشاشات وبطاقات الذاكرة.\nاختر I2C لتوفير المنافذ، و SPI للسرعة، و UART للوحدات مثل GPS والبلوتوث.'],
+        ['rs485 modbus rtu صناعي max485 مسافه طويله', 'RS485 و Modbus', 'RS485 إشارة تفاضلية على سلكين A و B تتحمل مسافات حتى 1200م وضجيجاً صناعياً، وتربط حتى 32 جهازاً. Modbus RTU بروتوكول فوقها: سيد يسأل وعبد يجيب (عنوان، دالة، سجل، CRC). مع MAX485: DE و RE معاً HIGH للإرسال و LOW للاستقبال، ومقاومة 120Ω في طرفي الخط.'],
+        ['can bus كان سيارات mcp2515 ناقل', 'ناقل CAN', 'ناقل تفاضلي (CAN-H / CAN-L) متعدد السادة بأولويات للرسائل وكشف أخطاء قوي — أساس شبكات السيارات والروبوتات الصناعية. السرعة الشائعة 500kbps، ومقاومة 120Ω عند كل طرف. مع الأردوينو: وحدة MCP2515 عبر SPI؛ و ESP32 فيه متحكم CAN مدمج (TWAI) ويحتاج محوّلاً مثل SN65HVD230.'],
+        ['مكثف فصل decoupling bypass 100nf ضجيج تغذيه', 'مكثفات الفصل (Decoupling)', 'ضع مكثف سيراميك 100nF أقرب ما يمكن لطرفي التغذية في كل دائرة متكاملة، ومكثفاً إلكتروليتياً 10–470µF عند مدخل التغذية وبجوار المحركات والسيرفو. تمنع هبوط الجهد اللحظي وإعادة تشغيل المتحكم.'],
+        ['ارضي مشترك common ground توحيد الارضي مصدرين', 'توحيد الأرضي بين المصادر', 'عند استخدام مصدرين (مثلاً 5V للمتحكم و12V للمحرك) يجب وصل **سالب المصدرين معاً**، وإلا لا يوجد مرجع مشترك للإشارة ولن يعمل التحكم. الاستثناء: العزل المتعمّد عبر Optocoupler أو ريلاي.'],
+        ['عمر البطاريه حساب استهلاك mah ساعات تشغيل', 'حساب عمر البطارية', 'الزمن (ساعة) ≈ السعة (mAh) ÷ متوسط التيار (mA) × 0.8 (هامش). مثال: 18650 بسعة 2500mAh مع استهلاك 120mA → ≈16.5 ساعة.\nللإطالة: Deep Sleep، إطفاء الليدات، رفع زمن النوم، واختيار منظّم بكفاءة عالية (Buck) بدل الخطي.'],
+        ['منظم خطي حراره تبديد 7805 مشتت heat sink قدره', 'حرارة المنظمات الخطية', 'القدرة المبددة P = (Vin − Vout) × I. مثال: 7805 من 12V بتيار 0.5A → 3.5W: يلزم مشتت حراري. إن زادت عن 1W فكّر بمحوّل Buck (كفاءة 85–95%). أضف مكثفي 0.33µF على الدخل و0.1µF على الخرج.'],
+        ['تعلم الاله machine learning انحدار تصنيف regression classification', 'أساسيات تعلّم الآلة', '**الانحدار** يتنبأ بقيمة رقمية (درجة حرارة بعد ساعة)، و**التصنيف** يختار فئة (سليم/مريض). الخطوات: جمع بيانات ← تنظيف ← تقسيم (تدريب 70–80% / اختبار) ← تدريب ← تقييم ← نشر.\nمقاييس: MSE للانحدار، والدقة و Precision/Recall و F1 للتصنيف. ابدأ بنموذج بسيط (انحدار خطي، شجرة قرار) قبل الشبكات العصبية.'],
+        ['شبكه عصبيه neural network طبقات نيورون تفعيل relu وزن', 'الشبكات العصبية', 'طبقات من عصبونات: كل عصبون يحسب مجموعاً موزوناً لمدخلاته ثم دالة تفعيل (ReLU في الطبقات المخفية، Softmax للتصنيف في الخرج). التدريب: انتشار أمامي ← حساب الخسارة ← انتشار خلفي يعدّل الأوزان بمعدّل تعلّم.\nللحساسات على المتحكمات تكفي غالباً طبقتان مخفيتان من 8–32 عصبوناً.'],
+        ['overfitting فرط التخصيص تعميم underfitting تحقق validation', 'فرط التخصيص (Overfitting)', 'النموذج يحفظ بيانات التدريب ويفشل على الجديدة: دقة التدريب عالية والاختبار منخفضة. العلاج: بيانات أكثر وتنويعها (Augmentation)، نموذج أبسط، Dropout، تنظيم L2، وإيقاف مبكر (Early Stopping). عكسه Underfitting: نموذج أضعف من المشكلة.'],
+        ['tinyml tflite tensorflow lite micro نموذج على المتحكم edge', 'TinyML: نموذج على المتحكم', '1) اجمع بيانات الحساس (مثلاً MPU6050 بتردد 50Hz). 2) درّب نموذجاً صغيراً بـ TensorFlow/Keras. 3) حوّله إلى TFLite مع تكميم int8. 4) حوّله إلى مصفوفة C وضعه في المشروع مع TensorFlow Lite Micro. ESP32 مناسب (520KB RAM)؛ Uno صغير جداً (2KB RAM) إلا لنماذج بسيطة جداً. راقب حجم النموذج وزمن الاستدلال.'],
+        ['رؤيه حاسوبيه computer vision كاميرا opencv كشف تصنيف صور', 'الرؤية الحاسوبية', 'مهام أساسية: **تصنيف** الصورة كاملة، **كشف** الأجسام بمربعات (YOLO, SSD)، و**تجزئة** لكل بكسل. خطوات تقليدية بـ OpenCV: تحويل لون (HSV) ← عتبة ← تنعيم ← إيجاد الحواف/الكنتور. على الراسبري باي: OpenCV مع Pi Camera؛ وعلى ESP32-CAM نماذج خفيفة بدقة 96×96.'],
+        ['دمج حساسات sensor fusion kalman كالمان complementary مرشح مكمل', 'دمج الحساسات ومرشح كالمان', 'الجيروسكوب دقيق لحظياً لكنه ينجرف، ومقياس التسارع ثابت لكنه ضوضائي. **المرشح المكمل:** الزاوية = 0.98×(الزاوية + الجيرو×dt) + 0.02×زاوية التسارع — بسيط وفعّال. **كالمان** يوازن بين التنبؤ والقياس حسب الثقة بكل منهما، وهو الأمثل للأنظمة الخطية بضجيج غاوسي.'],
+        ['قرار مصفوفه truth table جدول الحقيقه بوابه منطقيه جبر بولياني', 'البوابات المنطقية وجبر بول', 'AND: 1 إذا كل المداخل 1. OR: 1 إذا أي مدخل 1. NOT: يعكس. NAND و NOR بوابتان شاملتان (تبنى منهما أي دالة). XOR: 1 إذا اختلف المدخلان.\nقانونا دي مورغان: (A·B)\' = A\'+B\' و (A+B)\' = A\'·B\'. بسّط الدوال بخريطة كارنوف قبل البناء.'],
+        ['555 مؤقت astable monostable تردد نبضه', 'المؤقت 555', '**Astable (مذبذب):** f ≈ 1.44 / ((R1 + 2·R2)·C)، ودورة التشغيل = (R1+R2)/(R1+2·R2).\n**Monostable (نبضة واحدة):** T ≈ 1.1·R·C بعد قدح الطرف TRIG بجهد أقل من ثلث Vcc.\nأضف 10nF على طرف CTRL و100nF على التغذية.'],
+        ['pcb تصميم لوحه عرض المسار trace width نصائح طباعه', 'نصائح تصميم PCB', '- عرض المسار: 0.25–0.4mm للإشارة، ≈1mm لكل أمبير تقريباً للقدرة (نحاس 1oz).\n- مسافة عزل 0.2mm فأكثر.\n- صبّة أرضي (Ground Pour) على طبقة كاملة.\n- مكثفات الفصل ملاصقة للدوائر المتكاملة.\n- أبعد مسارات القدرة والمحركات عن الإشارات التماثلية.\n- ثقوب تثبيت M3 (3.2mm) أو M2.5 (2.75mm) للوحات HAT.'],
+        ['raspberry pi راسبري باي gpio قواعد حدود 3.3 جهد تيار', 'قواعد منافذ الراسبري باي', '- المنافذ **3.3V فقط** — 5V على أي GPIO يتلف المعالج نهائياً.\n- أقصى تيار للمنفذ 16mA، ومجموع المنافذ ≈50mA.\n- لا يوجد مدخل تماثلي: استخدم MCP3008 (SPI).\n- خرج 5V من حساس (مثل ECHO في HC-SR04) يمر بمقسّم جهد 1kΩ/2kΩ.\n- المحركات والريلاي عبر ترانزستور أو درايفر، لا مباشرة.\n- الترقيم في gpiozero هو BCM (GPIO17) لا رقم الطرف الفيزيائي (11).'],
+        ['hat راسبري لوحه اضافيه مقاس 40 pin هيدر', 'لوحة HAT للراسبري باي', 'المقاس القياسي 65×56.5مم، بأربعة ثقوب M2.5 على مستطيل 58×49مم، وهيدر 2×20 بخطوة 2.54مم: الطرف 1 (3.3V) في الصف الداخلي جهة بطاقة الذاكرة، والطرف 2 (5V) مقابله في الصف الخارجي. الأطراف 27 و28 محجوزة لذاكرة تعريف HAT. المنصة ترسم هذه اللوحة تلقائياً من دائرتك في تبويب «تصميم PCB».'],
+        ['ثرمستور ntc معادله beta steinhart حراره مقاومه', 'قراءة الثرمستور NTC', 'وصّله كمقسّم جهد مع مقاومة ثابتة تساوي مقاومته عند 25°م (غالباً 10kΩ). احسب مقاومته من قراءة ADC ثم الحرارة بمعادلة بيتا: 1/T = 1/T0 + (1/B)·ln(R/R0)، مع T بالكلفن و T0 = 298.15 و B ≈ 3950.',
+            'const float R0=10000, B=3950, RS=10000;\nvoid setup(){ Serial.begin(9600); }\nvoid loop(){\n  float v = analogRead(A0) / 1023.0;\n  float r = RS * v / (1.0 - v);                 // الثرمستور إلى GND والمقاومة الثابتة إلى 5V\n  float t = 1.0 / (1.0/298.15 + log(r/R0)/B) - 273.15;\n  Serial.println(t); delay(500);\n}'],
+        ['مقسم جهد مستوى level shifter 5v الى 3.3 تحويل مستوى منطقي', 'تحويل المستوى المنطقي 5V ↔ 3.3V', 'من 5V إلى 3.3V (اتجاه واحد): مقسّم جهد 1kΩ (علوي) و2kΩ (سفلي) → 3.33V. للخطوط السريعة أو ثنائية الاتجاه (I2C): محوّل مستوى بـ MOSFET (BSS138). من 3.3V إلى 5V: معظم مداخل 5V تقرأ 3.3V كـ HIGH مباشرة.'],
+        ['تيار الليد حساب مقاومه led resistor 220 قيمه', 'حساب مقاومة الليد', 'R = (Vs − Vf) / I. Vf ≈ 2.0V للأحمر/الأصفر، 2.2V للأخضر، 3.0–3.3V للأزرق/الأبيض. مثال: 5V مع ليد أحمر بتيار 15mA → (5−2)/0.015 = 200Ω → اختر 220Ω. على 3.3V (ESP32 / راسبري): (3.3−2)/0.01 = 130Ω → 150–330Ω.'],
+        ['mosfet موسفت logic level rds on gate بوابه مقاومه سحب', 'اختيار MOSFET وتشغيله', 'للتحكم من متحكم اختر **Logic-Level** (IRLZ44N, 2N7000) يفتح كاملاً عند 5V أو 3.3V؛ IRF540/IRFZ44N تحتاج ≈10V على البوابة. N-channel في جهة الأرضي (Low-side): المصدر S للأرضي والحمل بين الموجب والمصرف D. أضف 100–220Ω على البوابة و10kΩ من البوابة للأرضي حتى لا يعمل عشوائياً عند الإقلاع.'],
+        ['اوسيلوسكوب راسم اشارات oscilloscope قياس تردد موجه', 'استخدام راسم الإشارات', 'يعرض الجهد مع الزمن. اضبط Volts/Div ليملأ الموجة الشاشة و Time/Div لترى دورتين أو ثلاثاً، والقدح (Trigger) على حافة صاعدة لتثبيت الصورة. التردد = 1 / زمن الدورة. في المنصة: افتح «الراسم» من الشريط السفلي لمتابعة أي منفذ أثناء المحاكاة.']
+    ];
+    MORE.forEach(e => KB2.push(e)); try { KB_IX = null; } catch (e) { }
+
+    // ---------- 2) part expert ----------
+    // facts: key → 'class|supply|what it is|library|note|aliases'   supply: 5 = 5V only · 3 = 3.3V only · b = 3.3–5V
+    const F = {
+        soil_sensor: 'ana|b|يقيس رطوبة التربة سعوياً (لا يتآكل). القراءة تنخفض كلما زادت الرطوبة.||عاير القراءة في الهواء (جاف) وفي الماء (رطب) ثم استخدم map.|رطوبه تربه soil moisture',
+        dht22_sensor: 'dht|b|يقيس الحرارة (−40..80°م ±0.5) والرطوبة (0–100% ±2) رقمياً على سلك واحد.|DHT|قراءة واحدة كل ثانيتين على الأقل، ومقاومة رفع 10kΩ بين DATA و VCC.|dht22 dht11 حراره رطوبه',
+        ultrasonic_sensor: 'sonar|5|يقيس المسافة 2–400سم بزمن ارتداد نبضة فوق صوتية.||المسافة = الزمن × 0.0343 / 2. خرج ECHO بجهد 5V.|hc-sr04 hcsr04 التراسونيك مسافه',
+        ldr_sensor: 'ana|b|وحدة مقاومة ضوئية: خرج تماثلي يتغير مع شدة الإضاءة.|||ldr ضوء اضاءه',
+        potentiometer: 'ana|b|مقاومة متغيرة بثلاثة أطراف تعمل كمقسّم جهد: الطرف الأوسط يعطي 0..VCC.|||بوتنشيومتر pot',
+        pir_sensor: 'dig|5|يكشف حركة الأجسام الدافئة حتى ≈7م. الخرج HIGH (3.3V) عند الحركة.||يحتاج 30–60 ثانية استقرار بعد التشغيل.|hc-sr501 حركه pir',
+        lm35: 'ana|5|حساس حرارة تماثلي خطي: 10mV لكل درجة مئوية.||الحرارة = الجهد(mV) / 10.|lm35 حراره',
+        tmp36: 'ana|b|حساس حرارة تماثلي: 10mV/°م مع إزاحة 500mV (يقيس تحت الصفر).||الحرارة = (الجهد(mV) − 500) / 10.|tmp36',
+        mq2: 'gas|5|حساس غازات قابلة للاشتعال ودخان (LPG، بروبان، ميثان).||يسخن ويستهلك ≈150mA؛ اتركه دقيقة قبل القراءة وغذِّه من مصدر كافٍ.|mq-2 غاز دخان',
+        mq135: 'gas|5|حساس جودة الهواء (أمونيا، بنزين، CO2 تقريبياً).||يحتاج تسخيناً أولياً ومعايرة في هواء نقي.|mq-135 جوده الهواء',
+        mq7: 'gas|5|حساس أول أكسيد الكربون CO.||دقته تتطلب دورة تسخين 5V/1.4V.|mq-7 co',
+        flame: 'gas|b|يكشف اللهب بالأشعة تحت الحمراء (760–1100nm) حتى ≈80سم.||DO يصبح LOW عند كشف اللهب في معظم الوحدات.|لهب نار flame',
+        sound: 'gas|b|ميكروفون مع مقارن: AO لشدة الصوت و DO عند تجاوز العتبة.|||صوت ميكروفون sound',
+        rain: 'gas|b|لوح كشف المطر: المقاومة تقل مع البلل.||افصل التغذية بين القراءات لتقليل تآكل اللوح.|مطر rain',
+        waterlvl: 'ana|b|حساس مستوى الماء بخطوط موصلة: الجهد يزيد مع ارتفاع الماء.|||مستوى الماء water level',
+        acs712: 'ana|5|حساس تيار بتأثير هول (±5/20/30A). الخرج 2.5V عند صفر تيار.||الحساسية 185mV/A (5A)، 100mV/A (20A)، 66mV/A (30A). يوصل على التوالي مع الحمل.|acs712 تيار',
+        vsens: 'ana|b|مقسّم جهد 5:1 لقياس جهود حتى 25V بمدخل تماثلي.||الجهد = القراءة × 5 × (Vref/1023).|حساس جهد voltage sensor',
+        hall49e: 'ana|b|حساس مجال مغناطيسي تماثلي (هول خطي): 2.5V بلا مجال.|||هول 49e مغناطيس',
+        fsr: 'ana|b|مقاومة حساسة للقوة: تقل مقاومتها مع الضغط.||تُقرأ كمقسّم جهد مع مقاومة 10kΩ.|ضغط قوه fsr',
+        flex: 'ana|b|حساس انحناء: تزيد مقاومته مع الثني.||تُقرأ كمقسّم جهد مع مقاومة ≈22kΩ.|انحناء flex',
+        ir_obst: 'dig|b|حساس عوائق بالأشعة تحت الحمراء (2–30سم). الخرج LOW عند وجود عائق.|||عوائق ir obstacle',
+        tcrt: 'gas|b|حساس انعكاس لتتبع الخط (TCRT5000): يميّز الأسود من الأبيض.|||تتبع الخط tcrt5000 line',
+        touch: 'dig|b|زر لمس سعوي (TTP223): HIGH عند اللمس.|||لمس ttp223 touch',
+        tilt: 'dig|b|مفتاح ميلان كروي: يغيّر حالته عند إمالة الوحدة.|||ميلان tilt',
+        vib: 'dig|b|حساس اهتزاز (SW-420): نبضة عند الاهتزاز.||اقرأه بمقاطعة لالتقاط النبضات القصيرة.|اهتزاز sw-420 vibration',
+        hall3144: 'dig|b|مفتاح هول رقمي: LOW عند اقتراب مغناطيس. مناسب لعدّ الدورات.|||هول 3144 مغناطيس دورات',
+        bmp280: 'i2c|3|يقيس الضغط الجوي والحرارة ويحسب الارتفاع.|Adafruit_BMP280|العنوان 0x76 أو 0x77. بعض الوحدات 3.3V فقط.|bmp280 ضغط ارتفاع',
+        bme280: 'i2c|3|حرارة ورطوبة وضغط جوي في شريحة واحدة.|Adafruit_BME280|العنوان 0x76 أو 0x77.|bme280',
+        mpu6050: 'i2c|b|مقياس تسارع وجيروسكوب 6 محاور.|Wire|العنوان 0x68 (أو 0x69 إذا AD0 = HIGH).|mpu6050 جيروسكوب تسارع اتزان',
+        bh1750: 'i2c|b|يقيس شدة الإضاءة مباشرة باللوكس (1–65535).|BH1750|العنوان 0x23.|bh1750 لوكس اضاءه',
+        ds18b20: '1w|b|حساس حرارة رقمي دقيق (±0.5°م) على سلك واحد، ومتوفر بنسخة مقاومة للماء.|OneWire, DallasTemperature|مقاومة رفع 4.7kΩ بين DQ و VCC. يمكن وصل عدة حساسات على نفس السلك.|ds18b20 حراره مقاوم للماء',
+        hx711: 'hx|b|مضخم ومحوّل 24 بت لخلايا الوزن (Load Cell).|HX711|عاير بوزن معلوم لإيجاد معامل التحويل.|hx711 وزن ميزان load cell',
+        fp_r307: 'uart|b|قارئ بصمات ضوئي يخزّن حتى 1000 بصمة.|Adafruit_Fingerprint|سرعة 57600. TX الحساس إلى RX المتحكم.|بصمه fingerprint r307',
+        water_pump: 'load|5|مضخة ماء DC صغيرة.||تسحب تياراً أعلى من قدرة المنفذ: شغّلها عبر ريلاي أو ترانزستور مع دايود حماية.|مضخه pump',
+        cooling_fan: 'pwm|5|مروحة تبريد يُتحكم بسرعتها عبر PWM.|||مروحه fan',
+        servo_motor: 'servo|5|محرك سيرفو (SG90): يدور لزاوية 0–180° حسب عرض النبضة (1–2ms كل 20ms).|Servo|غذِّه من 5V خارجي إن أمكن — تياره اللحظي يعيد تشغيل المتحكم.|سيرفو sg90 servo',
+        relay_module: 'out|5|وحدة ريلاي معزولة: منفذ رقمي يتحكم بحمل كبير (حتى 10A / 250VAC).||كثير من الوحدات تعمل بإشارة LOW. الحمل بين COM و NO.|ريلاي relay مرحل',
+        lcd_i2c: 'lcd|5|شاشة حروف 16×2 مع محوّل I2C (PCF8574).|LiquidCrystal_I2C|العنوان 0x27 أو 0x3F. اضبط التباين من المقاومة الزرقاء خلف الشاشة.|lcd 16x2 شاشه',
+        lcd_20x4: 'lcd|5|شاشة حروف 20×4 مع محوّل I2C.|LiquidCrystal_I2C|العنوان 0x27 أو 0x3F.|lcd 20x4',
+        led_indicator: 'led|b|ليد مؤشر.|||ليد led',
+        active_buzzer: 'buz|b|طنّان نشط: يصدر صوتاً بمجرد تغذيته.|||بازر صافره buzzer طنان',
+        rgb_led: 'rgb|b|ليد ثلاثي الألوان بكاثود مشترك: ثلاثة منافذ PWM تمزج أي لون.||مقاومة 220Ω لكل لون.|rgb ليد ملون',
+        seven_segment: '7seg|b|شاشة رقم واحد بسبع شرائح وكاثود مشترك.||مقاومة 220Ω لكل شريحة.|سفن سيجمنت 7 segment',
+        oled_128x64: 'oled|b|شاشة OLED 0.96 بوصة 128×64 (SSD1306) بتباين عالٍ.|Adafruit_SSD1306, Adafruit_GFX|العنوان 0x3C.|oled ssd1306',
+        tft_18: 'spi|3|شاشة ملونة 1.8 بوصة 128×160 (ST7735).|Adafruit_ST7735|منطقها 3.3V: مع Uno استخدم مقاومات أو محوّل مستوى.|tft st7735 1.8',
+        tft_24: 'spi|3|شاشة ملونة 2.4 بوصة 240×320 (ILI9341).|Adafruit_ILI9341|منطقها 3.3V.|tft ili9341 2.4',
+        neopixel_8: 'neo|5|شريط 8 ليدات RGB معنونة (WS2812B) على سلك بيانات واحد.|Adafruit_NeoPixel|مكثف 470µF على التغذية ومقاومة 330Ω على DIN. كل ليد حتى 60mA.|neopixel ws2812 نيوبكسل',
+        tm1637: 'tm|b|شاشة 4 أرقام مع نقطتين، بسلكين.|TM1637Display||tm1637 اربع ارقام',
+        max7219: 'spi|5|مصفوفة ليدات 8×8 أو 8 أرقام بدرايفر MAX7219.|LedControl||max7219 مصفوفه',
+        rpi_touch7: 'dsi|5|شاشة اللمس الرسمية 7 بوصة للراسبري باي (800×480) عبر شريط DSI.||تتغذى من 5V و GND في الراسبري، والشريط في منفذ DISPLAY.|شاشه لمس راسبري touch',
+        camera_module: 'cam|5|وحدة كاميرا للرؤية الحاسوبية وتتبع الألوان.|||كاميرا camera',
+        robot_car: 'car|5|هيكل سيارة روبوت بمحركين.||يوصل عبر درايفر محركات (L298N أو TB6612).|سياره روبوت car',
+        dc_supply: 'pwr||مصدر جهد مستمر قابل للضبط.||وحّد سالبه مع أرضي المتحكم.|مصدر تغذيه supply',
+        resistor: 'res||مقاومة ثابتة تحدّ التيار: V = I × R.|||مقاومه resistor',
+        mosfet_irfz44n: 'nmos||MOSFET قدرة N-channel (55V / 49A).||يحتاج ≈10V على البوابة ليفتح كاملاً؛ مع 5V استخدم IRLZ44N.|irfz44n موسفت',
+        push_button: 'btn||زر ضغط لحظي.|||زر button كبسه',
+        slide_switch: 'sw||مفتاح منزلق.|||مفتاح switch',
+        joystick: 'joy|b|عصا تحكم: مقاومتان متغيرتان (X و Y) وزر.|||جويستيك joystick عصا',
+        sw_keypad: 'key||لوحة مفاتيح 4×4 بمسح الصفوف والأعمدة.|Keypad||كيباد keypad لوحه مفاتيح',
+        stepper_28byj: 'step|5|محرك خطوي أحادي القطبية بعلبة تروس (≈2048 خطوة/دورة).|Stepper|يوصل عبر ULN2003 لا مباشرة.|28byj-48 ستيبر خطوي stepper',
+        drv_uln2003: 'drvu|5|مصفوفة دارلنغتون (7 قنوات، 500mA) لقيادة المحرك الخطوي والريلايات.|||uln2003',
+        drv_l298n: 'drv|5|درايفر محركين DC بقنطرتي H (حتى 2A لكل قناة، 5–35V).||يخسر ≈2V. انزع جسر ENA/ENB للتحكم بالسرعة عبر PWM.|l298n درايفر',
+        drv_l293d: 'drv|5|درايفر محركين DC (600mA لكل قناة) بدايودات حماية مدمجة.|||l293d',
+        drv_tb6612: 'drv|b|درايفر محركين MOSFET كفء (1.2A لكل قناة).|||tb6612',
+        drv_drv8833: 'drv|b|درايفر محركين صغير بجهد منخفض (2.7–10.8V، 1.5A).|||drv8833',
+        mcp3008: 'adc|b|محوّل تماثلي-رقمي 10 بت بثماني قنوات عبر SPI — يعطي الراسبري باي مداخل تماثلية.||VDD و VREF إلى 3.3V مع الراسبري.|mcp3008 adc محول تماثلي',
+        max485: 'uart|5|محوّل TTL إلى RS485 للاتصال الصناعي لمسافات طويلة.||DE و RE معاً: HIGH للإرسال، LOW للاستقبال.|max485 rs485 modbus',
+        lora_sx1278: 'spi|3|راديو LoRa بعيد المدى (433MHz) باستهلاك منخفض.|LoRa|3.3V فقط، ولا تشغّله بلا هوائي.|lora sx1278 لورا',
+        rf_rx4: 'dig|5|مستقبل ريموت 433MHz بأربع قنوات: كل زر يرفع مخرجاً.|||ريموت rf 433',
+        rc_rx6: 'rc|5|مستقبل تحكم لاسلكي 6 قنوات: كل قناة نبضة 1000–2000µs.||اقرأ القناة بـ pulseIn.|مستقبل rc ريسيفر',
+        ph_meter: 'ana|5|حساس حموضة pH (0–14) بخرج تماثلي.||عاير بمحلولين قياسيين (4 و7). pH ≈ 7 + (2.5 − V) / 0.18.|ph حموضه',
+        tds_meter: 'ana|b|يقيس الأملاح الذائبة الكلية TDS (ppm).||عوّض الحرارة للحصول على دقة أفضل.|tds املاح',
+        ec_meter: 'ana|b|يقيس الموصلية الكهربائية للمحلول (EC).|||ec موصليه',
+        turbidity: 'gas|5|يقيس عكارة الماء ضوئياً.|||عكاره turbidity',
+        do_sensor: 'ana|b|يقيس الأكسجين المذاب في الماء.||يحتاج معايرة في هواء مشبع.|اكسجين مذاب do',
+        orp_sensor: 'ana|5|يقيس جهد الأكسدة والاختزال ORP (mV).|||orp',
+        chlorine: 'ana|5|يقيس الكلور الحر في الماء.|||كلور chlorine',
+        soil_ec: 'ana|b|يقيس موصلية وملوحة التربة.|||ملوحه التربه soil ec',
+        press_tx: 'ana|5|محوّل ضغط (0.5–4.5V) للسوائل والغازات.||الضغط = (V − 0.5) × المدى / 4.',
+        flow_yfs201: 'pulse|5|حساس تدفق ماء بتوربين: ≈450 نبضة لكل لتر.||التدفق (L/min) = التردد(Hz) / 7.5. عدّ النبضات بمقاطعة.|تدفق flow yf-s201',
+        float_sw: 'sw||عوامة مستوى: مفتاح يُغلق عند ارتفاع الماء.|||عوامه float',
+        npk_7in1: 'uart|5|حساس تربة 7 في 1 (NPK، حرارة، رطوبة، EC، pH) عبر RS485 / Modbus.||يوصل عبر MAX485 ويتغذى غالباً من 12V.|npk تربه',
+        func_gen: 'inst||مولّد إشارات (جيبية، مربعة، مثلثة) بتردد وسعة قابلة للضبط.',
+        voltmeter: 'inst||فولتميتر: يوصل على التوازي مع العنصر المراد قياس جهده.',
+        ammeter: 'inst||أميتر: يوصل على التوالي في مسار التيار.',
+        logic_probe: 'inst||مجس منطقي يعرض حالة النقطة HIGH / LOW.',
+        timer_555: 'ic|b|المؤقت 555: مذبذب (Astable) أو نبضة واحدة (Monostable).||f ≈ 1.44 / ((R1 + 2·R2)·C).|555 مؤقت',
+        cmp_lm393: 'ic|b|مقارن جهد بخرج مجمع مفتوح: يحتاج مقاومة رفع 10kΩ على الخرج.|||lm393 مقارن',
+        opamp_lm358: 'ic|b|مضخم عمليات مزدوج يعمل من مصدر واحد.||خرجه لا يتجاوز Vcc − 1.5V.|lm358 مضخم عمليات',
+        opamp_rr: 'ic|b|مضخم عمليات Rail-to-Rail: خرجه يصل لطرفي التغذية (مناسب لـ 3.3V).',
+        opto_pc817: 'ic||عازل ضوئي: يعزل دائرة التحكم عن دائرة الحمل كهربائياً.||مقاومة 330Ω على ليد الدخل.|pc817 اوبتوكبلر عازل',
+        tp4056: 'pwr||شاحن بطارية ليثيوم خلية واحدة (1A) مع حماية.||لا تسحب حملاً كبيراً أثناء الشحن.|tp4056 شاحن',
+        buck_lm2596: 'pwr||محوّل خافض للجهد (Buck) حتى 3A بكفاءة عالية.||اضبط الخرج بالمقاومة المتغيرة قبل وصل الحمل.|lm2596 buck خافض',
+        boost_mt3608: 'pwr||محوّل رافع للجهد (Boost) حتى 28V / 2A.||اضبط الخرج قبل وصل الحمل.|mt3608 boost رافع',
+        relay_coil: 'coil||ريلاي عارٍ (ملف + تلامسات).||الملف عبر ترانزستور مع دايود 1N4007 عكسي على طرفيه.',
+        speaker8: 'load||سماعة 8Ω.||عبر مكثف 100µF ومقاومة أو مضخم صوت — لا مباشرة على المنفذ.|سماعه speaker',
+        arduino_uno: 'mcu||لوحة متحكم ATmega328P: منطق 5V، 14 منفذاً رقمياً (6 منها PWM) و6 مداخل تماثلية 10 بت، 20mA لكل منفذ.||تتغذى من USB أو 7–12V على VIN. المنافذ 0 و1 للسيريال.|',
+        esp32_devkit: 'mcu||لوحة ESP32 ثنائية النواة مع WiFi و Bluetooth: منطق 3.3V، ADC 12 بت، PWM على معظم المنافذ.||منافذها لا تتحمل 5V. GPIO34–39 مداخل فقط. ADC2 لا يعمل مع WiFi.|',
+        rpi4: 'mcu||حاسوب لوحي يعمل بنظام لينكس: هيدر 40 طرفاً بمنطق 3.3V، بلا مدخل تماثلي، يبرمج ببايثون (gpiozero).||5V على أي GPIO يتلفه. أقصى تيار للمنفذ 16mA. يتغذى من USB-C 5V / 3A.|',
+        gnd_sym: 'inst||رمز الأرضي: نقطة المرجع 0V للدائرة.'
+    };
+    const GROUPS = [
+        [/^led_bar$/, 'led|b|شريط 10 ليدات بكاثود مشترك.||مقاومة 220Ω لكل ليد.|ليد شريط'],
+        [/^led_ir$/, 'led|b|ليد أشعة تحت الحمراء (940nm) لأجهزة التحكم عن بعد.||Vf ≈ 1.2V.|ليد'],
+        [/^led_/, 'led|b|ليد (ثنائي باعث للضوء).||الطرف الطويل هو الأنود (+).|ليد ضوء'],
+        [/^(res_e12|res_pwr)$/, 'res||مقاومة ثابتة.'], [/^rheostat$/, 'res||مقاومة متغيرة بطرفين (ريوستات) لضبط التيار.'],
+        [/^(pot_lin|pot_trim)$/, 'pot||مقاومة متغيرة بثلاثة أطراف: A و B الطرفان و W المنزلق.'],
+        [/^ntc$/, 'ntc||ثرمستور NTC: مقاومته تقل مع ارتفاع الحرارة (10kΩ عند 25°م).'], [/^pt100$/, 'ntc||مقاومة حرارية بلاتينية PT100: 100Ω عند 0°م وتزيد 0.385Ω لكل درجة.'],
+        [/^ldr_res$/, 'ntc||مقاومة ضوئية LDR: مقاومتها تقل مع الضوء.'], [/^fuse$/, 'fuse||فيوز: ينصهر ويقطع الدائرة عند تجاوز التيار المقنن.'],
+        [/^cap_elec$|^cap_tant$/, 'cap||مكثف مستقطب: الطرف السالب معلَّم ويجب أن يكون على الجهد الأدنى.||عكس القطبية يتلفه. اختر جهداً مقنناً ≥ 1.5 × جهد الدائرة.'],
+        [/^cap_super$/, 'cap||مكثف فائق (Supercapacitor) بسعة فارادات لتخزين الطاقة.||لا تتجاوز جهده المقنن (غالباً 2.7 أو 5.5V).'],
+        [/^cap_/, 'cap||مكثف غير مستقطب للفصل والترشيح والتوقيت.'], [/^ind$/, 'ind||ملف (محاثة): يقاوم تغير التيار ويخزّن طاقة مغناطيسية.||يولّد جهداً عكسياً عند القطع.'],
+        [/^d_zener$/, 'zener||دايود زينر: يثبّت الجهد عند قيمته عند توصيله عكسياً مع مقاومة توالٍ.'], [/^d_bridge$/, 'bridge||قنطرة توحيد: تحوّل AC إلى DC نابض.||أضف مكثف تنعيم على الخرج.'],
+        [/^d_/, 'diode||دايود: يمرر التيار من الأنود إلى الكاثود فقط.||الخط على جسمه يعلّم الكاثود.'],
+        [/^npn_tip120$/, 'npn||ترانزستور دارلنغتون NPN للقدرة (5A، كسب ≈1000).||هبوطه ≈1.2V، وقد يحتاج مشتتاً.'], [/^npn_/, 'npn||ترانزستور NPN يعمل مفتاحاً أو مضخماً.'],
+        [/^pnp_/, 'pnp||ترانزستور PNP: يوصّل عند سحب قاعدته للأسفل (مفتاح في جهة الموجب).'],
+        [/^mos_(irf9540|irf4905)$/, 'pmos||MOSFET قدرة P-channel: مفتاح في جهة الموجب.'], [/^mos_/, 'nmos||MOSFET N-channel: مفتاح يُتحكم به بالجهد.'], [/^igbt_/, 'nmos||IGBT: مفتاح قدرة للجهود والتيارات العالية.'],
+        [/^scr$/, 'scr||ثايرستور SCR: يوصّل بنبضة على البوابة ويبقى حتى ينقطع التيار.'], [/^triac$/, 'scr||ترياك: مفتاح للتيار المتردد في الاتجاهين.||مع جهد الشبكة استخدم عازلاً ضوئياً MOC3021.'], [/^diac$/, 'scr||دياك: يوصّل عند تجاوز جهد الانهيار (≈30V) لقدح الترياك.'],
+        [/^reg_/, 'reg||منظّم جهد خطي بثلاثة أطراف: دخل، أرضي، خرج ثابت.||مكثف 0.33µF على الدخل و0.1µF على الخرج. يبدد الفرق حرارة.'],
+        [/^g_|^ff_d$/, 'gate|b|بوابة منطقية / قلّاب من عائلة CMOS.||لا تترك المداخل عائمة.'],
+        [/^bat_/, 'bat||بطارية.||لا تقصر طرفيها. الليثيوم يحتاج دائرة حماية وشاحناً مخصصاً.'], [/^solar_/, 'bat||لوح شمسي.||جهده يتغير مع الإضاءة: استخدم منظّم شحن أو محوّل Buck.'],
+        [/^sw_dip4$/, 'sw||أربعة مفاتيح DIP لضبط الإعدادات.'], [/^sw_reed$/, 'sw||مفتاح ريد: يُغلق عند اقتراب مغناطيس.'], [/^sw_limit$/, 'sw||مفتاح نهاية شوط.'], [/^sw_/, 'sw||مفتاح.'],
+        [/^motor_vib$/, 'load||محرك اهتزاز صغير.||عبر ترانزستور مع دايود حماية.'], [/^motor_/, 'load||محرك DC.||عبر درايفر أو ترانزستور/MOSFET مع دايود حماية — لا مباشرة على المنفذ.'],
+        [/^(solenoid|valve_12v)$/, 'load||ملف / صمام كهرومغناطيسي 12V.||عبر MOSFET مع دايود 1N4007 عكسي.'], [/^(bulb_12v|heater)$/, 'load||حمل قدرة 12V.||عبر MOSFET أو ريلاي.'],
+        [/^bb_/, 'inst||لوحة تجارب: الصفوف الخمسة في كل عمود موصولة معاً، وخطا التغذية ممتدان أفقياً.']
+    ];
+    const B = {
+        uno: { n: 'Arduino Uno', v5: '5V', v3: '3.3V', g: 'GND', an: ['A0', 'A1', 'A2', 'A3'], dg: ['D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8'], pw: ['D9', 'D10', 'D3', 'D5'], sda: 'A4 (SDA)', scl: 'A5 (SCL)', mosi: 'D11', miso: 'D12', sck: 'D13', cs: 'D10', rx: 'D0 (RX)', tx: 'D1 (TX)' },
+        esp: { n: 'ESP32', v5: 'VIN (5V)', v3: '3V3', g: 'GND', an: ['GPIO34', 'GPIO35', 'GPIO32', 'GPIO33'], dg: ['GPIO4', 'GPIO5', 'GPIO18', 'GPIO19', 'GPIO23', 'GPIO13', 'GPIO14'], pw: ['GPIO25', 'GPIO26', 'GPIO27', 'GPIO14'], sda: 'GPIO21', scl: 'GPIO22', mosi: 'GPIO23', miso: 'GPIO19', sck: 'GPIO18', cs: 'GPIO5', rx: 'GPIO16 (RX2)', tx: 'GPIO17 (TX2)' },
+        pi: { n: 'Raspberry Pi', v5: '5V (pin 2)', v3: '3.3V (pin 1)', g: 'GND (pin 6)', an: ['MCP3008 CH0', 'MCP3008 CH1', 'MCP3008 CH2', 'MCP3008 CH3'], dg: ['GPIO17 (pin 11)', 'GPIO27 (pin 13)', 'GPIO22 (pin 15)', 'GPIO23 (pin 16)', 'GPIO24 (pin 18)', 'GPIO25 (pin 22)', 'GPIO5 (pin 29)'], pw: ['GPIO18 (pin 12)', 'GPIO13 (pin 33)', 'GPIO12 (pin 32)', 'GPIO19 (pin 35)'], sda: 'GPIO2 SDA (pin 3)', scl: 'GPIO3 SCL (pin 5)', mosi: 'GPIO10 MOSI (pin 19)', miso: 'GPIO9 MISO (pin 21)', sck: 'GPIO11 SCLK (pin 23)', cs: 'GPIO8 CE0 (pin 24)', rx: 'GPIO15 RXD (pin 10)', tx: 'GPIO14 TXD (pin 8)' }
+    };
+    const fact = k => { let s = F[k]; if (!s) { const g = GROUPS.find(g => g[0].test(k)); s = g ? g[1] : null; } if (!s) return null; const p = s.split('|'); return { cls: p[0], v: p[1] || '', d: p[2] || '', lib: p[3] || '', note: p[4] || '', al: p[5] || '' }; };
+    const SUP = /^(VCC|VDD|VIN|5V|VS)$/, GNDP = /^(GND|VSS)$/;
+    const num = s => (String(s).match(/\d+/) || [''])[0];
+
+    // pin-by-pin wiring for module-style parts on a given board
+    function wiring(k, d, f, bk) {
+        const b = B[bk], out = [], warn = []; let ai = 0, di = 0, pi = 0; const spi = /^(spi|adc)$/.test(f.cls), ana = /^(ana|gas|joy)$/.test(f.cls), pins = d.pins.map(p => p.id), map = {};
+        const five = f.v === '5' || (f.v === 'b' && bk === 'uno'), vcc = f.v === '3' ? b.v3 : bk === 'pi' && f.v === 'b' ? b.v3 : five || f.v === '5' ? b.v5 : bk === 'esp' ? b.v3 : b.v5, on5 = vcc === b.v5 && bk !== 'uno';
+        pins.forEach(p => {
+            let t;
+            if (p === 'VREF') t = k === 'mcp3008' && bk === 'pi' ? b.v3 : vcc; else if (SUP.test(p) && !(f.cls === 'drv' && p === 'VS')) t = vcc; else if (f.cls === 'drv' && p === 'VS') t = 'موجب مصدر المحركات (6–12V)';
+            else if (GNDP.test(p)) t = b.g + (f.cls === 'drv' ? ' + سالب مصدر المحركات' : '');
+            else if (p === 'SDA') t = b.sda; else if (p === 'SCL') t = b.scl;
+            else if (spi && /^(MOSI|DIN|SDI)$/.test(p)) t = b.mosi; else if (spi && /^(MISO|DOUT|SDO)$/.test(p)) t = b.miso; else if (spi && /^(SCK|CLK|SCLK)$/.test(p)) t = b.sck; else if (spi && /^(CS|NSS|SS)$/.test(p)) t = b.cs;
+            else if (/^CH\d$/.test(p) && k === 'mcp3008') t = 'خرج الحساس التماثلي ' + (+num(p) + 1);
+            else if (p === 'TX' || p === 'RO') t = b.rx + (bk === 'uno' ? ' — أو SoftwareSerial على D10' : ''); else if (p === 'RX' || p === 'DI') t = b.tx + (bk === 'uno' ? ' — أو SoftwareSerial على D11' : '');
+            else if (p === 'DSI') t = 'منفذ DISPLAY في الراسبري (شريط مسطح)'; else if (/^OUT[1-4]$/.test(p)) t = 'طرف المحرك ' + (num(p) <= 2 ? 'A' : 'B'); else if (p === 'COM') t = 'موجب مصدر الحمل'; else if (p === 'NO') t = 'طرف الحمل (والطرف الآخر للحمل إلى سالب مصدره)'; else if (p === 'NC') t = '—'; else if (p === 'LED') t = vcc + ' عبر مقاومة 100Ω (الإضاءة الخلفية)';
+            else if (/^(A|B)$/.test(p) && /^(max485|npk_7in1)$/.test(k)) t = 'خط RS485 ' + p;
+            else if (/^(PWM|ENA|ENB)$/.test(p) || f.cls === 'servo' && p === 'PWM') t = b.pw[pi++ % b.pw.length];
+            else if (ana && /^(AO|AOUT|WIPER|PO|VRX|VRY|OUT)$/.test(p) && !(f.cls === 'gas' && p === 'OUT')) { t = b.an[ai++ % b.an.length]; if (bk === 'pi') warn.push('الراسبري باي بلا مدخل تماثلي: الخرج ' + p + ' يمر عبر MCP3008 (SPI).'); if (bk === 'esp' && on5) warn.push('خرج الحساس قد يتجاوز 3.3V عند تغذيته من 5V: استخدم مقسّم جهد أو غذِّه من 3.3V.'); }
+            else { t = b.dg[di++ % b.dg.length]; if (on5 && /^(ECHO|OUT|DO|DATA|DQ|DT|TX|VT|D[0-3]|CH[1-6])$/.test(p) && !/^(pir_sensor)$/.test(k)) { t += ' عبر مقسّم جهد 1kΩ / 2kΩ'; if (!warn.some(w => /مقسّم جهد 1k/.test(w))) warn.push('خرج الوحدة 5V ومنافذ ' + b.n + ' تعمل على 3.3V: يلزم مقسّم جهد 1kΩ / 2kΩ على ' + p + '.'); } }
+            map[p] = t; out.push('- `' + p + '` ← ' + t);
+        });
+        return { lines: out, warn, map, vcc };
+    }
+    const pinNo = t => { const m = String(t || '').match(/^(?:D|GPIO)?(\d+)/); return m ? m[1] : String(t || '').split(' ')[0]; };
+    const A = t => String(t || '').split(' ')[0];      // 'A0' / 'D2'
+    // Arduino / ESP32 code
+    function code(k, d, f, w, bk) {
+        const m = w.map, nm = d.name, D = p => { const t = String(m[p] || ''); return bk === 'uno' ? pinNo(t) : pinNo(t.replace('GPIO', '')); }, AN = p => bk === 'uno' ? A(m[p]) : pinNo(String(m[p] || '').replace('GPIO', '')), ser = bk === 'esp' ? 115200 : 9600, amax = bk === 'esp' ? '4095.0' : '1023.0', vref = bk === 'esp' ? '3.3' : '5.0';
+        const P = d.pins.map(p => p.id), aPin = P.find(p => /^(AO|AOUT|WIPER|PO|OUT)$/.test(p) && /^(A\d|GPIO3[2-9]|MCP)/.test(m[p] || '')), dPin = P.find(p => /^(OUT|DO|DATA|SW|VT|D0)$/.test(p) && !/^(A\d|GPIO3[4-9])/.test(m[p] || ''));
+        switch (f.cls) {
+            case 'dht': return `#include <DHT.h>\nDHT dht(${D('DATA')}, DHT22);\nvoid setup(){ Serial.begin(${ser}); dht.begin(); }\nvoid loop(){\n  float t = dht.readTemperature(), h = dht.readHumidity();\n  if (isnan(t) || isnan(h)) { Serial.println("خطأ في القراءة"); }\n  else { Serial.print(t); Serial.print(" C  "); Serial.print(h); Serial.println(" %"); }\n  delay(2000);\n}`;
+            case 'sonar': return `const int TRIG = ${D('TRIG')}, ECHO = ${D('ECHO')};\nvoid setup(){ Serial.begin(${ser}); pinMode(TRIG, OUTPUT); pinMode(ECHO, INPUT); }\nvoid loop(){\n  digitalWrite(TRIG, LOW); delayMicroseconds(2);\n  digitalWrite(TRIG, HIGH); delayMicroseconds(10); digitalWrite(TRIG, LOW);\n  long us = pulseIn(ECHO, HIGH, 30000);          // مهلة 30ms\n  float cm = us * 0.0343 / 2;\n  Serial.print(cm); Serial.println(" cm");\n  delay(200);\n}`;
+            case '1w': return `#include <OneWire.h>\n#include <DallasTemperature.h>\nOneWire ow(${D('DQ')});\nDallasTemperature s(&ow);\nvoid setup(){ Serial.begin(${ser}); s.begin(); }\nvoid loop(){ s.requestTemperatures(); Serial.println(s.getTempCByIndex(0)); delay(1000); }`;
+            case 'hx': return `#include <HX711.h>\nHX711 scale;\nvoid setup(){ Serial.begin(${ser}); scale.begin(${D('DT')}, ${D('SCK')}); scale.set_scale(2280.f); scale.tare(); }   // عاير المعامل بوزن معلوم\nvoid loop(){ Serial.print(scale.get_units(5)); Serial.println(" g"); delay(500); }`;
+            case 'servo': return `#include <${bk === 'esp' ? 'ESP32Servo' : 'Servo'}.h>\nServo s;\nvoid setup(){ s.attach(${D('PWM')}); }\nvoid loop(){\n  for (int a = 0; a <= 180; a += 5) { s.write(a); delay(30); }\n  for (int a = 180; a >= 0; a -= 5) { s.write(a); delay(30); }\n}`;
+            case 'lcd': return `#include <Wire.h>\n#include <LiquidCrystal_I2C.h>\nLiquidCrystal_I2C lcd(0x27, ${k === 'lcd_20x4' ? '20, 4' : '16, 2'});\nvoid setup(){ lcd.init(); lcd.backlight(); lcd.setCursor(0, 0); lcd.print("SPARKSimLab"); }\nvoid loop(){ lcd.setCursor(0, 1); lcd.print(millis() / 1000); delay(500); }`;
+            case 'oled': return `#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\nAdafruit_SSD1306 d(128, 64, &Wire, -1);\nvoid setup(){ d.begin(SSD1306_SWITCHCAPVCC, 0x3C); d.clearDisplay(); d.setTextColor(SSD1306_WHITE); d.setTextSize(2); d.setCursor(0, 20); d.print("SPARK"); d.display(); }\nvoid loop(){}`;
+            case 'neo': return `#include <Adafruit_NeoPixel.h>\nAdafruit_NeoPixel px(8, ${D('DIN')}, NEO_GRB + NEO_KHZ800);\nvoid setup(){ px.begin(); px.setBrightness(60); }\nvoid loop(){\n  for (int i = 0; i < 8; i++) { px.clear(); px.setPixelColor(i, px.Color(255, 80, 0)); px.show(); delay(80); }\n}`;
+            case 'tm': return `#include <TM1637Display.h>\nTM1637Display d(${D('CLK')}, ${D('DIO')});\nvoid setup(){ d.setBrightness(5); }\nvoid loop(){ d.showNumberDec(millis() / 1000); delay(200); }`;
+            case 'step': return `#include <Stepper.h>\nStepper st(2048, 8, 10, 9, 11);        // ترتيب IN1, IN3, IN2, IN4 على ULN2003\nvoid setup(){ st.setSpeed(10); }       // دورة/دقيقة\nvoid loop(){ st.step(2048); delay(500); st.step(-2048); delay(500); }`;
+            case 'drv': return `const int IN1 = ${D('IN1')}, IN2 = ${D('IN2')}, ENA = ${D('ENA')};\nvoid setup(){ pinMode(IN1, OUTPUT); pinMode(IN2, OUTPUT); pinMode(ENA, OUTPUT); }\nvoid loop(){\n  digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW); analogWrite(ENA, 180); delay(2000);   // أمام\n  analogWrite(ENA, 0); delay(500);\n  digitalWrite(IN1, LOW); digitalWrite(IN2, HIGH); analogWrite(ENA, 180); delay(2000);   // خلف\n  analogWrite(ENA, 0); delay(500);\n}`;
+            case 'out': return `const int RELAY = ${D('IN')};\nvoid setup(){ pinMode(RELAY, OUTPUT); }\nvoid loop(){ digitalWrite(RELAY, HIGH); delay(2000); digitalWrite(RELAY, LOW); delay(2000); }   // بعض الوحدات تعمل بـ LOW`;
+            case 'pwm': return `const int FAN = ${D('PWM')};\nvoid setup(){ pinMode(FAN, OUTPUT); }\nvoid loop(){ for (int v = 0; v <= 255; v += 5) { analogWrite(FAN, v); delay(40); } }`;
+            case 'pulse': return `volatile unsigned long n = 0;\nvoid tick(){ n++; }\nvoid setup(){ Serial.begin(${ser}); pinMode(${D('OUT')}, INPUT_PULLUP); attachInterrupt(digitalPinToInterrupt(${D('OUT')}), tick, RISING); }\nvoid loop(){\n  noInterrupts(); unsigned long p = n; n = 0; interrupts();\n  Serial.print(p / 7.5); Serial.println(" L/min");\n  delay(1000);\n}`;
+            case 'rc': return `void setup(){ Serial.begin(${ser}); pinMode(${D('CH1')}, INPUT); }\nvoid loop(){ unsigned long us = pulseIn(${D('CH1')}, HIGH, 25000); Serial.println(us); delay(50); }   // 1000..2000 ميكروثانية`;
+            case 'joy': return `void setup(){ Serial.begin(${ser}); pinMode(${D('SW')}, INPUT_PULLUP); }\nvoid loop(){\n  Serial.print(analogRead(${AN('VRX')})); Serial.print(", "); Serial.print(analogRead(${AN('VRY')}));\n  Serial.print(", "); Serial.println(digitalRead(${D('SW')}) == LOW ? "pressed" : "-");\n  delay(150);\n}`;
+            case 'i2c': if (k === 'mpu6050') return `#include <Wire.h>\nvoid setup(){ Serial.begin(${ser}); Wire.begin(); Wire.beginTransmission(0x68); Wire.write(0x6B); Wire.write(0); Wire.endTransmission(); }   // إيقاظ\nvoid loop(){\n  Wire.beginTransmission(0x68); Wire.write(0x3B); Wire.endTransmission(false); Wire.requestFrom(0x68, 6);\n  int16_t ax = Wire.read() << 8 | Wire.read(), ay = Wire.read() << 8 | Wire.read(), az = Wire.read() << 8 | Wire.read();\n  Serial.print(ax / 16384.0); Serial.print(" "); Serial.print(ay / 16384.0); Serial.print(" "); Serial.println(az / 16384.0);   // بوحدة g\n  delay(200);\n}`;
+                if (k === 'bh1750') return `#include <Wire.h>\n#include <BH1750.h>\nBH1750 lm;\nvoid setup(){ Serial.begin(${ser}); Wire.begin(); lm.begin(); }\nvoid loop(){ Serial.print(lm.readLightLevel()); Serial.println(" lx"); delay(500); }`;
+                return `#include <Wire.h>\n#include <${k === 'bme280' ? 'Adafruit_BME280' : 'Adafruit_BMP280'}.h>\n${k === 'bme280' ? 'Adafruit_BME280' : 'Adafruit_BMP280'} s;\nvoid setup(){ Serial.begin(${ser}); if (!s.begin(0x76)) Serial.println("لم يُعثر على الحساس — جرّب 0x77"); }\nvoid loop(){ Serial.print(s.readTemperature()); Serial.print(" C  "); Serial.print(s.readPressure() / 100.0); Serial.println(" hPa"); delay(1000); }`;
+            case 'led': return `const int LED = ${bk === 'uno' ? 9 : 25};       // الأنود عبر مقاومة 220Ω، الكاثود إلى GND\nvoid setup(){ pinMode(LED, OUTPUT); }\nvoid loop(){ digitalWrite(LED, HIGH); delay(500); digitalWrite(LED, LOW); delay(500); }`;
+            case 'buz': return `const int BUZ = ${bk === 'uno' ? 8 : 26};\nvoid setup(){ pinMode(BUZ, OUTPUT); }\nvoid loop(){ digitalWrite(BUZ, HIGH); delay(200); digitalWrite(BUZ, LOW); delay(800); }`;
+            case 'rgb': return `const int R = ${bk === 'uno' ? 9 : 25}, G = ${bk === 'uno' ? 10 : 26}, Bl = ${bk === 'uno' ? 11 : 27};\nvoid color(int r, int g, int b){ analogWrite(R, r); analogWrite(G, g); analogWrite(Bl, b); }\nvoid setup(){}\nvoid loop(){ color(255, 0, 0); delay(600); color(0, 255, 0); delay(600); color(0, 0, 255); delay(600); color(255, 120, 0); delay(600); }`;
+            case 'btn': case 'sw': return `const int BTN = ${bk === 'uno' ? 2 : 4};        // طرف إلى المنفذ والآخر إلى GND\nvoid setup(){ Serial.begin(${ser}); pinMode(BTN, INPUT_PULLUP); }\nvoid loop(){ if (digitalRead(BTN) == LOW) { Serial.println("ON"); delay(200); } }   // LOW = مضغوط / مغلق`;
+            case 'adc': return `#include <SPI.h>\nconst int CS = ${D('CS')};\nint readCh(byte ch){\n  digitalWrite(CS, LOW); SPI.transfer(1);\n  byte hi = SPI.transfer((8 + ch) << 4), lo = SPI.transfer(0);\n  digitalWrite(CS, HIGH); return ((hi & 3) << 8) | lo;       // 0..1023\n}\nvoid setup(){ Serial.begin(${ser}); pinMode(CS, OUTPUT); digitalWrite(CS, HIGH); SPI.begin(); }\nvoid loop(){ Serial.println(readCh(0)); delay(300); }`;
+            case 'key': return `#include <Keypad.h>\nchar keys[4][4] = {{'1','2','3','A'},{'4','5','6','B'},{'7','8','9','C'},{'*','0','#','D'}};\nbyte rows[4] = {9, 8, 7, 6}, cols[4] = {5, 4, 3, 2};\nKeypad kp(makeKeymap(keys), rows, cols, 4, 4);\nvoid setup(){ Serial.begin(9600); }\nvoid loop(){ char k = kp.getKey(); if (k) Serial.println(k); }`;
+        }
+        if (aPin) { const extra = k === 'lm35' ? `  float c = v * 100.0;                       // 10mV لكل درجة\n  Serial.println(c);` : k === 'tmp36' ? `  float c = (v - 0.5) * 100.0;\n  Serial.println(c);` : k === 'acs712' ? `  float amps = (v - 2.5) / 0.185;            // نسخة 5A\n  Serial.println(amps);` : k === 'vsens' ? `  Serial.println(v * 5.0);                   // مقسّم 5:1` : `  Serial.print(raw); Serial.print("  "); Serial.println(v);`;
+            return `void setup(){ Serial.begin(${ser}); }\nvoid loop(){\n  int raw = analogRead(${AN(aPin)});\n  float v = raw * ${vref} / ${amax};             // الجهد على المنفذ\n${extra}\n  delay(300);\n}`; }
+        if (dPin) return `const int PIN = ${D(dPin)};\nvoid setup(){ Serial.begin(${ser}); pinMode(PIN, INPUT); }\nvoid loop(){ Serial.println(digitalRead(PIN)); delay(200); }`;
+        return '';
+    }
+    // Raspberry Pi (gpiozero) code
+    function pyCode(k, d, f, w) {
+        const g = p => (String(w.map[p] || '').match(/GPIO(\d+)/) || [])[1] || '17', P = d.pins.map(p => p.id);
+        switch (f.cls) {
+            case 'sonar': return `from gpiozero import DistanceSensor\nfrom time import sleep\n\ns = DistanceSensor(echo=${g('ECHO')}, trigger=${g('TRIG')})     # ECHO عبر مقسّم جهد\nwhile True:\n    print(round(s.distance * 100, 1), "cm")\n    sleep(0.3)`;
+            case 'servo': return `from gpiozero import AngularServo\nfrom time import sleep\n\ns = AngularServo(${g('PWM')}, min_angle=0, max_angle=180)\nwhile True:\n    for a in (0, 90, 180, 90):\n        s.angle = a\n        sleep(0.6)`;
+            case 'out': return `from gpiozero import OutputDevice\nfrom time import sleep\n\nrelay = OutputDevice(${g('IN')})\nwhile True:\n    relay.on(); sleep(2)\n    relay.off(); sleep(2)`;
+            case 'led': return `from gpiozero import LED\nfrom time import sleep\n\nled = LED(17)            # الأنود عبر مقاومة 330Ω، الكاثود إلى GND\nwhile True:\n    led.on(); sleep(0.5)\n    led.off(); sleep(0.5)`;
+            case 'buz': return `from gpiozero import Buzzer\nfrom time import sleep\n\nbz = Buzzer(22)\nwhile True:\n    bz.on(); sleep(0.2)\n    bz.off(); sleep(0.8)`;
+            case 'btn': case 'sw': return `from gpiozero import Button\nfrom signal import pause\n\nb = Button(27)           # طرف إلى GPIO27 والآخر إلى GND\nb.when_pressed = lambda: print("ON")\npause()`;
+            case 'rgb': return `from gpiozero import RGBLED\nfrom time import sleep\n\nled = RGBLED(17, 27, 22)\nfor c in ((1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 0.5, 0)):\n    led.color = c\n    sleep(0.6)`;
+            case 'dht': return `import adafruit_dht, board\nfrom time import sleep\n\nd = adafruit_dht.DHT22(board.D${g('DATA')})\nwhile True:\n    try:\n        print(d.temperature, "C", d.humidity, "%")\n    except RuntimeError:\n        pass                 # قراءة فاشلة عابرة: أعد المحاولة\n    sleep(2)`;
+            case 'drv': return `from gpiozero import Motor\nfrom time import sleep\n\nm = Motor(forward=${g('IN1')}, backward=${g('IN2')}, enable=${g('ENA')})\nm.forward(0.7); sleep(2)\nm.backward(0.7); sleep(2)\nm.stop()`;
+            case 'adc': return `from gpiozero import MCP3008\nfrom time import sleep\n\nch0 = MCP3008(channel=0)\nwhile True:\n    print(round(ch0.value * 3.3, 3), "V")\n    sleep(0.3)`;
+        }
+        if (/^(ana|gas|joy)$/.test(f.cls) && P.some(p => /^(AO|AOUT|WIPER|PO|OUT|VRX)$/.test(p))) return `from gpiozero import MCP3008\nfrom time import sleep\n\ns = MCP3008(channel=0)       # الحساس على القناة CH0 من MCP3008\nwhile True:\n    print(round(s.value * 3.3, 3), "V")\n    sleep(0.3)`;
+        const dp = P.find(p => /^(OUT|DO|DATA|SW)$/.test(p)); if (dp) return `from gpiozero import DigitalInputDevice\nfrom time import sleep\n\ns = DigitalInputDevice(${g(dp)})\nwhile True:\n    print(s.value)\n    sleep(0.2)`;
+        return '';
+    }
+    // "how to connect" for bare components (no VCC/GND module pins)
+    const HOW = {
+        led: 'الأنود (+، الطرف الأطول) ← مقاومة 220–330Ω ← منفذ رقمي. الكاثود (−) ← GND.\nR = (جهد المنفذ − Vf) / التيار. لا توصله بلا مقاومة.',
+        rgb: 'الكاثود المشترك `K` ← GND. كل من `R` و `G` و `B` ← مقاومة 220Ω ← منفذ PWM.',
+        '7seg': 'الطرف المشترك `COM` ← GND. كل شريحة (A..G و DP) ← مقاومة 220Ω ← منفذ رقمي.',
+        buz: '`POS` ← منفذ رقمي، `NEG` ← GND. للطنّان الخامل استخدم tone().',
+        res: 'بلا قطبية: يوصل على التوالي مع العنصر المراد تحديد تياره، أو مع مقاومة أخرى كمقسّم جهد.',
+        pot: 'الطرفان `A` و `B` ← 5V و GND، والمنزلق `W` ← مدخل تماثلي (A0).',
+        ntc: 'كمقسّم جهد: طرف ← 5V، والطرف الآخر ← مدخل تماثلي A0 ومنه مقاومة ثابتة (10kΩ) ← GND.',
+        fuse: 'على التوالي مع موجب المصدر قبل الحمل. اختر تياراً مقنناً ≈ 1.25 × تيار الحمل.',
+        cap: 'للفصل: بين VCC و GND أقرب ما يمكن للدائرة المتكاملة. للترشيح: بعد مقاومة التوالي إلى GND. المستقطب: السالب إلى الجهد الأدنى.',
+        ind: 'على التوالي مع الحمل للترشيح، أو ضمن محوّلات الجهد. أضف دايود حماية عند قطع تياره بمفتاح.',
+        diode: 'الأنود `A` جهة الموجب والكاثود `K` (جهة الخط) جهة الحمل. كدايود حماية: عكسياً على طرفي الملف، الكاثود على الموجب.',
+        zener: 'عكسياً: الكاثود `K` ← نقطة الجهد المراد تثبيتها (بعد مقاومة توالٍ من المصدر)، والأنود `A` ← GND.',
+        bridge: '`AC1` و `AC2` ← مصدر التيار المتردد. `POS` و `NEG` ← الخرج المستمر مع مكثف تنعيم بينهما.',
+        npn: 'القاعدة `B` ← مقاومة 1kΩ ← منفذ رقمي. الباعث `E` ← GND. المجمع `C` ← سالب الحمل، وموجب الحمل ← المصدر. مع الأحمال الحثية دايود عكسي على الحمل.',
+        pnp: 'الباعث `E` ← موجب المصدر. المجمع `C` ← موجب الحمل، وسالب الحمل ← GND. القاعدة `B` ← مقاومة 1kΩ ← المنفذ (LOW = تشغيل).',
+        nmos: 'البوابة `G` ← مقاومة 220Ω ← منفذ رقمي، مع 10kΩ من البوابة إلى GND. المصدر `S` ← GND. المصرف `D` ← سالب الحمل، وموجب الحمل ← المصدر. دايود عكسي مع الأحمال الحثية.',
+        pmos: 'المصدر `S` ← موجب المصدر. المصرف `D` ← موجب الحمل. البوابة `G` تُسحب للأسفل للتشغيل (عبر ترانزستور NPN إذا كان المصدر أعلى من جهد المتحكم) مع 10kΩ بين G و S.',
+        scr: 'الأنود جهة الموجب/الحمل والكاثود جهة السالب. نبضة صغيرة على البوابة `G` عبر مقاومة تبدأ التوصيل.',
+        reg: '`IN` ← المصدر غير المنظم (أعلى من الخرج بـ 2V على الأقل)، `GND` ← الأرضي المشترك، `OUT` ← الحمل. مكثف على الدخل وآخر على الخرج.',
+        pwr: 'الدخل `IN` و `GND` ← المصدر، والخرج إلى الحمل. اضبط جهد الخرج بفولتميتر قبل وصل أي حمل.',
+        bat: '`POS` ← موجب الدائرة (ويفضّل عبر مفتاح وفيوز)، `NEG` ← الأرضي المشترك.',
+        btn: 'طرف ← منفذ رقمي، والطرف الآخر ← GND، مع تفعيل INPUT_PULLUP (القراءة LOW عند الضغط).',
+        sw: 'على التوالي مع الخط المراد قطعه، أو كمدخل: طرف ← منفذ رقمي والآخر ← GND مع INPUT_PULLUP.',
+        key: 'الصفوف R1..R4 والأعمدة C1..C4 ← ثمانية منافذ رقمية (مثلاً D9..D2). مكتبة Keypad تمسحها.',
+        load: 'لا يوصل مباشرة بمنفذ المتحكم. طرف ← موجب مصدر الحمل، والطرف الآخر ← مصرف MOSFET (أو مجمع ترانزستور) الذي يتحكم به المنفذ. دايود 1N4007 عكسي على طرفي الحمل.',
+        coil: 'الملف `A1`/`A2`: طرف ← 5V والآخر ← مجمع ترانزستور NPN مع دايود عكسي. التلامسات: `COM` ← مصدر الحمل، `NO` ← الحمل.',
+        gate: '`VCC` ← 5V و `GND` ← الأرضي. المداخل `A` / `B` من منافذ أو مفاتيح (بمقاومات سحب)، والخرج `Y` إلى ليد بمقاومة أو مدخل آخر.',
+        ic: 'التغذية `VCC` و `GND` مع مكثف 100nF بينهما، ثم وصّل المداخل والخرج حسب الدائرة المطلوبة.',
+        mcu: 'تتغذى من USB. وصّل `5V` / `3V3` و `GND` إلى خطي التغذية في لوحة التجارب، ثم المنافذ إلى الحساسات والمشغلات. اسأل عن أي عنصر لأعطيك توصيله مع هذه اللوحة.',
+        inst: '', car: 'المحرك الأيسر (`LP`/`LN`) ← OUT1/OUT2 في الدرايفر، والأيمن (`RP`/`RN`) ← OUT3/OUT4.', cam: '`VCC` ← 5V و `GND` ← GND. الصورة تُعالج في تبويب «الإيماءات والكاميرا».', dsi: '`5V` و `GND` ← 5V و GND في الراسبري. `DSI` ← منفذ DISPLAY بالشريط المسطح.',
+        step: 'الأطراف الخمسة ← موصل ULN2003. ثم IN1..IN4 في ULN2003 ← أربعة منافذ رقمية (D8..D11).', drvu: '`IN1..IN4` ← منافذ رقمية. `OUT1..OUT4` ← ملفات المحرك الخطوي. `GND` مشترك مع المتحكم.'
+    };
+    const MODULE = d => d.pins.some(p => SUP.test(p.id)) && d.pins.some(p => GNDP.test(p.id));
+
+    // index for matching a question to a part
+    const PSTOP = new Set('حساس مجس وحده موديول sensor module عنصر قطعه مع ب الى اردوينو arduino uno esp32 راسبري باي raspberry pi توصيل وصل اوصل ربط كود برنامج برمجه مثال اطراف منافذ شرح اشرح يعمل وظيفه استخدام استخدم طريقه كيفيه ما هو هي عن في على من لي كيف اريد ابغى بدي شو ايش pin pins code wiring connect how what the to and with for digital analog متحكم دائره دائرتي'.split(' ').map(x => kbNorm(x)));
+    const ptok = s => { const base = kbNorm(s).split(/[^\p{L}\p{N}]+/u).filter(Boolean), out = []; base.forEach((w, i) => { out.push(w); if (i + 1 < base.length && /[a-z]/.test(w) && /^[a-z]*\d/.test(base[i + 1] + '') ) out.push(w + base[i + 1]); }); const glued = kbNorm(s).replace(/[\s\-_.]+/g, ''); (glued.match(/[a-z]+\d+[a-z0-9]*/g) || []).forEach(x => out.push(x)); return out.filter(w => w.length > 1 && !PSTOP.has(w)); };
+    let IX = null;
+    const index = () => IX || (IX = Object.keys(COMPONENT_CATALOG).map(k => { const d = COMPONENT_CATALOG[k], f = fact(k), s = new Set(ptok(d.name + ' ' + (d.subtitle || '') + ' ' + k.replace(/_/g, ' ') + ' ' + (f ? f.al : ''))); return { k, d, f, s, model: new Set([...s].filter(x => /[a-z]\d|\d[a-z]/.test(x) || /^\d{3,}$/.test(x))) }; }));
+    function findPart(q) {
+        const ws = Array.from(new Set(ptok(q))); if (!ws.length) return null; let best = null, bs = 0, second = 0;
+        index().forEach(ix => { let s = 0; ws.forEach(w => { if (ix.model.has(w)) s += 3; else if (ix.s.has(w)) s += 1.2; else if (w.length >= 4) { for (const x of ix.s) if (x.length >= 4 && (x.startsWith(w) || w.startsWith(x))) { s += 0.7; break; } } }); if (s > bs) { second = bs; bs = s; best = ix; } else if (s > second) second = s; });
+        return best && bs >= 1.2 ? { ix: best, s: bs, sure: bs >= 2.4 } : null;
+    }
+    const boardOf = q => { const n = kbNorm(q); if (/راسبري|raspberry|\bpi\b|باي|gpiozero/.test(n)) return 'pi'; if (/esp32|esp 32|اي اس بي|micropython/.test(n)) return 'esp'; if (/اردوينو|ardu|uno|اونو/.test(n)) return 'uno'; try { const c = state.components; if (c.some(x => x.type === 'rpi4')) return 'pi'; if (c.some(x => x.type === 'esp32_devkit')) return 'esp'; } catch (e) { } return 'uno'; };
+    const INT = { wire: /(وصل|توصيل|اوصل|ربط|اربط|اركب|تركيب|اطراف|منافذ|pin|wiring|connect|مخطط)/, code: /(كود|برنامج|برمج|مثال|سكتش|code|sketch|program|مكتبه|library)/, what: /(ما هو|ما هي|ماهو|ماهي|شرح|اشرح|وظيف|يعمل|مبدا|استخدام|فايد|what is|تعريف|عرف)/, volt: /(جهد|فولت|تغذي|تيار|امبير|يستهلك|volt|current|power|3\.3|5v)/, fix: /(لا يعمل|مش شغال|ما بشتغل|ما يشتغل|مشكل|خطا|غلط|عطل|ليش|لماذا|قراءه خاط|not work|error|problem)/ };
+    function partCard(q, hit, plain) {
+        const { k, d, f } = hit.ix, n = kbNorm(q), bk = boardOf(q), it = {}; Object.keys(INT).forEach(i => it[i] = INT[i].test(n)); const any = it.wire || it.code || it.what || it.volt || it.fix, all = !any;
+        const ff = f || { cls: MODULE(d) ? 'mod' : 'inst', v: '', d: d.subtitle || '', lib: '', note: '', al: '' }; const mod = MODULE(d) && !/^(gate|ic|reg|pwr)$/.test(ff.cls);
+        const L = ['### ' + d.name, (ff.d || d.subtitle || '') + (d.category ? ' — ' + d.category.replace(/\s*\(.*\)/, '') : '')];
+        const sup = ff.v === '5' ? '5V' : ff.v === '3' ? '3.3V فقط' : ff.v === 'b' ? '3.3V – 5V' : '', iface = { ana: 'تماثلي', gas: 'تماثلي AO + رقمي DO', dig: 'رقمي', i2c: 'I2C', spi: 'SPI', adc: 'SPI', uart: 'UART', '1w': 'OneWire', dht: 'سلك بيانات واحد', sonar: 'TRIG / ECHO', hx: 'سلكان (DT / SCK)', servo: 'PWM', pwm: 'PWM', lcd: 'I2C', oled: 'I2C', neo: 'سلك بيانات واحد', tm: 'سلكان (CLK / DIO)', pulse: 'نبضات', joy: 'تماثلي ×2 + زر' }[ff.cls] || '';
+        if ((all || it.what || it.volt) && (sup || iface || ff.lib)) L.push('**المواصفات:** ' + [sup && 'التغذية ' + sup, iface && 'الواجهة ' + iface, ff.lib && 'المكتبة `' + ff.lib + '`'].filter(Boolean).join(' · '));
+        let w = null; if (mod) w = wiring(k, d, ff, bk);
+        if (all || it.wire || it.volt && mod) {
+            if (w) { L.push('**التوصيل مع ' + B[bk].n + ':**'); w.lines.forEach(x => L.push(x)); w.warn.forEach(x => L.push('⚠ ' + x)); }
+            else if (HOW[ff.cls]) L.push('**التوصيل:** ' + HOW[ff.cls]); else L.push('**الأطراف:** ' + d.pins.slice(0, 14).map(p => '`' + (p.label || p.id) + '`').join('، '));
+        }
+        let c = ''; if (all || it.code) { if (!w && mod) w = wiring(k, d, ff, bk); const ww = w || { map: {} }; c = bk === 'pi' ? pyCode(k, d, ff, ww) : code(k, d, ff, ww, bk); if (!c && it.code) { try { const h = kbSearch(d.name + ' ' + ff.al, 1)[0]; if (h && h.s >= 3 && h.e[3]) c = h.e[3]; } catch (e) { } } }
+        if (ff.note && (all || it.what || it.wire || it.fix || it.volt)) L.push('**انتبه:** ' + ff.note);
+        if (it.fix) L.push('**إذا لم يعمل:** 1) تأكد من التغذية والأرضي المشترك. 2) طابق كل طرف مع الجدول أعلاه. 3) جرّب مثالاً بسيطاً يطبع القراءة على السيريال. 4) اضغط «تشغيل» وراجع ملاحظات فاحص الدائرة.');
+        let md = L.filter(Boolean).join('\n'); if (c) md += '\n\n**الكود (' + (bk === 'pi' ? 'Python · gpiozero' : bk === 'esp' ? 'ESP32 · Arduino C++' : 'Arduino C++') + '):**\n```' + (bk === 'pi' ? 'python' : 'cpp') + '\n' + c + '\n```';
+        if (plain) return md.replace(/[*#`]/g, '');
+        const img = window.phCat ? phCat(k) : null, others = Object.keys(B).filter(x => x !== bk && mod);
+        return '<div class="text-[10px] text-amber-300 mb-1">📦 خبير العناصر (بدون إنترنت)</div>' + (img ? `<img src="${img}" alt="" style="float:left;width:76px;max-height:76px;object-fit:contain;margin:0 0 6px 8px;background:#e6e9ee;border-radius:10px;padding:4px">` : '') + aiMd(md, true) +
+            '<div class="mt-2 flex flex-wrap gap-1" style="clear:both">' + `<button onclick="addComponentToCanvas('${k}');if(window.sxToast)sxToast('✓ أُضيف العنصر إلى الدائرة')" class="px-2 py-1 rounded-lg bg-cyan-700 text-white text-[11px] font-bold">➕ أضفه إلى الدائرة</button>` +
+            others.map(x => `<button onclick="kbAsk(this.dataset.q)" data-q="توصيل وكود ${aiEsc(d.name)} مع ${B[x].n}" class="px-2 py-1 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 text-[11px]">مع ${B[x].n}</button>`).join('') + '</div>';
+    }
+
+    // ---------- 3) circuit doctor ----------
+    function doctor(q) {
+        let cs, ws; try { cs = state.components; ws = state.wires; } catch (e) { return null; }
+        const tag = '<div class="text-[10px] text-amber-300 mb-1">🩺 فاحص الدائرة (بدون إنترنت)</div>';
+        if (!cs.length) return tag + aiMd('الساحة فارغة. أضف عناصر من المكتبة أو افتح مشروعاً جاهزاً ثم اطلب الفحص.', true);
+        const nm = c => (COMPONENT_CATALOG[c.type] || {}).name || c.type, by = {}; cs.forEach(c => by[nm(c)] = (by[nm(c)] || 0) + 1);
+        const L = ['### فحص الدائرة الحالية', '**العناصر (' + cs.length + '):** ' + Object.keys(by).map(k => k + (by[k] > 1 ? ' ×' + by[k] : '')).join('، '), '**الأسلاك:** ' + ws.length];
+        let list = []; try { list = (window.sparkERC ? sparkERC() : []) || []; } catch (e) { }
+        const errs = list.filter(x => x.lv === 'err'), warns = list.filter(x => x.lv !== 'err');
+        if (!list.length) L.push('✅ **لم أجد أخطاء في التوصيل.** الدائرة مكتملة: كل عنصر موصول وله تغذية وأرضي.');
+        else { if (errs.length) { L.push('**أخطاء يجب إصلاحها (' + errs.length + '):**'); errs.forEach(x => L.push('- ❌ ' + x.t)); } if (warns.length) { L.push('**ملاحظات (' + warns.length + '):**'); warns.forEach(x => L.push('- ⚠ ' + x.t)); } }
+        if (/(اشرح|وصف|كيف تعمل|ماذا تفعل)/.test(kbNorm(q)) && ws.length) { const id = {}; cs.forEach(c => id[c.id] = nm(c)); L.push('**التوصيلات:**'); ws.slice(0, 24).forEach(w => L.push('- ' + (id[w.from.compId] || '?') + ' `' + w.from.pinId + '` ↔ ' + (id[w.to.compId] || '?') + ' `' + w.to.pinId + '`')); if (ws.length > 24) L.push('… و' + (ws.length - 24) + ' سلكاً آخر.'); }
+        return tag + aiMd(L.join('\n'), true);
+    }
+
+    // ---------- 4) routing ----------
+    const DOC = /(افحص|فحص|شخص|تشخيص|راجع|دقق).{0,14}(داير|توصيل|مشروع)|دايرتي.{0,20}(صح|سليم|خطا|غلط|مشكل|لا تعمل|ما بتشتغل)|(اشرح|وصف).{0,8}دايرتي|ما (مشكله|خطا) (دايرتي|التوصيل)/;
+    const _al = aiLocal;
+    aiLocal = function (text, kind) {
+        if (kind) return _al.apply(this, arguments);
+        const q = String(text || ''), n = kbNorm(q);
+        try { if (DOC.test(n)) { const r = doctor(q); if (r) return r; } } catch (e) { console.warn(e); }
+        let hit = null; try { hit = findPart(q); } catch (e) { console.warn(e); }
+        const specific = INT.wire.test(n) || INT.code.test(n);
+        if (hit && hit.sure && specific) { try { return partCard(q, hit); } catch (e) { console.warn(e); } }
+        const base = _al.apply(this, arguments);
+        if (hit && (base.indexOf('لم أجد جواباً دقيقاً') >= 0 || base.indexOf('من مكتبة العناصر') >= 0 || base.indexOf('لم أفهم السؤال') >= 0)) { try { return partCard(q, hit); } catch (e) { console.warn(e); } }
+        if (hit && hit.sure && base.indexOf('خبير العناصر') < 0) { const d = hit.ix.d; return base + `<div class="mt-2 flex flex-wrap gap-1"><button onclick="kbAsk(this.dataset.q)" data-q="توصيل وكود ${aiEsc(d.name)}" class="px-2 py-0.5 rounded-full border border-slate-600 text-slate-300 hover:bg-slate-700 text-[11px]">🔌 توصيل وكود ${aiEsc(d.name)}</button></div>`; }
+        return base;
+    };
+    // the downloaded offline model is grounded with the same facts
+    if (typeof brainContext === 'function') { const _bc = brainContext; brainContext = function (q) { let s = _bc.apply(this, arguments); try { const h = findPart(q); if (h && h.sure) s += (s ? '\n\n' : '') + 'بطاقة العنصر من المنصة:\n' + partCard(q, h, true).slice(0, 900); } catch (e) { } return s; }; }
+    window.sparkPartExpert = { find: findPart, card: (q, plain) => { const h = findPart(q); return h ? partCard(q, h, plain) : null; }, fact, doctor };
+})();
+
+// ===== Phase 43: Raspberry Pi realism — physical pin numbers, electrical limits (3.3 V logic, no ADC, 16 mA per pin) checked before run =====
+(function () {
+    const PINNO = { '3V3': 1, '5V': 2, SDA: 3, SCL: 5, GND: 6, G4: 7, G14: 8, G15: 10, G17: 11, G18: 12, G27: 13, G22: 15, G23: 16, G24: 18, G10: 19, G9: 21, G25: 22, G11: 23, G8: 24, G7: 26, G5: 29, G6: 31, G12: 32, G13: 33, G19: 35, G16: 36, G26: 37, G20: 38, G21: 40 };
+    window.SPARK_PI_PINS = PINNO;
+    // every header pin shows its physical number, as printed in the official pinout
+    try {
+        const d = COMPONENT_CATALOG.rpi4; if (d) d.pins.forEach(p => { const n = PINNO[p.id]; if (!n || /^\d+ · /.test(p.label || '')) return; p.label = n + ' · ' + String(p.label || p.id).replace(/\s*\(pin \d+\)/, ''); });
+    } catch (e) { }
+
+    const BAT = { bat_9v: 9, bat_lipo2s: 7.4, bat_pb12: 12, solar_1w: 6, solar_20w: 18, solar_50w: 18 };
+    const ANALOG_T = /^(lm35|tmp36|acs712|vsens|hall49e|fsr|flex|press_tx|potentiometer|ph_meter|tds_meter|ec_meter|do_sensor|orp_sensor|chlorine|soil_ec|soil_sensor|waterlvl|ldr_sensor)$/;
+    const ANALOG_P = /^(AO|AOUT|WIPER|PO|W)$/;
+    const OUT_P = /^(ECHO|OUT|DO|DATA|DQ|DT|TX|RO|VT|D[0-3]|CH[1-6])$/;
+    const OK_5V_OUT = /^(pir_sensor|ds18b20)$/;          // 3.3 V output stage / open drain: safe when the pull-up goes to 3V3
+    const LOAD = /^(motor_|water_pump|solenoid|relay_coil|bulb_12v|heater|speaker8|valve_12v|cooling_fan)/;
+    const nm = c => (COMPONENT_CATALOG[c.type] || {}).name || c.type;
+    const gp = id => /^G\d+$/.test(id) || id === 'SDA' || id === 'SCL';
+    const gname = id => id === 'SDA' ? 'GPIO2' : id === 'SCL' ? 'GPIO3' : id.replace(/^G/, 'GPIO');
+
+    function piRules(out) {
+        const cs = state.components, pis = cs.filter(c => c.type === 'rpi4'); if (!pis.length || typeof pcbNetlist !== 'function') return;
+        const root = pcbNetlist(), net = {};
+        cs.forEach(c => { const d = COMPONENT_CATALOG[c.type]; if (!d) return; d.pins.forEach(p => { const r = root(c.id + '|' + p.id); (net[r] = net[r] || []).push({ c, p: p.id }); }); });
+        const on = (c, p) => net[root(c.id + '|' + p)] || [];
+        // volts a net is driven to by a stiff source (0 = none)
+        const src = m => { let v = 0; m.forEach(({ c, p }) => { const t = c.type, s = c.state || {}; let x = 0; if (/^(rpi4|arduino_uno|esp32_devkit)$/.test(t) && p === '5V') x = 5; else if (t === 'dc_supply' && p === 'VPOS') x = +s.voltage || 0; else if (BAT[t] && p === 'POS') x = BAT[t]; else if (/^(reg_|buck_|boost_)/.test(t) && p === 'OUT') x = +s.vout || 0; if (x > v) v = x; }); return v; };
+        const isGnd = m => m.some(({ c, p }) => p === 'GND' || /^(bat_|solar_)/.test(c.type) && p === 'NEG');
+        const push = (lv, id, t) => { if (!out.some(o => o.t === t)) out.push({ lv, id, t }); };
+        pis.forEach(pi => {
+            const P = COMPONENT_CATALOG.rpi4.pins.map(p => p.id);
+            // rails
+            const v5 = on(pi, '5V'), v3 = on(pi, '3V3'), r5 = root(pi.id + '|5V'), r3 = root(pi.id + '|3V3'), rg = root(pi.id + '|GND');
+            if (r5 === r3) push('err', pi.id, 'قصر بين 5V و 3.3V على الراسبري باي — يتلف منظّم 3.3V فوراً.');
+            if (r5 === rg || r3 === rg) push('err', pi.id, 'قصر بين التغذية و GND على الراسبري باي.');
+            const s5 = v5.filter(m => m.c !== pi), vin = src(s5); if (vin > 5.25) push('err', pi.id, 'منفذ 5V في الراسبري موصول بمصدر ' + vin + 'V — الحد الأقصى 5.25V. استخدم محوّلاً خافضاً (Buck) مضبوطاً على 5V.');
+            const s3 = src(v3.filter(m => m.c !== pi)); if (s3 > 3.6) push('err', pi.id, 'منفذ 3.3V في الراسبري موصول بمصدر ' + s3 + 'V — يتلف المعالج.');
+            P.filter(gp).forEach(g => {
+                const m = on(pi, g), others = m.filter(x => !(x.c === pi && x.p === g)); if (!others.length) return; const G = gname(g) + ' (pin ' + PINNO[g] + ')';
+                const v = src(m); if (v > 3.6) return push('err', pi.id, G + ' موصول مباشرة بجهد ' + v + 'V — منافذ الراسبري تعمل على 3.3V فقط ولا تتحمل أكثر.');
+                if (root(pi.id + '|' + g) === rg) return;
+                others.forEach(({ c, p }) => {
+                    if (c === pi) return; const t = c.type, d = COMPONENT_CATALOG[t] || {}, ids = (d.pins || []).map(x => x.id);
+                    if (ANALOG_P.test(p) || ANALOG_T.test(t) && /^(OUT|AO|AOUT|WIPER|PO)$/.test(p)) return push('err', c.id, '«' + nm(c) + '»: خرج تماثلي موصول بـ ' + G + ' — الراسبري باي لا تملك مدخلاً تماثلياً. وصّله عبر MCP3008.');
+                    if (OUT_P.test(p) && !OK_5V_OUT.test(t)) { const vc = ids.find(x => /^(VCC|VDD|VIN)$/.test(x)); if (vc && src(on(c, vc)) > 3.6) return push('err', c.id, '«' + nm(c) + '» يتغذى من 5V وخرجه ' + p + ' موصول مباشرة بـ ' + G + ' — استخدم مقسّم جهد (1kΩ + 2kΩ) أو غذِّه من 3.3V.'); }
+                    if (/^(SDA|SCL)$/.test(p) && /^(SDA|SCL)$/.test(g)) { const vc = ids.find(x => /^(VCC|VDD|VIN)$/.test(x)); if (vc && src(on(c, vc)) > 3.6) return push('warn', c.id, '«' + nm(c) + '» على ناقل I2C ويتغذى من 5V — مقاومات الرفع على لوحته قد ترفع الخط إلى 5V. غذِّه من 3.3V أو استخدم محوّل مستوى.'); }
+                    if (LOAD.test(t) && !/^(PWM|IN)$/.test(p)) return push('err', c.id, '«' + nm(c) + '» موصول مباشرة بـ ' + G + ' — أقصى تيار للمنفذ 16mA. استخدم ترانزستوراً أو درايفر مع دايود حماية.');
+                    if (/^(led_|rgb_led)/.test(t) && ids.length <= 4 && t !== 'led_bar') { const oth = ids.filter(x => x !== p).map(x => on(c, x)); if (oth.some(o => isGnd(o) || src(o) > 0)) return push('err', c.id, '«' + nm(c) + '» موصول بـ ' + G + ' بدون مقاومة — أضف مقاومة 220–330Ω على التوالي.'); }
+                });
+            });
+        });
+    }
+    const prev = window.sparkErcExtra; window.sparkErcExtra = function (out) { if (prev) try { prev(out); } catch (e) { } piRules(out); };
+    window.sparkPiRules = () => { const o = []; piRules(o); return o; };
+})();
+
+// ===== Phase 44: secrets vault — activation code, API keys, Pi PIN and the owner's GitHub token are encrypted at rest =====
+// The account record itself stays readable synchronously (name, tier…) so the app boots exactly as before; only its code field moves into the vault.
+(function () {
+    const SP = Storage.prototype, O0 = SP.__sp0 || (SP.__sp0 = { g: SP.getItem, s: SP.setItem, r: SP.removeItem }), _get = O0.g, _set = O0.s, _rem = O0.r;      // the true originals, even when an update re-runs this script in the same window
+    const SECRET = new Set(['sparkv_code', 'spark_ai_cfg_v1', 'spark_pi_pin', 'sparkv_gh']), ACCT = 'spark_acct_v1', HOLE = '\u00a7';
+    const isEnc = v => typeof v === 'string' && v.slice(0, 5) === 'enc1:';
+    const GEN = SP.__spGen = (SP.__spGen || 0) + 1, live = () => SP.__spGen === GEN;      // an update re-runs this script: only the newest copy may touch storage
+    const cache = {}, pending = new Set(); let key = null, ready = false, on = false;
+    const isLS = s => { try { return s === window.localStorage; } catch (e) { return false; } };
+    const b64 = u => { let s = ''; for (let i = 0; i < u.length; i++) s += String.fromCharCode(u[i]); return btoa(s); }, ub64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+    const enc = async t => { const iv = crypto.getRandomValues(new Uint8Array(12)), ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(t))); return 'enc1:' + b64(iv) + ':' + b64(ct); };
+    const dec = async s => { for (let i = 0; i < 3 && isEnc(s); i++) { const p = s.split(':'); s = new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ub64(p[1]) }, key, ub64(p[2]))); } return s; };
+    const persist = k => { if (!live() || !(k in cache) || isEnc(cache[k])) return; const v = cache[k]; enc(v).then(c => { if (live() && cache[k] === v) _set.call(localStorage, k, c); }).catch(() => { }); };
+    try { on = !!(window.indexedDB && window.crypto && crypto.subtle && typeof sparkKV !== 'undefined'); } catch (e) { on = false; }
+
+    if (on) {
+        SP.getItem = function (k) {
+            if (isLS(this) && k === ACCT) { const raw = _get.call(this, k); if (raw && cache.sparkv_code && raw.indexOf('"code":"' + HOLE + '"') >= 0) { try { const a = JSON.parse(raw); a.code = cache.sparkv_code; return JSON.stringify(a); } catch (e) { } } return raw; }
+            if (!isLS(this) || !SECRET.has(k)) return _get.call(this, k);
+            if (k in cache) return cache[k]; const raw = _get.call(this, k); return isEnc(raw) ? null : raw;
+        };
+        SP.setItem = function (k, v) {
+            if (isLS(this) && k === ACCT) { try { const a = JSON.parse(v); if (a && typeof a.code === 'string' && a.code && a.code !== HOLE) { cache.sparkv_code = a.code; if (ready) persist('sparkv_code'); else pending.add('sparkv_code'); a.code = HOLE; v = JSON.stringify(a); } } catch (e) { } return _set.call(this, k, v); }
+            if (!isLS(this) || !SECRET.has(k)) return _set.call(this, k, v);
+            cache[k] = String(v); if (ready) persist(k); else pending.add(k);
+        };
+        SP.removeItem = function (k) {
+            if (isLS(this) && k === ACCT) { delete cache.sparkv_code; pending.delete('sparkv_code'); _rem.call(this, 'sparkv_code'); }
+            if (isLS(this) && SECRET.has(k)) { delete cache[k]; pending.delete(k); }
+            return _rem.call(this, k);
+        };
+    }
+    const open = (async () => {
+        if (!on) return false;
+        try {
+            key = await sparkKV.get('vk');
+            if (!key || !key.algorithm) { key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']); await sparkKV.set('vk', key); const chk = await sparkKV.get('vk'); if (!chk || !chk.algorithm) throw new Error('kv'); }
+            for (const k of SECRET) {
+                if (!live()) return false;
+                const raw = _get.call(localStorage, k); if (raw == null) continue;
+                if (isEnc(raw)) { try { const p = await dec(raw); if (!pending.has(k) || k === 'spark_ai_cfg_v1' && !/"keys":\{"/.test(cache[k] || '')) cache[k] = p; } catch (e) { } }      // unreadable (key lost): left untouched, read as absent
+                else { if (!(k in cache)) cache[k] = raw; pending.add(k); }          // legacy plain text → encrypt now
+            }
+            if (!live()) return false;
+            // the account: move a plain (or earlier fully-encrypted) record's code into the vault
+            try { let a = _get.call(localStorage, ACCT); if (isEnc(a)) a = await dec(a); if (a && a.indexOf('"code":"' + HOLE + '"') < 0 && live()) SP.setItem.call(localStorage, ACCT, a); } catch (e) { }
+            ready = true; pending.forEach(persist); pending.clear();
+            try { if (cache.spark_ai_cfg_v1 && typeof AI !== 'undefined' && AI.cfg) { Object.assign(AI.cfg, JSON.parse(cache.spark_ai_cfg_v1)); AI.cfg.keys = AI.cfg.keys || {}; AI.cfg.models = AI.cfg.models || {}; if (typeof aiStatus === 'function') aiStatus(); } } catch (e) { }
+            return true;
+        } catch (e) {
+            // no usable key store on this browser: keep working exactly as before (plain storage)
+            if (!live()) return false;
+            on = false; SP.getItem = _get; SP.setItem = _set; SP.removeItem = _rem; try { const raw = _get.call(localStorage, ACCT); if (raw && cache.sparkv_code) { const a = JSON.parse(raw); if (a.code === HOLE) { a.code = cache.sparkv_code; _set.call(localStorage, ACCT, JSON.stringify(a)); } } } catch (er) { } Object.keys(cache).forEach(k => { try { if (k !== 'sparkv_code') _set.call(localStorage, k, cache[k]); } catch (er) { } }); return false;
+        }
+    })();
+    window.sparkVaultReady = open.then(() => { });
+    window.sparkVault = Object.freeze({ ready: window.sparkVaultReady, active: () => on && ready, get: k => SECRET.has(k) ? localStorage.getItem(k) : null, set: (k, v) => { if (SECRET.has(k)) localStorage.setItem(k, v); }, del: k => { if (SECRET.has(k)) localStorage.removeItem(k); } });
+
+    // secret fields are masked while typing (owner code, Pi PIN)
+    const $id = id => document.getElementById(id);
+    function decorate() {
+        const c = $id('accCode'), t = $id('accT'); if (c && t) { const own = /فريق التطوير/.test(t.textContent); if ((c.type === 'password') !== own) c.type = own ? 'password' : 'text'; }
+        const pp = $id('piPin'); if (pp && pp.type !== 'password') { pp.type = 'password'; pp.autocomplete = 'off'; }
+    }
+    let dq = 0; new MutationObserver(() => { if (dq) return; dq = setTimeout(() => { dq = 0; try { decorate(); } catch (e) { } }, 60); }).observe(document.documentElement, { childList: true, subtree: true });
+    try { localStorage.removeItem('spark_bio_v1'); } catch (e) { }
+})();
+
+// ===== Phase 45: owner studio — a hidden maintenance panel (owner only): colours, names, icons, tab and pane positions, publish to the repository =====
+(function () {
+    const $ = id => document.getElementById(id);
+    const REPO = 'EngMohannd/spark-simlab', FILE = 'theme.json';
+    const LS = { g: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, s: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } }, d: k => { try { localStorage.removeItem(k); } catch (e) { } } };
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const isOwner = () => { try { return !!(window.sparkAcc && sparkAcc.info().tier === 'owner'); } catch (e) { return false; } };
+    const toast = t => { try { sxToast(t); } catch (e) { } };
+
+    // ---------- theme model (everything is validated before it is applied: a published theme is data, never code) ----------
+    const ROLES = { brand: ['لون الهوية', '#c8741f'], acc: ['اللون المساند', '#4fb3a5'], pri: ['زر التشغيل والنجاح', '#2f8f62'], stop: ['الإيقاف والخطأ', '#c93e3e'], bg: ['الخلفية', '#171b21'], surf: ['الألواح والبطاقات', '#1c2128'], line: ['الحدود والفواصل', '#353c46'], txt: ['النص', '#d5dae1'], mut: ['النص الثانوي', '#909aa8'] };
+    const PANES = { lib: ['paneLibrary', 'مكتبة العناصر'], canvas: ['paneCanvas', 'ساحة الدائرة'], code: ['paneCode', 'الكود'] };
+    const HEX = /^#[0-9a-f]{6}$/i, ICO = /^fa-[a-z0-9-]{1,40}$/, clean = s => String(s).replace(/[\u0000-\u001f\u007f<>]/g, '').slice(0, 80);
+    function sanitize(t) {
+        const o = { v: 1, colors: {}, labels: {}, icons: {}, tabs: { order: [], hide: [] }, panes: [] }; if (!t || typeof t !== 'object') return o;
+        Object.keys(t.colors || {}).forEach(k => { if (ROLES[k] && HEX.test(t.colors[k])) o.colors[k] = t.colors[k].toLowerCase(); });
+        Object.keys(t.labels || {}).slice(0, 400).forEach(k => { const a = clean(k).trim(), b = clean(t.labels[k]).trim(); if (a && b && a !== b) o.labels[a] = b; });
+        Object.keys(t.icons || {}).slice(0, 400).forEach(k => { const m = /^(fa-[a-z0-9-]{1,40})\|(.*)$/.exec(k); if (m && ICO.test(t.icons[k])) o.icons[m[1] + '|' + clean(m[2]).trim()] = t.icons[k]; });
+        const idok = x => typeof x === 'string' && /^[a-z0-9_]{1,20}$/.test(x);
+        if (t.tabs) { o.tabs.order = (t.tabs.order || []).filter(idok).slice(0, 30); o.tabs.hide = (t.tabs.hide || []).filter(idok).filter(x => x !== 'sim').slice(0, 30); }
+        const p = (t.panes || []).filter(x => PANES[x]); if (p.length === 3 && new Set(p).size === 3 && p.join() !== 'lib,canvas,code') o.panes = p;
+        if (typeof t.at === 'number') o.at = t.at;
+        return o;
+    }
+    const empty = t => !Object.keys(t.colors).length && !Object.keys(t.labels).length && !Object.keys(t.icons).length && !t.tabs.order.length && !t.tabs.hide.length && !t.panes.length;
+    const load = k => { try { return sanitize(JSON.parse(LS.g(k) || 'null')); } catch (e) { return sanitize(null); } };
+    let PUB = load('spark_theme_pub'), OWN = null, T = PUB;        // T = what is on screen
+    const merge = (a, b) => sanitize({ colors: Object.assign({}, a.colors, b.colors), labels: Object.assign({}, a.labels, b.labels), icons: Object.assign({}, a.icons, b.icons), tabs: b.tabs.order.length || b.tabs.hide.length ? b.tabs : a.tabs, panes: b.panes.length ? b.panes : a.panes });
+
+    // ---------- colours: remap the palette inside every stylesheet rule ----------
+    const hsl = (r, g, b) => { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; let h = 0, s = 0; if (d) { s = d / (1 - Math.abs(2 * l - 1)); h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; } return [h, s, l]; };
+    const rgb = (h, s, l) => { const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2; let r = 0, g = 0, b = 0; if (h < 60) { r = c; g = x; } else if (h < 120) { r = x; g = c; } else if (h < 180) { g = c; b = x; } else if (h < 240) { g = x; b = c; } else if (h < 300) { r = x; b = c; } else { r = c; b = x; } return [r, g, b].map(v => Math.round((v + m) * 255)); };
+    const hex3 = h => { h = h.slice(1); if (h.length === 3 || h.length === 4) h = h.split('').map(c => c + c).join(''); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16), h.length === 8 ? h.slice(6) : '']; };
+    const role = (h, s, l, light) => {
+        if (s < 0.04) return null;
+        if (s <= 0.24 && h > 190 && h < 240) { if (light) return null; return l < 0.125 ? 'bg' : l < 0.185 ? 'surf' : l < 0.36 ? 'line' : l < 0.72 ? 'mut' : 'txt'; }
+        if (s < 0.32) return null;
+        if (h >= 20 && h <= 36) return 'brand'; if (h >= 162 && h <= 186) return 'acc'; if (h >= 136 && h < 162) return 'pri'; if (h >= 352 || h <= 8) return 'stop'; return null;
+    };
+    const COLOR = /#[0-9a-f]{3,8}\b|rgba?\(\s*\d{1,3}[\s,]+\d{1,3}[\s,]+\d{1,3}/gi;
+    function remapper(colors) {
+        const B = {}, N = {}; Object.keys(colors).forEach(k => { B[k] = hsl.apply(0, hex3(ROLES[k][1])); N[k] = hsl.apply(0, hex3(colors[k])); });
+        const memo = {};
+        const conv = (r, g, b, light) => { const key = r + ',' + g + ',' + b + (light ? 'L' : ''); if (key in memo) return memo[key]; const [h, s, l] = hsl(r, g, b), k = role(h, s, l, light); let out = null;
+            if (k && N[k]) { const b0 = B[k], n = N[k], neutral = /^(bg|surf|line|txt|mut)$/.test(k); const H = neutral ? n[0] : (n[0] + (h - b0[0]) + 360) % 360, S = Math.max(0, Math.min(1, n[1] * (b0[1] > 0.01 ? s / b0[1] : 1))), L = Math.max(0.02, Math.min(0.98, l + (n[2] - b0[2]))); out = rgb(H, S, L); }
+            return memo[key] = out; };
+        return (css, light) => { let hit = false; const res = css.replace(COLOR, m => {
+            if (m[0] === '#') { if (![4, 5, 7, 9].includes(m.length)) return m; const [r, g, b, a] = hex3(m), o = conv(r, g, b, light); if (!o) return m; hit = true; return '#' + o.map(v => v.toString(16).padStart(2, '0')).join('') + a; }
+            const p = m.match(/\d{1,3}/g).map(Number), o = conv(p[0], p[1], p[2], light); if (!o) return m; hit = true; return m.replace(/\d{1,3}([\s,]+)\d{1,3}([\s,]+)\d{1,3}$/, o[0] + '$1' + o[1] + '$2' + o[2]); });
+            return hit ? res : null; };
+    }
+    function paint(colors) {
+        let st = $('osColors'); if (!Object.keys(colors).length) { if (st) st.remove(); return; }
+        const map = remapper(colors), out = [];
+        const walk = (rules, wrapA, wrapB) => { for (const r of rules) {
+            if (r.type === 1) { const sel = r.selectorText || ''; if (/os-|osColors/.test(sel)) continue; const light = /html\.light|\.light\b/.test(sel), body = r.style.cssText; if (!/#|rgb/i.test(body)) continue; const decl = [];
+                for (let i = 0; i < r.style.length; i++) { const p = r.style[i], v = r.style.getPropertyValue(p); if (!/#|rgb/i.test(v)) continue; const nv = map(v, light); if (nv) decl.push(p + ':' + nv + '!important'); }
+                if (decl.length) out.push(wrapA + sel + '{' + decl.join(';') + '}' + wrapB); }
+            else if ((r.type === 4 || r.type === 12) && r.cssRules) walk(r.cssRules, wrapA + (r.type === 4 ? '@media ' + r.conditionText : '@supports ' + r.conditionText) + '{', '}' + wrapB);
+        } };
+        for (const sh of document.styleSheets) { if (sh.ownerNode && sh.ownerNode.id === 'osColors') continue; let rules; try { rules = sh.cssRules; } catch (e) { continue; } if (rules) walk(rules, '', ''); }
+        if (!st) { st = document.createElement('style'); st.id = 'osColors'; }
+        st.textContent = out.join('\n'); document.head.appendChild(st);          // re-append: must stay the last sheet
+        inlineBrand(document.body);
+    }
+    function inlineBrand(root) { const c = T.colors.brand; if (!c || !root.querySelectorAll) return; root.querySelectorAll('[style*="c8741f" i]').forEach(e => { if (e.closest('#osPanel')) return; e.setAttribute('style', e.getAttribute('style').replace(/#c8741f/gi, c)); }); }
+
+    // ---------- names and icons ----------
+    const SKIP = /^(SCRIPT|STYLE|TEXTAREA|INPUT|CODE|PRE|SVG|CANVAS|OPTION)$/i;
+    const inScope = n => { const p = n.parentElement; return p && !SKIP.test(p.tagName) && !p.closest('#osPanel,#osPick,.CodeMirror,#serialMonitorOutput,[contenteditable],.ai-msgs,#aiMessages,#codeLineNumbers,#codeHighlight'); };
+    function relabel(root) {
+        const L = T.labels, I = T.icons, hasL = Object.keys(L).length, hasI = Object.keys(I).length; if (!hasL && !hasI || !root) return;
+        if (hasL) {
+            const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; const todo = [];
+            while ((n = w.nextNode())) { const t = n.nodeValue.trim(); if (t && L[t] && inScope(n)) todo.push([n, t]); }
+            todo.forEach(([n, t]) => { const p = n.parentElement; if (p && !p.dataset.os0) p.dataset.os0 = t; n.nodeValue = n.nodeValue.replace(t, L[t]); });
+            if (root.querySelectorAll) root.querySelectorAll('[title],[aria-label],[placeholder]').forEach(e => { ['title', 'aria-label', 'placeholder'].forEach(a => { const v = e.getAttribute(a); if (v && L[v.trim()]) e.setAttribute(a, L[v.trim()]); }); });
+            if (L[document.title]) document.title = L[document.title];
+        }
+        if (hasI && root.querySelectorAll) root.querySelectorAll('i[class*="fa-"]').forEach(i => { if (i.dataset.osi || i.closest('#osPanel,#osPick')) return; const cur = [...i.classList].find(c => /^fa-/.test(c) && !/^fa-(solid|regular|brands|light|thin|duotone|fw|spin|pulse|lg|xl|2x|xs|sm)$/.test(c)); if (!cur) return; const lab = labelOf(i), nv = I[cur + '|' + lab] || I[cur + '|*']; if (nv) { i.dataset.osi = cur; i.classList.replace(cur, nv); } });
+    }
+    const origText = e => (e && (e.dataset.os0 || (e.textContent || '').trim())) || '';
+    function labelOf(i) { const p = i.parentElement; if (!p) return ''; let t = p.dataset.os0 || ''; if (!t) { for (const n of p.childNodes) if (n.nodeType === 3 && n.nodeValue.trim()) { t = n.nodeValue.trim(); break; } } if (!t) t = (p.getAttribute('title') || p.getAttribute('aria-label') || '').trim(); const rev = Object.keys(T.labels).find(k => T.labels[k] === t); return clean(rev || t).trim(); }
+
+    // ---------- positions ----------
+    function arrange() {
+        let st = $('osLayout'); const css = [], tb = T.tabs;
+        tb.order.forEach((id, i) => css.push(`.sx-tab[data-n="${id}"]{order:${i + 1}}`)); if (tb.order.length) css.push('.sx-nav .sx-find{order:99}');
+        tb.hide.forEach(id => css.push(`.sx-tab[data-n="${id}"]{display:none!important}`));
+        if (T.panes.length) { css.push('@media(min-width:1024px){' + T.panes.map((k, i) => `#${PANES[k][0]}{order:${i * 2 + 1}}`).join('') + 'main>.rsz{display:none!important}}'); }
+        if (!css.length) { if (st) st.remove(); return; }
+        if (!st) { st = document.createElement('style'); st.id = 'osLayout'; document.head.appendChild(st); } st.textContent = css.join('\n');
+    }
+    function unlabel() { document.querySelectorAll('[data-os0]').forEach(p => { for (const n of p.childNodes) if (n.nodeType === 3 && n.nodeValue.trim()) { n.nodeValue = n.nodeValue.replace(n.nodeValue.trim(), p.dataset.os0); break; } delete p.dataset.os0; }); document.querySelectorAll('i[data-osi]').forEach(i => { const cur = [...i.classList].find(c => /^fa-/.test(c) && !/^fa-(solid|regular|brands|fw)$/.test(c)); if (cur) i.classList.replace(cur, i.dataset.osi); delete i.dataset.osi; }); }
+    function apply(full) { T = OWN ? merge(PUB, OWN) : PUB; if (full) unlabel(); try { paint(T.colors); } catch (e) { } try { arrange(); } catch (e) { } try { relabel(document.body); } catch (e) { } }
+    let q = 0; const obs = new MutationObserver(ms => { if (!Object.keys(T.labels).length && !Object.keys(T.icons).length && !T.colors.brand) return; if (q) return; q = setTimeout(() => { q = 0; try { relabel(document.body); inlineBrand(document.body); } catch (e) { } }, 220); });
+    addEventListener('load', () => setTimeout(() => { if (isOwnerDraft()) OWN = load('spark_theme_own'); apply(false); obs.observe(document.body, { childList: true, subtree: true }); setTimeout(fetchPub, 4000); setInterval(fetchPub, 3 * 3600e3); watchOwner(); }, 900));
+    const isOwnerDraft = () => !!LS.g('spark_theme_own');
+
+    // every installed copy picks up the published look from the repository (cached, works offline afterwards)
+    async function fetchPub() {
+        if (navigator.onLine === false) return;
+        for (const u of ['https://api.github.com/repos/' + REPO + '/contents/' + FILE + '?ref=main', 'https://raw.githubusercontent.com/' + REPO + '/main/' + FILE, 'https://cdn.jsdelivr.net/gh/' + REPO + '@main/' + FILE]) {
+            try { const r = await fetch(u + (u.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store' }); if (r.status === 404) { if (/api\.github/.test(u) && !empty(PUB)) { PUB = sanitize(null); LS.d('spark_theme_pub'); apply(true); } return; } if (!r.ok) continue; let j = await r.json();
+                if (j && j.content && j.encoding === 'base64') j = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\s/g, '')), c => c.charCodeAt(0))));
+                const t = sanitize(j), s = JSON.stringify(t); if (s !== JSON.stringify(PUB)) { PUB = t; LS.s('spark_theme_pub', s); apply(true); } return; } catch (e) { }
+        }
+    }
+
+    // ---------- owner UI ----------
+    const st = document.createElement('style');
+    st.textContent = `
+#osBtn{display:none;width:36px;height:36px;border-radius:10px;border:1px dashed rgba(200,116,31,.7);background:rgba(200,116,31,.10);color:#c8741f;align-items:center;justify-content:center;cursor:pointer;flex:none}
+#osBtn.on{display:inline-flex}
+#osPanel{position:fixed;inset:0 auto 0 0;z-index:9000;width:min(400px,100vw);background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border-inline-end:1px solid var(--sp-line,#353c46);box-shadow:12px 0 40px rgba(0,0,0,.4);display:flex;flex-direction:column;font-size:13px}
+#osPanel header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--sp-line,#353c46)}#osPanel header b{font-size:15px;flex:1}
+.os-tabs{display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid var(--sp-line,#353c46);overflow-x:auto;scrollbar-width:none}
+.os-tabs button{flex:none;padding:8px 12px;border-radius:9px;border:0;background:transparent;color:var(--sp-mut,#909aa8);font:inherit;font-weight:700;cursor:pointer;min-height:36px}.os-tabs button.on{background:rgba(200,116,31,.16);color:#e39a4c}
+.os-body{flex:1;overflow:auto;padding:14px;display:grid;gap:10px;align-content:start}
+.os-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--sp-line,#353c46);border-radius:12px;background:var(--sp-surf2,rgba(255,255,255,.03))}.os-row>span{flex:1;min-width:0}.os-row small{display:block;color:var(--sp-mut,#909aa8);font-size:11px;direction:ltr;text-align:right}
+.os-row input[type=color]{width:44px;height:36px;border:0;background:none;padding:0;cursor:pointer}.os-row input[type=text],.os-row input[type=password],.os-in{flex:1;min-width:0;height:38px;border-radius:9px;border:1px solid var(--sp-line,#353c46);background:var(--sp-bg,#171b21);color:var(--sp-txt,#d5dae1);padding:0 10px;font:inherit}
+.os-b{min-height:38px;padding:0 12px;border-radius:9px;border:1px solid var(--sp-line,#353c46);background:transparent;color:var(--sp-txt,#d5dae1);font:inherit;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+.os-b.pri{background:#c8741f;border-color:#c8741f;color:#fff}.os-b.sm{min-height:32px;min-width:32px;padding:0 8px}.os-b:disabled{opacity:.4;cursor:default}.os-b.warn{color:#e07a72;border-color:rgba(217,83,79,.5)}
+.os-h{font-weight:800;font-size:12.5px;color:var(--sp-mut,#909aa8);margin-top:4px}.os-note{font-size:11.5px;line-height:1.8;color:var(--sp-mut,#909aa8)}
+.os-foot{padding:10px 14px;border-top:1px solid var(--sp-line,#353c46);display:flex;gap:8px;flex-wrap:wrap}.os-foot .os-b{flex:1}
+#osPick{position:fixed;inset:0 0 auto 0;z-index:9100;background:#c8741f;color:#fff;padding:10px 14px;font-size:13px;font-weight:700;display:flex;gap:10px;align-items:center;justify-content:center}
+#osPick button{border:1px solid rgba(255,255,255,.7);background:transparent;color:#fff;border-radius:8px;padding:5px 12px;font:inherit;cursor:pointer}
+.os-hover{outline:2px dashed #c8741f!important;outline-offset:2px;cursor:crosshair!important}
+#osEdit{position:fixed;z-index:9200;width:min(320px,calc(100vw - 16px));background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid #c8741f;border-radius:14px;padding:12px;box-shadow:0 18px 50px rgba(0,0,0,.5);display:grid;gap:8px;font-size:13px}
+.os-ic{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-height:132px;overflow:auto}.os-ic button{height:32px;border-radius:7px;border:1px solid var(--sp-line,#353c46);background:transparent;color:var(--sp-txt,#d5dae1);cursor:pointer}.os-ic button.on{background:#c8741f;border-color:#c8741f;color:#fff}
+@media(max-width:768px){#osPanel{width:100vw}}`;
+    document.head.appendChild(st);
+    const ICONS = 'bolt microchip robot helicopter hand tower-broadcast clipboard-list wand-magic-sparkles gear play stop folder-open floppy-disk download upload share-nodes code terminal bug book graduation-cap lightbulb plug battery-full wifi signal satellite-dish camera video image palette brush pen ruler-combined cube cubes layer-group diagram-project sitemap chart-line gauge-high temperature-half droplet fan sun moon leaf seedling water fire shield-halved lock key user users bell circle-info circle-question triangle-exclamation star heart house magnifying-glass bars screwdriver-wrench toolbox flask atom rocket puzzle-piece gamepad car plane mobile-screen laptop print trash rotate eye'.split(' ').map(x => 'fa-' + x);
+
+    let tab = 'colors', dirty = false;
+    const draft = () => OWN || (OWN = sanitize(PUB));
+    const save = () => { OWN = sanitize(OWN); LS.s('spark_theme_own', JSON.stringify(OWN)); dirty = true; };
+    function panel() {
+        if (!isOwner()) return; let p = $('osPanel'); if (!p) { p = document.createElement('aside'); p.id = 'osPanel'; p.dir = 'rtl'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', 'استوديو المالك'); document.body.appendChild(p); }
+        draft();
+        const tabs = [['colors', 'الألوان'], ['names', 'الأسماء والأيقونات'], ['layout', 'المواقع'], ['publish', 'النشر'], ['tools', 'الصيانة']];
+        p.innerHTML = `<header><i class="fa-solid fa-screwdriver-wrench" style="color:#c8741f"></i><b>استوديو المالك</b><button class="os-b sm" id="osX" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></header>
+<div class="os-tabs" role="tablist">${tabs.map(t => `<button role="tab" data-t="${t[0]}" class="${t[0] === tab ? 'on' : ''}">${t[1]}</button>`).join('')}</div><div class="os-body" id="osBody"></div>
+<div class="os-foot"><button class="os-b warn" id="osReset"><i class="fa-solid fa-rotate-left"></i>رجوع للأصل</button><button class="os-b pri" id="osGoPub"><i class="fa-solid fa-cloud-arrow-up"></i>نشر للجميع</button></div>`;
+        $('osX').onclick = () => p.remove(); p.querySelectorAll('.os-tabs button').forEach(b => b.onclick = () => { tab = b.dataset.t; panel(); });
+        $('osGoPub').onclick = () => { tab = 'publish'; panel(); };
+        $('osReset').onclick = e => { const b = e.currentTarget; if (b.dataset.sure) { OWN = sanitize(null); save(); apply(true); panel(); toast('رجعت الواجهة للشكل الأصلي على جهازك'); } else { b.dataset.sure = 1; b.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>اضغط مرة ثانية للتأكيد'; setTimeout(() => { if ($('osReset')) panel(); }, 3500); } };
+        body();
+    }
+    function body() {
+        const b = $('osBody'); if (!b) return;
+        if (tab === 'colors') {
+            b.innerHTML = `<div class="os-note">غيّر أي لون وشاهد النتيجة فوراً على جهازك. درجات اللون (الفاتح والداكن) تتبع اختيارك تلقائياً.</div>` + Object.keys(ROLES).map(k => `<div class="os-row"><input type="color" data-k="${k}" value="${OWN.colors[k] || ROLES[k][1]}" aria-label="${ROLES[k][0]}"><span>${ROLES[k][0]}<small>${OWN.colors[k] || ROLES[k][1]}</small></span><button class="os-b sm" data-r="${k}" title="اللون الأصلي" ${OWN.colors[k] ? '' : 'disabled'}><i class="fa-solid fa-rotate-left"></i></button></div>`).join('');
+            let tm = 0; b.querySelectorAll('input[type=color]').forEach(i => i.oninput = () => { const k = i.dataset.k; if (i.value.toLowerCase() === ROLES[k][1]) delete OWN.colors[k]; else OWN.colors[k] = i.value; i.nextElementSibling.querySelector('small').textContent = i.value; i.parentElement.querySelector('[data-r]').disabled = !OWN.colors[k]; clearTimeout(tm); tm = setTimeout(() => { save(); apply(false); }, 140); });
+            b.querySelectorAll('[data-r]').forEach(x => x.onclick = () => { delete OWN.colors[x.dataset.r]; save(); apply(false); body(); });
+        } else if (tab === 'names') {
+            const L = OWN.labels, I = OWN.icons, name = L['SPARKSimLab'] || 'SPARKSimLab';
+            b.innerHTML = `<div class="os-h">اسم المنصة</div><div class="os-row"><input type="text" id="osName" value="${esc(name)}" maxlength="40" aria-label="اسم المنصة"><button class="os-b sm" id="osNameOk">حفظ</button></div>
+<button class="os-b pri" id="osPickGo"><i class="fa-solid fa-arrow-pointer"></i>اختر عنصراً من الشاشة لتغيير اسمه أو أيقونته</button>
+<div class="os-h">التعديلات الحالية (${Object.keys(L).length + Object.keys(I).length})</div>` +
+                (Object.keys(L).map(k => `<div class="os-row"><span>${esc(L[k])}<small style="direction:rtl">كان: ${esc(k)}</small></span><button class="os-b sm" data-dl="${esc(k)}" aria-label="حذف التعديل"><i class="fa-solid fa-trash"></i></button></div>`).join('') +
+                    Object.keys(I).map(k => `<div class="os-row"><i class="fa-solid ${I[k]}" style="width:22px;text-align:center"></i><span>${esc(k.split('|')[1] === '*' ? 'كل المواضع' : k.split('|')[1])}<small>${esc(k.split('|')[0])} → ${I[k]}</small></span><button class="os-b sm" data-di="${esc(k)}" aria-label="حذف التعديل"><i class="fa-solid fa-trash"></i></button></div>`).join('') || '<div class="os-note">لا توجد تعديلات بعد.</div>');
+            $('osNameOk').onclick = () => { const v = clean($('osName').value).trim(); if (!v || v === 'SPARKSimLab') delete OWN.labels['SPARKSimLab']; else OWN.labels['SPARKSimLab'] = v; save(); apply(true); body(); };
+            $('osPickGo').onclick = pick;
+            b.querySelectorAll('[data-dl]').forEach(x => x.onclick = () => { delete OWN.labels[x.dataset.dl]; save(); apply(true); body(); });
+            b.querySelectorAll('[data-di]').forEach(x => x.onclick = () => { delete OWN.icons[x.dataset.di]; save(); apply(true); body(); });
+        } else if (tab === 'layout') {
+            const all = [...document.querySelectorAll('.sx-tab')].map(t => [t.dataset.n, origText(t) || t.dataset.n]), ord = OWN.tabs.order.filter(id => all.some(a => a[0] === id)); all.forEach(a => { if (!ord.includes(a[0])) ord.push(a[0]); });
+            const panes = OWN.panes.length ? OWN.panes : ['lib', 'canvas', 'code'];
+            b.innerHTML = `<div class="os-h">ترتيب وإظهار الشاشات (الشريط العلوي)</div>` + ord.map((id, i) => { const nm = (all.find(a => a[0] === id) || [])[1], hid = OWN.tabs.hide.includes(id); return `<div class="os-row" style="${hid ? 'opacity:.5' : ''}"><span>${esc(T.labels[nm] || nm)}</span><button class="os-b sm" data-up="${i}" ${i ? '' : 'disabled'} aria-label="تقديم"><i class="fa-solid fa-arrow-up"></i></button><button class="os-b sm" data-dn="${i}" ${i < ord.length - 1 ? '' : 'disabled'} aria-label="تأخير"><i class="fa-solid fa-arrow-down"></i></button><button class="os-b sm" data-hd="${id}" ${id === 'sim' ? 'disabled' : ''} aria-label="${hid ? 'إظهار' : 'إخفاء'}"><i class="fa-solid ${hid ? 'fa-eye-slash' : 'fa-eye'}"></i></button></div>`; }).join('') +
+                `<div class="os-h">مواقع الألواح الثلاثة (على الشاشات الكبيرة، من اليمين لليسار)</div>` + panes.map((k, i) => `<div class="os-row"><span>${PANES[k][1]}</span><button class="os-b sm" data-pu="${i}" ${i ? '' : 'disabled'} aria-label="تقديم"><i class="fa-solid fa-arrow-up"></i></button><button class="os-b sm" data-pd="${i}" ${i < 2 ? '' : 'disabled'} aria-label="تأخير"><i class="fa-solid fa-arrow-down"></i></button></div>`).join('') + `<div class="os-note">عند تغيير مواقع الألواح يتوقف تغيير عرضها بالسحب. على الجوال تبقى الألواح كما هي.</div>`;
+            const mv = (a, i, d) => { const t = a[i]; a[i] = a[i + d]; a[i + d] = t; };
+            b.querySelectorAll('[data-up]').forEach(x => x.onclick = () => { mv(ord, +x.dataset.up, -1); OWN.tabs.order = ord; save(); apply(false); body(); });
+            b.querySelectorAll('[data-dn]').forEach(x => x.onclick = () => { mv(ord, +x.dataset.dn, 1); OWN.tabs.order = ord; save(); apply(false); body(); });
+            b.querySelectorAll('[data-hd]').forEach(x => x.onclick = () => { const id = x.dataset.hd, h = OWN.tabs.hide; OWN.tabs.order = ord; if (h.includes(id)) h.splice(h.indexOf(id), 1); else h.push(id); save(); apply(false); body(); });
+            b.querySelectorAll('[data-pu]').forEach(x => x.onclick = () => { mv(panes, +x.dataset.pu, -1); OWN.panes = panes.slice(); save(); apply(false); body(); });
+            b.querySelectorAll('[data-pd]').forEach(x => x.onclick = () => { mv(panes, +x.dataset.pd, 1); OWN.panes = panes.slice(); save(); apply(false); body(); });
+        } else if (tab === 'publish') {
+            const same = JSON.stringify(sanitize(OWN)) === JSON.stringify(PUB), tok = LS.g('sparkv_gh') || '';
+            b.innerHTML = `<div class="os-note">التعديلات الآن على <b>جهازك فقط</b>. «نشر» يرفعها إلى مستودع المنصة فتصل لكل النسخ خلال دقائق (الألوان والأسماء والأيقونات والمواقع فقط — لا يُرفع أي كود ولا أي معلومة سرية).</div>
+<div class="os-h">رمز GitHub</div><div class="os-row"><input type="password" id="osTok" autocomplete="off" dir="ltr" placeholder="github_pat_…" value="${esc(tok)}" aria-label="رمز GitHub"></div>
+<div class="os-note">أنشئه من GitHub ← Settings ← Developer settings ← Fine-grained tokens، للمستودع <b dir="ltr">${REPO}</b> فقط وبصلاحية <b dir="ltr">Contents: Read and write</b>. يُحفظ مشفّراً على هذا الجهاز ولا يُرسل إلا إلى GitHub.</div>
+<button class="os-b pri" id="osPub" ${same ? 'disabled' : ''}><i class="fa-solid fa-cloud-arrow-up"></i>${same ? 'المنشور مطابق لما على جهازك' : 'نشر التعديلات لكل المستخدمين'}</button><div class="os-note" id="osPubMsg" aria-live="polite"></div>
+<div class="os-h">بدون رمز</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="os-b" id="osDl"><i class="fa-solid fa-download"></i>تنزيل theme.json</button><label class="os-b" style="cursor:pointer"><i class="fa-solid fa-upload"></i>استيراد ملف<input type="file" id="osUp" accept="application/json,.json" hidden></label></div>
+<div class="os-note">يمكنك رفع الملف المنزّل يدوياً إلى جذر المستودع باسم <b dir="ltr">theme.json</b>.</div>`;
+            $('osTok').onchange = e => { const v = e.target.value.trim(); if (v) LS.s('sparkv_gh', v); else LS.d('sparkv_gh'); };
+            $('osDl').onclick = () => { try { saveFile('theme.json', JSON.stringify(Object.assign(sanitize(OWN), { at: Date.now() }), null, 1), 'application/json'); } catch (e) { } };
+            $('osUp').onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { OWN = sanitize(JSON.parse(r.result)); save(); apply(true); body(); toast('تم الاستيراد — راجع الشكل ثم انشر'); } catch (er) { toast('ملف غير صالح'); } }; r.readAsText(f); };
+            $('osPub').onclick = publish;
+        } else {
+            let br = ''; try { br = window.SparkAndroid ? 'تطبيق أندرويد (جسر ' + SparkAndroid.version() + ')' : /electron/i.test(navigator.userAgent) ? 'برنامج ويندوز' : 'متصفح'; } catch (e) { }
+            let used = 0; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); used += (k.length + (localStorage.getItem(k) || '').length) * 2; } } catch (e) { }
+            b.innerHTML = `<div class="os-row"><span>الإصدار<small>${esc(typeof SPARK_VER !== 'undefined' ? SPARK_VER : '')} · ${esc(br)}</small></span></div>
+<div class="os-row"><span>التخزين المستخدم<small>${(used / 1024).toFixed(0)} KB · الخزنة المشفّرة: ${window.sparkVault && sparkVault.active() ? 'تعمل' : 'غير متاحة على هذا المتصفح'}</small></span></div>
+<button class="os-b" id="osUpd"><i class="fa-solid fa-rotate"></i>فحص التحديثات الآن</button><button class="os-b" id="osRep"><i class="fa-solid fa-bug"></i>سجل الأخطاء وتقرير الدعم</button><button class="os-b" id="osNews"><i class="fa-solid fa-newspaper"></i>سجل «ما الجديد»</button>
+<button class="os-b" id="osLic"><i class="fa-solid fa-key"></i>تحديث قائمة أكواد التفعيل</button><button class="os-b" id="osTheme"><i class="fa-solid fa-cloud-arrow-down"></i>جلب الشكل المنشور من المستودع</button><button class="os-b warn" id="osCache"><i class="fa-solid fa-broom"></i>مسح نسخة التحديث المخزّنة وإعادة التشغيل</button>
+<div class="os-note">إصدار الأكواد ونشر تحديثات الكود يبقيان من ملف لوحة التحكم SPARK-Admin.</div>`;
+            $('osUpd').onclick = () => { try { sparkUpdateCheck(true); } catch (e) { } }; $('osRep').onclick = () => { try { sparkReport(); } catch (e) { } }; $('osNews').onclick = () => { try { sparkNews(); } catch (e) { } };
+            $('osLic').onclick = async () => { try { await sparkLicRefresh(); toast('تم تحديث قائمة الأكواد'); } catch (e) { toast('تعذّر التحديث'); } };
+            $('osTheme').onclick = async () => { await fetchPub(); toast('تم الجلب'); };
+            $('osCache').onclick = e => { const x = e.currentTarget; if (!x.dataset.sure) { x.dataset.sure = 1; x.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>اضغط مرة ثانية للتأكيد'; return; } LS.d('spark_upd'); try { if (typeof sparkKV !== 'undefined') sparkKV.del('upd_html').then(() => location.reload()); else location.reload(); } catch (er) { location.reload(); } };
+        }
+    }
+    async function publish() {
+        const msg = $('osPubMsg'), btn = $('osPub'), tok = (($('osTok') || {}).value || '').trim(); if (!tok) { msg.textContent = 'أدخل رمز GitHub أولاً.'; return; } LS.s('sparkv_gh', tok);
+        const t = Object.assign(sanitize(OWN), { at: Date.now() }), bytes = new TextEncoder().encode(JSON.stringify(t, null, 1)); let s = ''; bytes.forEach(c => s += String.fromCharCode(c));
+        const api = 'https://api.github.com/repos/' + REPO + '/contents/' + FILE, H = { Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+        btn.disabled = true; msg.textContent = 'جارٍ النشر…';
+        try {
+            let sha; const g = await fetch(api + '?ref=main', { headers: H, cache: 'no-store' }); if (g.ok) sha = (await g.json()).sha; else if (g.status === 401 || g.status === 403) throw new Error('الرمز غير صالح أو لا يملك صلاحية الكتابة على المستودع'); else if (g.status !== 404) throw new Error('GitHub: ' + g.status);
+            const r = await fetch(api, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, H), body: JSON.stringify({ message: 'SPARKSimLab: update published look (theme.json)', content: btoa(s), branch: 'main', sha }) });
+            if (!r.ok) throw new Error(r.status === 401 || r.status === 403 || r.status === 404 ? 'الرمز لا يملك صلاحية الكتابة على المستودع' : 'GitHub: ' + r.status);
+            PUB = sanitize(t); LS.s('spark_theme_pub', JSON.stringify(PUB)); msg.textContent = '✓ تم النشر — يصل لكل النسخ خلال دقائق.'; toast('تم نشر الشكل الجديد'); setTimeout(() => { if (tab === 'publish') body(); }, 1500);
+        } catch (e) { msg.textContent = '✗ ' + (e && /Failed to fetch|NetworkError|Load failed/.test(e.message) ? 'لا يوجد اتصال بالإنترنت' : (e && e.message) || 'تعذّر النشر'); btn.disabled = false; }
+    }
+
+    // pick an element on screen → rename it / change its icon
+    function pick() {
+        const p = $('osPanel'); if (p) p.style.display = 'none'; let bar = $('osPick'); if (bar) bar.remove(); bar = document.createElement('div'); bar.id = 'osPick'; bar.dir = 'rtl'; bar.innerHTML = '<span>اضغط على أي زر أو عنوان لتعديله</span><button id="osPickX">إنهاء</button>'; document.body.appendChild(bar);
+        let cur = null; const target = e => { let t = e.target; if (!t || !t.closest || t.closest('#osPick,#osEdit,#osPanel')) return null; return t.closest('button,a,[role=tab],[role=menuitem],label,h1,h2,h3,h4,summary,.sx-tab,.sx-mbtn') || (t.childElementCount <= 1 && (t.textContent || '').trim().length && (t.textContent || '').trim().length <= 60 ? t : null); };
+        const mv = e => { const t = target(e); if (cur && cur !== t) cur.classList.remove('os-hover'); cur = t; if (t) t.classList.add('os-hover'); };
+        const stop = () => { document.removeEventListener('mousemove', mv, true); document.removeEventListener('click', ck, true); if (cur) cur.classList.remove('os-hover'); bar.remove(); const e = $('osEdit'); if (e) e.remove(); if (p) { p.style.display = ''; panel(); } };
+        const ck = e => { if (e.target.closest && e.target.closest('#osPickX')) { e.preventDefault(); e.stopPropagation(); return stop(); } if (e.target.closest && e.target.closest('#osEdit')) return; const t = target(e); e.preventDefault(); e.stopPropagation(); if (t) edit(t); };
+        document.addEventListener('mousemove', mv, true); document.addEventListener('click', ck, true);
+    }
+    function edit(el) {
+        let ed = $('osEdit'); if (ed) ed.remove(); ed = document.createElement('div'); ed.id = 'osEdit'; ed.dir = 'rtl';
+        let node = null; const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) if (n.nodeValue.trim()) { node = n; break; }
+        const holder = node ? node.parentElement : el, now = node ? node.nodeValue.trim() : '', orig = clean(holder.dataset.os0 || now).trim();
+        const ic = el.querySelector('i[class*="fa-"]') || (el.matches && el.matches('i[class*="fa-"]') ? el : null), icNow = ic ? [...ic.classList].find(c => /^fa-/.test(c) && !/^fa-(solid|regular|brands|fw|spin|lg|xl|xs|sm)$/.test(c)) : '', icOrig = ic ? (ic.dataset.osi || icNow) : ''; let icSel = icNow;
+        ed.innerHTML = (orig ? `<label>الاسم<input class="os-in" id="osEdT" value="${esc(now)}" maxlength="80" style="width:100%;margin-top:4px"></label>` : '<div class="os-note">هذا العنصر أيقونة بدون نص.</div>') + (ic ? `<div>الأيقونة</div><div class="os-ic">${ICONS.map(c => `<button type="button" data-c="${c}" class="${c === icNow ? 'on' : ''}" aria-label="${c}"><i class="fa-solid ${c}"></i></button>`).join('')}</div>` : '') + `<div style="display:flex;gap:6px"><button class="os-b pri" id="osEdOk" style="flex:1">حفظ</button><button class="os-b" id="osEdR">الأصل</button><button class="os-b" id="osEdX">إلغاء</button></div>`;
+        document.body.appendChild(ed); const r = el.getBoundingClientRect(); ed.style.top = Math.max(50, Math.min(innerHeight - ed.offsetHeight - 8, r.bottom + 8)) + 'px'; ed.style.left = Math.max(8, Math.min(innerWidth - ed.offsetWidth - 8, r.left)) + 'px';
+        ed.querySelectorAll('.os-ic button').forEach(b => b.onclick = () => { icSel = b.dataset.c; ed.querySelectorAll('.os-ic button').forEach(x => x.classList.toggle('on', x === b)); });
+        const ik = icOrig + '|' + (orig || '*');
+        $('osEdX').onclick = () => ed.remove();
+        $('osEdR').onclick = () => { draft(); if (orig) delete OWN.labels[orig]; delete OWN.icons[ik]; save(); apply(true); ed.remove(); };
+        $('osEdOk').onclick = () => { draft(); if (orig) { const v = clean(($('osEdT') || {}).value || '').trim(); if (!v || v === orig) delete OWN.labels[orig]; else OWN.labels[orig] = v; } if (ic && icSel) { if (icSel === icOrig) delete OWN.icons[ik]; else OWN.icons[ik] = icSel; } save(); apply(true); ed.remove(); };
+        const ti = $('osEdT'); if (ti) { ti.focus(); ti.select(); ti.onkeydown = e => { if (e.key === 'Enter') $('osEdOk').click(); }; }
+    }
+
+    // the entry point exists only for the owner
+    function watchOwner() {
+        const sync = () => { const own = isOwner(); let b = $('osBtn');
+            if (own && !b) { b = document.createElement('button'); b.id = 'osBtn'; b.title = 'استوديو المالك'; b.setAttribute('aria-label', 'استوديو المالك'); b.innerHTML = '<i class="fa-solid fa-screwdriver-wrench"></i>'; b.onclick = panel; const chip = $('accChip'); if (chip && chip.parentElement) chip.after(b); else return; if (!OWN && LS.g('spark_theme_own')) { OWN = load('spark_theme_own'); apply(true); } }
+            if (b) b.classList.toggle('on', own); if (!own) { const p = $('osPanel'); if (p) p.remove(); let known = false; try { known = !!sparkAcc.info().tier; } catch (e) { } if (OWN && known) { OWN = null; apply(true); } }
+            const sec = document.querySelector('#accMd .acc-own'); if (own && sec && !$('osOpen2')) { const x = document.createElement('button'); x.id = 'osOpen2'; x.className = 'acc-btn'; x.style.marginTop = '8px'; x.innerHTML = '<i class="fa-solid fa-screwdriver-wrench"></i> استوديو المالك: الألوان والأسماء والمواقع'; x.onclick = () => { const m = $('accMd'); if (m) m.remove(); panel(); }; sec.appendChild(x); }
+        };
+        sync(); setInterval(sync, 1500);
+    }
+    window.sparkOwnerStudio = Object.freeze({ open: panel, theme: () => JSON.parse(JSON.stringify(T)), sanitize });
 })();
 
         window.onload = function () {
