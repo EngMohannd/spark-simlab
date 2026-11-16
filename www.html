@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.7.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='2.7.2',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -9657,7 +9657,7 @@ void loop() {
             const txt = L.join('\n'), a = $('rsTel'); if (a) a.textContent = txt; const h = $('rsHud'); if (h) h.textContent = RS.tab === 'drive' ? L.slice(0, 4).join('\n') : (RS.design.name || '') + ' — ' + RS.design.parts.length + ' parts';
             const g = $('rsGes'); if (g) g.textContent = GES.cmd.label; const sc = $('rsScore'); if (sc) sc.textContent = RS.arena === 'soccer' ? `⚽ أهدافك ${RS.score[0]} — ${RS.score[1]}` : `🥋 دفعت الخصم خارج الحلبة: ${RS.score[0]}`;
         }
-        function rsHelp() { alert('استوديو الروبوت\n\n• التصميم: اختر الهيكل ثم أضف القطع من المكتبة (تُوضع تلقائياً)، واسحبها لتعديل موضعها.\n• القيادة: اختر البيئة ومصدر التحكم (يدوي، هاتف، إيماءات، كود).\n• لوحة المفاتيح: W/A/S/D، Q/E جانبي، R/F للمروحية، L ضوء، H بوق، G ملقط، C الكاميرا، مسافة للتوقف.\n• البرمجة: استخدم Robot bot; في كود الأردوينو، مثل bot.drive(200,200) و bot.distance() و bot.line(0).\n• تحقق من الوزن والاستهلاك وزمن البطارية في لوحة التصميم.'); }
+        function rsHelp() { alert('استوديو الروبوت\n\n• التصميم: اختر الهيكل ثم أضف القطع من المكتبة (تُوضع تلقائياً)، واسحبها لتعديل موضعها.\n• القيادة: اختر البيئة ومصدر التحكم (يدوي، هاتف، إيماءات، كود).\n• لوحة المفاتيح: W/A/S/D، Q/E جانبي' + (window.sparkAir ? '، R/F للمروحية' : '') + '، L ضوء، H بوق، G ملقط، C الكاميرا، مسافة للتوقف.\n• البرمجة: استخدم Robot bot; في كود الأردوينو، مثل bot.drive(200,200) و bot.distance() و bot.line(0).\n• تحقق من الوزن والاستهلاك وزمن البطارية في لوحة التصميم.'); }
         function rsShot() { if (!RS.r) return; S3.shot = RS.r.domElement.toDataURL('image/png'); s3Save(); }
         function rsSaveFile() { saveFile((RS.design.name || 'robot').replace(/[\\/:*?"<>|]+/g, '_') + '.robot.json', JSON.stringify(RS.design, null, 1), 'application/json'); }
         function rsLoadFile(inp) { const f = inp.files && inp.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { const d = sparkClean(JSON.parse(r.result)); if (!d.parts || !d.base) throw 0; rsPushUndo(); RS.design = d; rsRebuild(); rsSide(); } catch (e) { alert('ملف تصميم غير صالح'); } }; r.readAsText(f); inp.value = ''; }
@@ -11330,7 +11330,7 @@ nav.fixed.bottom-0,nav[class*="bottom-0"]{background:var(--sp-surf)!important;bo
             const K = [['بحث الأوامر', 'Ctrl K'], ['حفظ المشروع', 'Ctrl S'], ['فتح المشاريع', 'Ctrl O'], ['تراجع', 'Ctrl Z'], ['تشغيل/إيقاف المحاكاة', 'Space'], ['رفع الكود', 'Ctrl Enter'], ['المساعد الذكي', 'Ctrl I'], ['تكرار العنصر', 'Ctrl D'], ['تدوير العنصر', 'R'], ['حذف المحدد', 'Del'], ['إلغاء التوصيل', 'Esc'], ['ملاءمة المحتوى', '0'], ['تكبير / تصغير', '+ / -'], ['وضع التركيز', 'F'], ['إظهار/إخفاء الألواح', 'Tab'], ['هذه القائمة', '?']];
             const R = [['تقدّم / رجوع', 'W / S'], ['دوران', 'A / D'], ['حركة جانبية', 'Q / E'], ['صعود / هبوط (مروحية)', 'R / F'], ['إقلاع / هبوط تلقائي', 'T / B'], ['تنفيذ المهمة (تصوير/إسقاط)', 'X'], ['منظور الطيار FPV', 'V'], ['إمالة الكاميرا', 'I / K'], ['عودة لنقطة الإقلاع', 'N'], ['توقف', 'Space'], ['ضوء / بوق / ملقط', 'L / H / G']];
             const g = a => `<div class="sx-kb">${a.map(x => `<div><span>${x[0]}</span><kbd>${x[1]}</kbd></div>`).join('')}</div>`;
-            sxCard('sxKeysM', `<h3><i class="fa-solid fa-keyboard" style="color:var(--sp-acc)"></i> اختصارات لوحة المفاتيح</h3><div class="sx-cap">مساحة الدوائر</div>${g(K)}<div class="sx-cap" style="margin-top:10px">استوديو الروبوت والمروحية</div>${g(R)}`);
+            sxCard('sxKeysM', `<h3><i class="fa-solid fa-keyboard" style="color:var(--sp-acc)"></i> اختصارات لوحة المفاتيح</h3><div class="sx-cap">مساحة الدوائر</div>${g(K)}<div class="sx-cap" style="margin-top:10px">استوديو الروبوت${window.sparkAir ? ' والمروحية' : ''}</div>${g(window.sparkAir ? R : R.filter(x => !/مروحية|إقلاع|المهمة|FPV|الكاميرا|الإقلاع/.test(x[0])))}`);
         }
         function sxGuide() {
             const S = [['اختر مثالاً أو ابدأ من الصفر', 'من القائمة المنسدلة للأمثلة في الأعلى، أو أضف العناصر من «مكتبة العناصر» بالنقر على زر +.'],
@@ -13884,7 +13884,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.7.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.7.2', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14090,7 +14090,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
             function modal(html, w) { closeMd(); const m = document.createElement('div'); m.id = 'accMd'; m.className = 'acc-md'; m.dir = 'rtl'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div class="acc-card" style="${w ? 'width:min(' + w + 'px,100%)' : ''}">${html}</div>`; document.body.appendChild(m); return m; }
             function panel() {
                 if (!S.a) return login(); const t = S.as || S.tier, p = PLAN[t] || { n: 'منتهية', c: '#c0564c', lv: 0 }, d = daysLeft(), own = S.tier === 'owner';
-                const rows = [['الأدوات الأساسية (المحاكاة، Arduino C، البلوكات، المصحح، الأمثلة)', 1]].concat(Object.values(FEAT).map(f => [f[1], f[0]])), vis = Object.entries(PLAN).filter(e => !e[1].hid);
+                const rows = [['الأدوات الأساسية (المحاكاة، Arduino C، البلوكات، المصحح، الأمثلة)', 1]].concat(Object.entries(FEAT).filter(e => e[0] !== 'drone' || window.sparkAir).map(e => [e[1][1], e[1][0]])), vis = Object.entries(PLAN).filter(e => !e[1].hid);
                 const m = modal(`<div class="acc-hd" style="--c:${p.c}"><span class="av">${esc(S.a.name.trim()[0])}</span><div style="flex:1;min-width:0"><b style="font-size:17px">${esc(S.a.name)}</b><div class="acc-mut" dir="ltr" style="text-align:right">${esc(S.a.email)}</div>${S.a.org ? `<div class="acc-mut">${esc(S.a.org)}</div>` : ''}</div><button class="acc-btn" data-x aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></div>
 <div class="acc-stats"><div class="acc-stat"><b style="color:${p.c}">${p.n}</b><span>الباقة الحالية</span></div><div class="acc-stat"><b>${d === Infinity ? 'دائم' : Math.max(0, d)}</b><span>${d === Infinity ? 'بلا تاريخ انتهاء' : 'يوماً متبقياً'}</span></div><div class="acc-stat"><b dir="ltr">v${SPARK_VER}</b><span>إصدار المنصة</span></div></div>
 ${own ? `<div class="acc-own"><b><i class="fa-solid fa-user-gear"></i> أدوات المالك</b><div class="acc-mut" style="margin:4px 0 8px">عاين المنصة كما يراها كل مشترك، وافحص التحديثات. إصدار الأكواد ونشر التحديثات من ملف لوحة التحكم SPARK-Admin.</div><div style="display:flex;gap:6px;flex-wrap:wrap">${['student', 'engineer', 'developer'].map(k => `<button class="acc-btn" data-as="${k}">معاينة كـ${PLAN[k].n}</button>`).join('')}<button class="acc-btn" data-as="">عرض المالك</button><button class="acc-btn" id="accUpd"><i class="fa-solid fa-rotate"></i>فحص التحديثات</button></div></div>` : ''}
@@ -14231,7 +14231,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -14326,7 +14326,7 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
 .mb-menu button.on i{background:#2f9e8f;color:#fff}`; document.head.appendChild(st);
             const NAME = [[/عناصر مبسطة/, 'وضع الطلاب (عناصر مبسطة)'], [/تحديد عدة/, 'تحديد عدة عناصر'], [/تحديد الدائرة كاملة/, 'تحديد الدائرة كاملة'], [/فصل جميع الأسلاك/, 'فصل جميع الأسلاك'], [/مسح الساحة/, 'مسح الساحة بالكامل'], [/مكتبة العناصر/, 'إظهار/إخفاء مكتبة العناصر'], [/محرر الكود/, 'إظهار/إخفاء محرر الكود'], [/راسم الإشارات/, 'راسم الإشارات'], [/ملء الشاشة/, 'ملء الشاشة'], [/صور حقيقية/, 'عرض: صور حقيقية'], [/الشكل الحقيقي/, 'عرض: الشكل الحقيقي'], [/الرموز الهندسية/, 'عرض: رموز هندسية'], [/ثلاثي الأبعاد/, 'عرض: ثلاثي الأبعاد'], [/PCB/, 'تحويل إلى لوحة PCB'], [/ساحة الروبوت/, 'ساحة الروبوت'], [/الكاميرا/, 'الكاميرا'], [/نمط الأسلاك/, 'نمط الأسلاك'], [/المؤثرات الصوتية/, 'الصوت: تشغيل / كتم'], [/داكن \/ فاتح/, 'المظهر: داكن / فاتح'], [/إعدادات/, 'إعدادات المنصة']];
             const label = b => { const t = b.title || b.getAttribute('aria-label') || b.textContent.trim(); const n = NAME.find(x => x[0].test(t)); return n ? n[1] : t.split(/[(:—]/)[0].trim().slice(0, 34); };
-            const keepCv = b => /zoomCanvas|toggleDock/.test(b.getAttribute('onclick') || '') || b.id === 'jxCenterBtn' || b.id === 'zoomLevelText' || b.classList.contains('mb-more');
+            const keepCv = b => /zoomCanvas|toggleDock/.test(b.getAttribute('onclick') || '') || b.id === 'jxCenterBtn' || b.id === 'zoomLevelText' || b.id === 'cvFold' || b.classList.contains('mb-more');
             const hdHide = () => [...document.querySelectorAll('header.sp-head button.sp-ib, header button.sp-ib')].filter(b => !b.id.match(/^(sxBurger|ntBtn)$/) && !b.classList.contains('sp-ai') && !b.classList.contains('mb-more'));
             function mark() {
                 const bar = document.querySelector('.sp-cvbar'); if (bar) { [...bar.children].forEach(b => b.classList.toggle('mb-hide', !keepCv(b))); if (!document.getElementById('mbCvMore')) { const m = document.createElement('button'); m.id = 'mbCvMore'; m.className = 'mb-more'; m.innerHTML = '<i class="fa-solid fa-sliders"></i>أدوات الساحة<i class="fa-solid fa-chevron-down" style="font-size:9px;opacity:.7"></i>'; m.onclick = e => { e.stopPropagation(); e.preventDefault(); const cur = document.querySelector('.sp-cvbar') || bar; [...cur.children].forEach(b => b.classList.toggle('mb-hide', !keepCv(b))); open(m, [...cur.children].filter(b => b.tagName === 'BUTTON' && !keepCv(b)), 'أدوات الساحة والعرض'); }; bar.appendChild(m); } }
@@ -16336,22 +16336,24 @@ class TouchScreen:
     // ---------- theme model (everything is validated before it is applied: a published theme is data, never code) ----------
     const ROLES = { brand: ['لون الهوية', '#c8741f'], acc: ['اللون المساند', '#4fb3a5'], pri: ['زر التشغيل والنجاح', '#2f8f62'], stop: ['الإيقاف والخطأ', '#c93e3e'], bg: ['الخلفية', '#171b21'], surf: ['الألواح والبطاقات', '#1c2128'], line: ['الحدود والفواصل', '#353c46'], txt: ['النص', '#d5dae1'], mut: ['النص الثانوي', '#909aa8'] };
     const PANES = { lib: ['paneLibrary', 'مكتبة العناصر'], canvas: ['paneCanvas', 'ساحة الدائرة'], code: ['paneCode', 'الكود'] };
+    const POSK = /^[md]\|[#\w\s>:().-]{1,240}$/, PHQ = matchMedia('(max-width:768px)');
     const HEX = /^#[0-9a-f]{6}$/i, ICO = /^fa-[a-z0-9-]{1,40}$/, clean = s => String(s).replace(/[\u0000-\u001f\u007f<>]/g, '').slice(0, 80);
     function sanitize(t) {
-        const o = { v: 1, colors: {}, labels: {}, icons: {}, tabs: { order: [], hide: [] }, panes: [] }; if (!t || typeof t !== 'object') return o;
+        const o = { v: 1, colors: {}, labels: {}, icons: {}, tabs: { order: [], hide: [] }, panes: [], pos: {} }; if (!t || typeof t !== 'object') return o;
         Object.keys(t.colors || {}).forEach(k => { if (ROLES[k] && HEX.test(t.colors[k])) o.colors[k] = t.colors[k].toLowerCase(); });
         Object.keys(t.labels || {}).slice(0, 400).forEach(k => { const a = clean(k).trim(), b = clean(t.labels[k]).trim(); if (a && b && a !== b) o.labels[a] = b; });
         Object.keys(t.icons || {}).slice(0, 400).forEach(k => { const m = /^(fa-[a-z0-9-]{1,40})\|(.*)$/.exec(k); if (m && ICO.test(t.icons[k])) o.icons[m[1] + '|' + clean(m[2]).trim()] = t.icons[k]; });
         const idok = x => typeof x === 'string' && /^[a-z0-9_]{1,20}$/.test(x);
         if (t.tabs) { o.tabs.order = (t.tabs.order || []).filter(idok).slice(0, 30); o.tabs.hide = (t.tabs.hide || []).filter(idok).filter(x => x !== 'sim').slice(0, 30); }
         const p = (t.panes || []).filter(x => PANES[x]); if (p.length === 3 && new Set(p).size === 3 && p.join() !== 'lib,canvas,code') o.panes = p;
+        Object.keys(t.pos || {}).slice(0, 300).forEach(k => { const v = t.pos[k]; if (!POSK.test(k) || !v || typeof v !== 'object') return; const n = (x, a, b, d) => { x = +x; return isFinite(x) ? Math.max(a, Math.min(b, Math.round(x * 100) / 100)) : d; }; const x = n(v.x, -2000, 2000, 0), y = n(v.y, -2000, 2000, 0), sc = n(v.s, 0.3, 3, 1); if (x || y || sc !== 1) o.pos[k] = { x, y, s: sc }; });
         if (typeof t.at === 'number') o.at = t.at;
         return o;
     }
-    const empty = t => !Object.keys(t.colors).length && !Object.keys(t.labels).length && !Object.keys(t.icons).length && !t.tabs.order.length && !t.tabs.hide.length && !t.panes.length;
+    const empty = t => !Object.keys(t.pos || {}).length && !Object.keys(t.colors).length && !Object.keys(t.labels).length && !Object.keys(t.icons).length && !t.tabs.order.length && !t.tabs.hide.length && !t.panes.length;
     const load = k => { try { return sanitize(JSON.parse(LS.g(k) || 'null')); } catch (e) { return sanitize(null); } };
     let PUB = load('spark_theme_pub'), OWN = null, T = PUB;        // T = what is on screen
-    const merge = (a, b) => sanitize({ colors: Object.assign({}, a.colors, b.colors), labels: Object.assign({}, a.labels, b.labels), icons: Object.assign({}, a.icons, b.icons), tabs: b.tabs.order.length || b.tabs.hide.length ? b.tabs : a.tabs, panes: b.panes.length ? b.panes : a.panes });
+    const merge = (a, b) => sanitize({ colors: Object.assign({}, a.colors, b.colors), labels: Object.assign({}, a.labels, b.labels), icons: Object.assign({}, a.icons, b.icons), tabs: b.tabs.order.length || b.tabs.hide.length ? b.tabs : a.tabs, panes: b.panes.length ? b.panes : a.panes, pos: Object.assign({}, a.pos, b.pos) });
 
     // ---------- colours: remap the palette inside every stylesheet rule ----------
     const hsl = (r, g, b) => { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; let h = 0, s = 0; if (d) { s = d / (1 - Math.abs(2 * l - 1)); h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; } return [h, s, l]; };
@@ -16414,6 +16416,8 @@ class TouchScreen:
         tb.order.forEach((id, i) => css.push(`.sx-tab[data-n="${id}"]{order:${i + 1}}`)); if (tb.order.length) css.push('.sx-nav .sx-find{order:99}');
         tb.hide.forEach(id => css.push(`.sx-tab[data-n="${id}"]{display:none!important}`));
         if (T.panes.length) { css.push('@media(min-width:1024px){' + T.panes.map((k, i) => `#${PANES[k][0]}{order:${i * 2 + 1}}`).join('') + 'main>.rsz{display:none!important}}'); }
+        const pm = [], pd = []; Object.keys(T.pos || {}).forEach(k => { const v = T.pos[k], sel = k.slice(2); try { document.querySelector(sel); } catch (e) { return; } (k[0] === 'm' ? pm : pd).push(`${sel}{translate:${v.x}px ${v.y}px!important;scale:${v.s}!important;transform-origin:center}`); });
+        if (pm.length) css.push('@media(max-width:768px){' + pm.join('') + '}'); if (pd.length) css.push('@media(min-width:769px){' + pd.join('') + '}');
         if (!css.length) { if (st) st.remove(); return; }
         if (!st) { st = document.createElement('style'); st.id = 'osLayout'; document.head.appendChild(st); } st.textContent = css.join('\n');
     }
@@ -16469,7 +16473,7 @@ class TouchScreen:
 <div class="os-tabs" role="tablist">${tabs.map(t => `<button role="tab" data-t="${t[0]}" class="${t[0] === tab ? 'on' : ''}">${t[1]}</button>`).join('')}</div><div class="os-body" id="osBody"></div>
 <div class="os-foot"><button class="os-b warn" id="osReset"><i class="fa-solid fa-rotate-left"></i>رجوع للأصل</button><button class="os-b pri" id="osGoPub"><i class="fa-solid fa-cloud-arrow-up"></i>نشر للجميع</button></div>`;
         $('osX').onclick = () => p.remove(); p.querySelectorAll('.os-tabs button').forEach(b => b.onclick = () => { tab = b.dataset.t; panel(); });
-        $('osGoPub').onclick = () => { tab = 'publish'; panel(); };
+        $('osGoPub').onclick = () => { tab = 'publish'; panel(); if (LS.g('sparkv_gh') && $('osPub') && !$('osPub').disabled) publish(); };
         $('osReset').onclick = e => { const b = e.currentTarget; if (b.dataset.sure) { OWN = sanitize(null); save(); apply(true); panel(); toast('رجعت الواجهة للشكل الأصلي على جهازك'); } else { b.dataset.sure = 1; b.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>اضغط مرة ثانية للتأكيد'; setTimeout(() => { if ($('osReset')) panel(); }, 3500); } };
         body();
     }
@@ -16494,8 +16498,10 @@ class TouchScreen:
             const all = [...document.querySelectorAll('.sx-tab')].map(t => [t.dataset.n, origText(t) || t.dataset.n]), ord = OWN.tabs.order.filter(id => all.some(a => a[0] === id)); all.forEach(a => { if (!ord.includes(a[0])) ord.push(a[0]); });
             const panes = OWN.panes.length ? OWN.panes : ['lib', 'canvas', 'code'];
             b.innerHTML = `<div class="os-h">ترتيب وإظهار الشاشات (الشريط العلوي)</div>` + ord.map((id, i) => { const nm = (all.find(a => a[0] === id) || [])[1], hid = OWN.tabs.hide.includes(id); return `<div class="os-row" style="${hid ? 'opacity:.5' : ''}"><span>${esc(T.labels[nm] || nm)}</span><button class="os-b sm" data-up="${i}" ${i ? '' : 'disabled'} aria-label="تقديم"><i class="fa-solid fa-arrow-up"></i></button><button class="os-b sm" data-dn="${i}" ${i < ord.length - 1 ? '' : 'disabled'} aria-label="تأخير"><i class="fa-solid fa-arrow-down"></i></button><button class="os-b sm" data-hd="${id}" ${id === 'sim' ? 'disabled' : ''} aria-label="${hid ? 'إظهار' : 'إخفاء'}"><i class="fa-solid ${hid ? 'fa-eye-slash' : 'fa-eye'}"></i></button></div>`; }).join('') +
-                `<div class="os-h">مواقع الألواح الثلاثة (على الشاشات الكبيرة، من اليمين لليسار)</div>` + panes.map((k, i) => `<div class="os-row"><span>${PANES[k][1]}</span><button class="os-b sm" data-pu="${i}" ${i ? '' : 'disabled'} aria-label="تقديم"><i class="fa-solid fa-arrow-up"></i></button><button class="os-b sm" data-pd="${i}" ${i < 2 ? '' : 'disabled'} aria-label="تأخير"><i class="fa-solid fa-arrow-down"></i></button></div>`).join('') + `<div class="os-note">عند تغيير مواقع الألواح يتوقف تغيير عرضها بالسحب. على الجوال تبقى الألواح كما هي.</div>`;
+                `<div class="os-h">مواقع الألواح الثلاثة (على الشاشات الكبيرة، من اليمين لليسار)</div>` + panes.map((k, i) => `<div class="os-row"><span>${PANES[k][1]}</span><button class="os-b sm" data-pu="${i}" ${i ? '' : 'disabled'} aria-label="تقديم"><i class="fa-solid fa-arrow-up"></i></button><button class="os-b sm" data-pd="${i}" ${i < 2 ? '' : 'disabled'} aria-label="تأخير"><i class="fa-solid fa-arrow-down"></i></button></div>`).join('') + `<div class="os-note">عند تغيير مواقع الألواح يتوقف تغيير عرضها بالسحب. على الجوال تبقى الألواح كما هي.</div>` +
+                `<div class="os-h">عناصر نُقلت أو تغيّر حجمها (${Object.keys(OWN.pos).length})</div><button class="os-b pri" id="osPickGo2"><i class="fa-solid fa-up-down-left-right"></i>اختر عنصراً لتحريكه أو تغيير حجمه</button>` + Object.keys(OWN.pos).map(k => { const v = OWN.pos[k]; return `<div class="os-row"><span>${k[0] === 'm' ? 'الجوال' : 'الشاشات الكبيرة'}<small>${esc(k.slice(2).slice(-60))} · ${v.x},${v.y} · ${Math.round(v.s * 100)}%</small></span><button class="os-b sm" data-dp="${esc(k)}" aria-label="إرجاع لمكانه"><i class="fa-solid fa-rotate-left"></i></button></div>`; }).join('');
             const mv = (a, i, d) => { const t = a[i]; a[i] = a[i + d]; a[i + d] = t; };
+            $('osPickGo2').onclick = pick; b.querySelectorAll('[data-dp]').forEach(x => x.onclick = () => { delete OWN.pos[x.dataset.dp]; save(); apply(false); body(); });
             b.querySelectorAll('[data-up]').forEach(x => x.onclick = () => { mv(ord, +x.dataset.up, -1); OWN.tabs.order = ord; save(); apply(false); body(); });
             b.querySelectorAll('[data-dn]').forEach(x => x.onclick = () => { mv(ord, +x.dataset.dn, 1); OWN.tabs.order = ord; save(); apply(false); body(); });
             b.querySelectorAll('[data-hd]').forEach(x => x.onclick = () => { const id = x.dataset.hd, h = OWN.tabs.hide; OWN.tabs.order = ord; if (h.includes(id)) h.splice(h.indexOf(id), 1); else h.push(id); save(); apply(false); body(); });
@@ -16503,13 +16509,14 @@ class TouchScreen:
             b.querySelectorAll('[data-pd]').forEach(x => x.onclick = () => { mv(panes, +x.dataset.pd, 1); OWN.panes = panes.slice(); save(); apply(false); body(); });
         } else if (tab === 'publish') {
             const same = JSON.stringify(sanitize(OWN)) === JSON.stringify(PUB), tok = LS.g('sparkv_gh') || '';
-            b.innerHTML = `<div class="os-note">التعديلات الآن على <b>جهازك فقط</b>. «نشر» يرفعها إلى مستودع المنصة فتصل لكل النسخ خلال دقائق (الألوان والأسماء والأيقونات والمواقع فقط — لا يُرفع أي كود ولا أي معلومة سرية).</div>
-<div class="os-h">رمز GitHub</div><div class="os-row"><input type="password" id="osTok" autocomplete="off" dir="ltr" placeholder="github_pat_…" value="${esc(tok)}" aria-label="رمز GitHub"></div>
-<div class="os-note">أنشئه من GitHub ← Settings ← Developer settings ← Fine-grained tokens، للمستودع <b dir="ltr">${REPO}</b> فقط وبصلاحية <b dir="ltr">Contents: Read and write</b>. يُحفظ مشفّراً على هذا الجهاز ولا يُرسل إلا إلى GitHub.</div>
+            b.innerHTML = `<div class="os-note">التعديلات الآن على <b>جهازك فقط</b>. «نشر» يرفعها إلى مستودع المنصة فتصل لكل النسخ خلال دقائق (الألوان والأسماء والأيقونات والمواقع والأحجام فقط — لا يُرفع أي كود ولا أي معلومة سرية).</div>
+${tok ? `<div class="os-row"><span><i class="fa-solid fa-circle-check" style="color:#16a34a"></i> مرتبط بالمستودع<small dir="ltr">${REPO}</small></span><button class="os-b" id="osUnlink" style="width:auto;margin:0">فك الربط</button></div>` : `<div class="os-h">ربط المستودع — مرة واحدة فقط</div><div class="os-row"><input type="password" id="osTok" autocomplete="off" dir="ltr" placeholder="github_pat_…" aria-label="رمز GitHub"></div>
+<a class="os-b" target="_blank" rel="noopener" href="https://github.com/settings/personal-access-tokens/new?name=SPARKSimLab+Studio&description=SPARKSimLab+owner+studio&contents=write"><i class="fa-brands fa-github"></i>إنشاء الرمز من GitHub</a>
+<div class="os-note">اختر المستودع <b dir="ltr">${REPO}</b> فقط وصلاحية <b dir="ltr">Contents: Read and write</b> ثم الصق الرمز هنا. يُحفظ مشفّراً على هذا الجهاز ولن يُطلب منك ثانية، وبعدها النشر بضغطة واحدة.</div>`}
 <button class="os-b pri" id="osPub" ${same ? 'disabled' : ''}><i class="fa-solid fa-cloud-arrow-up"></i>${same ? 'المنشور مطابق لما على جهازك' : 'نشر التعديلات لكل المستخدمين'}</button><div class="os-note" id="osPubMsg" aria-live="polite"></div>
 <div class="os-h">بدون رمز</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="os-b" id="osDl"><i class="fa-solid fa-download"></i>تنزيل theme.json</button><label class="os-b" style="cursor:pointer"><i class="fa-solid fa-upload"></i>استيراد ملف<input type="file" id="osUp" accept="application/json,.json" hidden></label></div>
 <div class="os-note">يمكنك رفع الملف المنزّل يدوياً إلى جذر المستودع باسم <b dir="ltr">theme.json</b>.</div>`;
-            $('osTok').onchange = e => { const v = e.target.value.trim(); if (v) LS.s('sparkv_gh', v); else LS.d('sparkv_gh'); };
+            if ($('osTok')) $('osTok').onchange = e => { const v = e.target.value.trim(); if (v) { LS.s('sparkv_gh', v); body(); } }; if ($('osUnlink')) $('osUnlink').onclick = e => { const x = e.currentTarget; if (!x.dataset.sure) { x.dataset.sure = 1; x.textContent = 'تأكيد فك الربط'; return; } LS.d('sparkv_gh'); body(); };
             $('osDl').onclick = () => { try { saveFile('theme.json', JSON.stringify(Object.assign(sanitize(OWN), { at: Date.now() }), null, 1), 'application/json'); } catch (e) { } };
             $('osUp').onchange = e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => { try { OWN = sanitize(JSON.parse(r.result)); save(); apply(true); body(); toast('تم الاستيراد — راجع الشكل ثم انشر'); } catch (er) { toast('ملف غير صالح'); } }; r.readAsText(f); };
             $('osPub').onclick = publish;
@@ -16528,12 +16535,12 @@ class TouchScreen:
         }
     }
     async function publish() {
-        const msg = $('osPubMsg'), btn = $('osPub'), tok = (($('osTok') || {}).value || '').trim(); if (!tok) { msg.textContent = 'أدخل رمز GitHub أولاً.'; return; } LS.s('sparkv_gh', tok);
+        const msg = $('osPubMsg'), btn = $('osPub'), tok = (($('osTok') || {}).value || '').trim() || LS.g('sparkv_gh') || ''; if (!tok) { msg.textContent = 'اربط المستودع أولاً (مرة واحدة).'; return; } LS.s('sparkv_gh', tok);
         const t = Object.assign(sanitize(OWN), { at: Date.now() }), bytes = new TextEncoder().encode(JSON.stringify(t, null, 1)); let s = ''; bytes.forEach(c => s += String.fromCharCode(c));
         const api = 'https://api.github.com/repos/' + REPO + '/contents/' + FILE, H = { Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
         btn.disabled = true; msg.textContent = 'جارٍ النشر…';
         try {
-            let sha; const g = await fetch(api + '?ref=main', { headers: H, cache: 'no-store' }); if (g.ok) sha = (await g.json()).sha; else if (g.status === 401 || g.status === 403) throw new Error('الرمز غير صالح أو لا يملك صلاحية الكتابة على المستودع'); else if (g.status !== 404) throw new Error('GitHub: ' + g.status);
+            let sha; const g = await fetch(api + '?ref=main', { headers: H, cache: 'no-store' }); if (g.ok) sha = (await g.json()).sha; else if (g.status === 401 || g.status === 403) { throw new Error('الرمز غير صالح أو انتهت مدته — فك الربط واربط من جديد'); } else if (g.status !== 404) throw new Error('GitHub: ' + g.status);
             const r = await fetch(api, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, H), body: JSON.stringify({ message: 'SPARKSimLab: update published look (theme.json)', content: btoa(s), branch: 'main', sha }) });
             if (!r.ok) throw new Error(r.status === 401 || r.status === 403 || r.status === 404 ? 'الرمز لا يملك صلاحية الكتابة على المستودع' : 'GitHub: ' + r.status);
             PUB = sanitize(t); LS.s('spark_theme_pub', JSON.stringify(PUB)); msg.textContent = '✓ تم النشر — يصل لكل النسخ خلال دقائق.'; toast('تم نشر الشكل الجديد'); setTimeout(() => { if (tab === 'publish') body(); }, 1500);
@@ -16542,25 +16549,52 @@ class TouchScreen:
 
     // pick an element on screen → rename it / change its icon
     function pick() {
-        const p = $('osPanel'); if (p) p.style.display = 'none'; let bar = $('osPick'); if (bar) bar.remove(); bar = document.createElement('div'); bar.id = 'osPick'; bar.dir = 'rtl'; bar.innerHTML = '<span>اضغط على أي زر أو عنوان لتعديله</span><button id="osPickX">إنهاء</button>'; document.body.appendChild(bar);
+        const p = $('osPanel'); if (p) p.style.display = 'none'; let bar = $('osPick'); if (bar) bar.remove(); bar = document.createElement('div'); bar.id = 'osPick'; bar.dir = 'rtl'; bar.innerHTML = '<span>اضغط على أي عنصر لتعديل اسمه أو أيقونته أو موقعه وحجمه</span><button id="osPickX">إنهاء</button>'; document.body.appendChild(bar);
         let cur = null; const target = e => { let t = e.target; if (!t || !t.closest || t.closest('#osPick,#osEdit,#osPanel')) return null; return t.closest('button,a,[role=tab],[role=menuitem],label,h1,h2,h3,h4,summary,.sx-tab,.sx-mbtn') || (t.childElementCount <= 1 && (t.textContent || '').trim().length && (t.textContent || '').trim().length <= 60 ? t : null); };
         const mv = e => { const t = target(e); if (cur && cur !== t) cur.classList.remove('os-hover'); cur = t; if (t) t.classList.add('os-hover'); };
-        const stop = () => { document.removeEventListener('mousemove', mv, true); document.removeEventListener('click', ck, true); if (cur) cur.classList.remove('os-hover'); bar.remove(); const e = $('osEdit'); if (e) e.remove(); if (p) { p.style.display = ''; panel(); } };
-        const ck = e => { if (e.target.closest && e.target.closest('#osPickX')) { e.preventDefault(); e.stopPropagation(); return stop(); } if (e.target.closest && e.target.closest('#osEdit')) return; const t = target(e); e.preventDefault(); e.stopPropagation(); if (t) edit(t); };
+        let stop = () => { document.removeEventListener('mousemove', mv, true); document.removeEventListener('click', ck, true); if (cur) cur.classList.remove('os-hover'); bar.remove(); const e = $('osEdit'); if (e) e.remove(); if (p) { p.style.display = ''; panel(); } };
+        const ck = e => { if (e.target.closest && e.target.closest('#osPickX')) { e.preventDefault(); e.stopPropagation(); return stop(); } if (e.target.closest && e.target.closest('#osEdit')) return; if (EDIT && EDIT.el.contains(e.target)) { e.preventDefault(); e.stopPropagation(); return; } const t = target(e); e.preventDefault(); e.stopPropagation(); if (t) edit(t); };
+        let dg = null, moved = false;
+        const pd = e => { if (!EDIT || !EDIT.el.contains(e.target)) return; dg = { x: e.clientX, y: e.clientY }; moved = false; EDIT.start(); e.preventDefault(); e.stopPropagation(); };
+        const pm = e => { if (!dg || !EDIT) return; const dx = e.clientX - dg.x, dy = e.clientY - dg.y; if (Math.abs(dx) + Math.abs(dy) > 3) moved = true; if (moved) { EDIT.drag(dx, dy); e.preventDefault(); } };
+        const pu = () => { if (dg && moved) { const sup = ev => { ev.preventDefault(); ev.stopPropagation(); }; document.addEventListener('click', sup, { capture: true, once: true }); setTimeout(() => document.removeEventListener('click', sup, true), 350); } dg = null; };
+        const stop0 = stop; stop = () => { document.removeEventListener('pointerdown', pd, true); document.removeEventListener('pointermove', pm, true); document.removeEventListener('pointerup', pu, true); if (EDIT) { EDIT.el.style.removeProperty('translate'); EDIT.el.style.removeProperty('scale'); EDIT = null; } stop0(); };
+        document.addEventListener('pointerdown', pd, true); document.addEventListener('pointermove', pm, { capture: true, passive: false }); document.addEventListener('pointerup', pu, true);
         document.addEventListener('mousemove', mv, true); document.addEventListener('click', ck, true);
     }
+    function selOf(el) {
+        const ok = id => /^[A-Za-z][\w-]*$/.test(id);
+        if (el.id && ok(el.id)) return '#' + el.id;
+        const parts = []; let e = el;
+        while (e && e !== document.body && parts.length < 8) { if (e.id && ok(e.id)) { parts.unshift('#' + e.id); break; } const p = e.parentElement; if (!p) return null; parts.unshift(e.tagName.toLowerCase() + ':nth-child(' + ([...p.children].indexOf(e) + 1) + ')'); e = p; }
+        if (e === document.body) parts.unshift('body'); else if (!(parts[0] || '').startsWith('#')) return null;
+        const sel = parts.join('>'); try { return document.querySelectorAll(sel).length === 1 && POSK.test('m|' + sel) ? sel : null; } catch (er) { return null; }
+    }
+    let EDIT = null;
     function edit(el) {
         let ed = $('osEdit'); if (ed) ed.remove(); ed = document.createElement('div'); ed.id = 'osEdit'; ed.dir = 'rtl';
         let node = null; const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) if (n.nodeValue.trim()) { node = n; break; }
         const holder = node ? node.parentElement : el, now = node ? node.nodeValue.trim() : '', orig = clean(holder.dataset.os0 || now).trim();
         const ic = el.querySelector('i[class*="fa-"]') || (el.matches && el.matches('i[class*="fa-"]') ? el : null), icNow = ic ? [...ic.classList].find(c => /^fa-/.test(c) && !/^fa-(solid|regular|brands|fw|spin|lg|xl|xs|sm)$/.test(c)) : '', icOrig = ic ? (ic.dataset.osi || icNow) : ''; let icSel = icNow;
-        ed.innerHTML = (orig ? `<label>الاسم<input class="os-in" id="osEdT" value="${esc(now)}" maxlength="80" style="width:100%;margin-top:4px"></label>` : '<div class="os-note">هذا العنصر أيقونة بدون نص.</div>') + (ic ? `<div>الأيقونة</div><div class="os-ic">${ICONS.map(c => `<button type="button" data-c="${c}" class="${c === icNow ? 'on' : ''}" aria-label="${c}"><i class="fa-solid ${c}"></i></button>`).join('')}</div>` : '') + `<div style="display:flex;gap:6px"><button class="os-b pri" id="osEdOk" style="flex:1">حفظ</button><button class="os-b" id="osEdR">الأصل</button><button class="os-b" id="osEdX">إلغاء</button></div>`;
+        const sel = selOf(el), pk = (PHQ.matches ? 'm|' : 'd|') + sel; draft(); const P0 = Object.assign({ x: 0, y: 0, s: 1 }, OWN.pos[pk] || {}), P = Object.assign({}, P0);
+        ed.innerHTML = `<div class="os-h" style="margin:0">${esc((orig || el.getAttribute('aria-label') || el.getAttribute('title') || el.tagName.toLowerCase()).slice(0, 40))}</div>` + (orig ? `<label>الاسم<input class="os-in" id="osEdT" value="${esc(now)}" maxlength="80" style="width:100%;margin-top:4px"></label>` : '<div class="os-note">هذا العنصر أيقونة بدون نص.</div>') + (ic ? `<div>الأيقونة</div><div class="os-ic">${ICONS.map(c => `<button type="button" data-c="${c}" class="${c === icNow ? 'on' : ''}" aria-label="${c}"><i class="fa-solid ${c}"></i></button>`).join('')}</div>` : '') +
+            (sel ? `<div>الموقع والحجم <small style="color:var(--sp-mut,#909aa8)">(${PHQ.matches ? 'للجوال' : 'للشاشات الكبيرة'} — أو اسحب العنصر نفسه)</small></div><div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center"><button class="os-b sm" data-mv="0,-1" aria-label="أعلى"><i class="fa-solid fa-arrow-up"></i></button><button class="os-b sm" data-mv="0,1" aria-label="أسفل"><i class="fa-solid fa-arrow-down"></i></button><button class="os-b sm" data-mv="1,0" aria-label="يمين"><i class="fa-solid fa-arrow-right"></i></button><button class="os-b sm" data-mv="-1,0" aria-label="يسار"><i class="fa-solid fa-arrow-left"></i></button><span style="flex:1"></span><button class="os-b sm" data-sz="-1" aria-label="تصغير"><i class="fa-solid fa-minus"></i></button><b id="osEdS" style="min-width:42px;text-align:center">100%</b><button class="os-b sm" data-sz="1" aria-label="تكبير"><i class="fa-solid fa-plus"></i></button></div><div style="display:flex;gap:6px"><button class="os-b sm" id="osEdUp" style="flex:1"><i class="fa-solid fa-expand"></i> العنصر الأكبر الحاوي</button><button class="os-b sm" id="osEdP0" style="flex:1">الموقع الأصلي</button></div>` : '<div class="os-note">لا يمكن تحريك هذا العنصر — اختر العنصر الأكبر الحاوي.</div>' + (el.parentElement && el.parentElement !== document.body ? '<button class="os-b sm" id="osEdUp"><i class="fa-solid fa-expand"></i> العنصر الأكبر الحاوي</button>' : '')) +
+            `<div style="display:flex;gap:6px"><button class="os-b pri" id="osEdOk" style="flex:1">حفظ</button><button class="os-b" id="osEdR">الأصل</button><button class="os-b" id="osEdX">إلغاء</button></div>`;
         document.body.appendChild(ed); const r = el.getBoundingClientRect(); ed.style.top = Math.max(50, Math.min(innerHeight - ed.offsetHeight - 8, r.bottom + 8)) + 'px'; ed.style.left = Math.max(8, Math.min(innerWidth - ed.offsetWidth - 8, r.left)) + 'px';
         ed.querySelectorAll('.os-ic button').forEach(b => b.onclick = () => { icSel = b.dataset.c; ed.querySelectorAll('.os-ic button').forEach(x => x.classList.toggle('on', x === b)); });
         const ik = icOrig + '|' + (orig || '*');
-        $('osEdX').onclick = () => ed.remove();
-        $('osEdR').onclick = () => { draft(); if (orig) delete OWN.labels[orig]; delete OWN.icons[ik]; save(); apply(true); ed.remove(); };
-        $('osEdOk').onclick = () => { draft(); if (orig) { const v = clean(($('osEdT') || {}).value || '').trim(); if (!v || v === orig) delete OWN.labels[orig]; else OWN.labels[orig] = v; } if (ic && icSel) { if (icSel === icOrig) delete OWN.icons[ik]; else OWN.icons[ik] = icSel; } save(); apply(true); ed.remove(); };
+        const show = () => { el.style.setProperty('translate', P.x + 'px ' + P.y + 'px', 'important'); el.style.setProperty('scale', String(P.s), 'important'); const b = $('osEdS'); if (b) b.textContent = Math.round(P.s * 100) + '%'; };
+        const unshow = () => { el.style.removeProperty('translate'); el.style.removeProperty('scale'); el.style.removeProperty('touch-action'); EDIT = null; };
+        const close = () => { unshow(); ed.remove(); };
+        ed.querySelectorAll('[data-mv]').forEach(b => b.onclick = () => { const [dx, dy] = b.dataset.mv.split(',').map(Number); P.x += dx * 4; P.y += dy * 4; show(); });
+        ed.querySelectorAll('[data-sz]').forEach(b => b.onclick = () => { P.s = Math.max(0.3, Math.min(3, Math.round((P.s + b.dataset.sz * 0.05) * 100) / 100)); show(); });
+        const up = $('osEdUp'); if (up) up.onclick = () => { const par = el.parentElement; close(); if (par && par !== document.body) { par.classList.add('os-hover'); setTimeout(() => par.classList.remove('os-hover'), 700); edit(par); } };
+        const p0 = $('osEdP0'); if (p0) p0.onclick = () => { P.x = 0; P.y = 0; P.s = 1; show(); };
+        if (sel) { el.style.touchAction = 'none'; EDIT = { el, drag: (dx, dy) => { P.x = Math.round(P0d.x + dx); P.y = Math.round(P0d.y + dy); show(); }, start: () => { P0d.x = P.x; P0d.y = P.y; } }; } const P0d = { x: 0, y: 0 };
+        const savePos = () => { if (!sel) return false; const same = P.x === P0.x && P.y === P0.y && P.s === P0.s; if (same) return false; if (!P.x && !P.y && P.s === 1) delete OWN.pos[pk]; else OWN.pos[pk] = { x: P.x, y: P.y, s: P.s }; return true; };
+        $('osEdX').onclick = () => close();
+        $('osEdR').onclick = () => { draft(); if (orig) delete OWN.labels[orig]; delete OWN.icons[ik]; if (sel) delete OWN.pos[pk]; save(); close(); apply(true); };
+        $('osEdOk').onclick = () => { draft(); if (orig) { const v = clean(($('osEdT') || {}).value || '').trim(); if (!v || v === orig) delete OWN.labels[orig]; else OWN.labels[orig] = v; } if (ic && icSel) { if (icSel === icOrig) delete OWN.icons[ik]; else OWN.icons[ik] = icSel; } savePos(); save(); close(); apply(true); };
         const ti = $('osEdT'); if (ti) { ti.focus(); ti.select(); ti.onkeydown = e => { if (e.key === 'Enter') $('osEdOk').click(); }; }
     }
 
@@ -16574,6 +16608,135 @@ class TouchScreen:
         sync(); setInterval(sync, 1500);
     }
     window.sparkOwnerStudio = Object.freeze({ open: panel, theme: () => JSON.parse(JSON.stringify(T)), sanitize });
+})();
+
+// ===== Phase 46: phone workspace — 2-row header, status as a small pill on the canvas, canvas tools as a folding vertical strip, half-width parts library =====
+(function () {
+    const $ = id => document.getElementById(id);
+    const PH = matchMedia('(max-width:768px)');
+    const st = document.createElement('style');
+    st.textContent = `
+@media(min-width:769px){#cvFold{display:none!important}}
+@media(max-width:768px){
+/* header: exactly two rows — brand + owner/bell/account/menu, then projects + run + assistant + quick options */
+header.sp-head{row-gap:3px!important}
+header.sp-head::after{content:"";order:10;flex:0 0 100%;height:0}
+header.sp-head>.flex.items-center.gap-3{order:1;flex:1 1 0!important;width:auto!important;min-width:0}
+header.sp-head>#osBtn{order:2;flex:none}header.sp-head>#ntBtn{order:3}header.sp-head>#accChip{order:4}header.sp-head>#sxBurger{order:5}
+header.sp-head>.sp-preset{order:11;flex:1 1 0!important;width:auto!important;min-width:0;margin-top:3px!important}
+header.sp-head>#btnRunSim{order:12;margin-top:3px}header.sp-head>.sp-ai{order:13;margin-top:3px}header.sp-head>#mbHdMore{order:14;margin-top:3px;display:inline-flex!important}
+header.sp-head #pjPick{height:36px!important;font-size:12.5px!important;padding-inline:8px!important}
+header.sp-head #pjPick .ic{width:22px;height:22px;font-size:13px}
+header.sp-head #pjPick .tx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+header.sp-head>#btnRunSim,header.sp-head>.sp-ai{height:36px!important}header.sp-head>#mbHdMore{height:36px!important}
+/* status: a small pill on the canvas instead of a full row */
+#paneCanvas>#statusBanner{position:absolute!important;top:8px;left:8px;z-index:21;border:1px solid var(--sp-line,#353c46)!important;border-radius:10px;padding:3px 8px!important;gap:8px;max-width:calc(100% - 70px);pointer-events:none;opacity:.92;font-size:10px!important}
+#paneCanvas>#statusBanner #wiringHintText{display:none!important}
+#paneCanvas>#statusBanner #simStateBadge{padding:0!important;background:none!important;font-size:10px!important}
+#paneCanvas>#statusBanner>div{gap:6px!important}#paneCanvas>#statusBanner *{font-size:10px!important}
+/* canvas tools: a vertical strip on the right that folds away */
+#paneCanvas .cvx-wrap{left:auto!important;right:8px!important;top:8px!important;flex-direction:column!important;align-items:flex-end!important;flex-wrap:nowrap!important}
+#paneCanvas .cvx-bar{flex-direction:column!important;gap:4px!important;padding:4px!important;align-items:center!important;width:44px}
+#paneCanvas .cvx-bar>*{margin:0!important}
+#paneCanvas .cvx-bar>button,#paneCanvas .cvx-bar>#cvFold{width:36px!important;height:34px!important;padding:0!important;display:inline-flex;align-items:center;justify-content:center}
+#paneCanvas .cvx-bar #zoomLevelText{font-size:9.5px!important;line-height:1;padding:2px 0}
+#paneCanvas .cvx-bar #mbCvMore{font-size:0!important;gap:0!important;border-radius:10px}
+#paneCanvas .cvx-bar #mbCvMore i:first-child{font-size:15px!important}#paneCanvas .cvx-bar #mbCvMore i.fa-chevron-down{display:none}
+#cvFold{border:0;border-radius:10px;background:rgba(200,116,31,.14);color:#c8741f;cursor:pointer;font-size:15px}
+#paneCanvas .cvx-bar.fold>:not(#cvFold){display:none!important}
+#paneCanvas .cvx-bar.fold{width:44px}
+/* parts library: half the screen, the circuit stays visible beside it */
+#paneLibrary.lib-half{left:auto!important;right:0!important;width:52%!important;max-width:260px;min-width:200px;box-shadow:-8px 0 24px rgba(0,0,0,.35)}
+#paneLibrary.lib-half #libraryListContainer{padding:6px!important}
+#paneLibrary.lib-half .group{padding:5px!important;border-radius:10px!important}
+#paneLibrary.lib-half .group>div:first-child{gap:6px!important}
+#paneLibrary.lib-half .group .ph-thumb{width:38px!important;height:38px!important}
+#paneLibrary.lib-half .group .ph-thumb img{max-width:38px;max-height:38px}
+#paneLibrary.lib-half .group h3,#paneLibrary.lib-half .group .font-bold,#paneLibrary.lib-half .group .font-semibold{font-size:11.5px!important;line-height:1.3;white-space:normal}
+#paneLibrary.lib-half .group p,#paneLibrary.lib-half .group .text-\\[10px\\],#paneLibrary.lib-half .group .text-\\[11px\\],#paneLibrary.lib-half .group .text-xs{font-size:9.5px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#paneLibrary.lib-half .group>:last-child:not(:first-child){display:none!important}
+#paneLibrary.lib-half{z-index:25!important}#paneLibrary.lib-half>div:last-child{display:none!important}
+#paneLibrary.lib-half>div:first-child{padding:8px!important;gap:6px}#paneLibrary.lib-half>div:first-child>:not(:first-child):not(#libX){display:none!important}
+#paneLibrary.lib-half>div:first-child h2,#paneLibrary.lib-half>div:first-child h3,#paneLibrary.lib-half>div:first-child .font-bold{font-size:13px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#paneLibrary.lib-half>div:first-child>:first-child{min-width:0;overflow:hidden}
+#libX{display:none}
+#paneLibrary.lib-half #libX{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;border:1px solid var(--sp-line,#353c46);background:transparent;color:inherit;flex:none;cursor:pointer}
+}`;
+    document.head.appendChild(st);
+
+    // status pill: lives inside the canvas on phones, back in its row on larger screens
+    let home = null;
+    function placeStatus() {
+        const sb = $('statusBanner'), cv = $('paneCanvas'); if (!sb || !cv) return;
+        if (!home) home = { p: sb.parentElement, n: sb.nextSibling };
+        if (PH.matches) { if (sb.parentElement !== cv) cv.appendChild(sb); }
+        else if (sb.parentElement !== home.p) home.p.insertBefore(sb, home.n && home.n.parentElement === home.p ? home.n : null);
+    }
+    // canvas tools strip
+    function toolsStrip() {
+        const more = $('mbCvMore'); if (!more) return; const wrap = more.closest('.absolute'), bar = more.parentElement; if (!wrap || !bar) return;
+        wrap.classList.add('cvx-wrap'); bar.classList.add('cvx-bar');
+        if (!$('cvFold')) {
+            const b = document.createElement('button'); b.id = 'cvFold'; b.type = 'button';
+            const set = f => { bar.classList.toggle('fold', f); b.innerHTML = f ? '<i class="fa-solid fa-sliders"></i>' : '<i class="fa-solid fa-chevron-up"></i>'; b.title = f ? 'أدوات الساحة' : 'طيّ الأدوات'; b.setAttribute('aria-label', b.title); b.setAttribute('aria-expanded', f ? 'false' : 'true'); };
+            let f = true; try { f = localStorage.getItem('spark_cvfold') !== '0'; } catch (e) { }
+            b.onclick = () => { const nf = !bar.classList.contains('fold'); set(nf); try { localStorage.setItem('spark_cvfold', nf ? '1' : '0'); } catch (e) { } };
+            bar.insertBefore(b, bar.firstChild); set(f);
+            // the quick menu opens beside the strip instead of covering it
+            more.addEventListener('click', () => setTimeout(() => { if (!PH.matches) return; const m = $('mbMenu'); if (!m || !m.offsetHeight) return; const r = bar.getBoundingClientRect(), mr = more.getBoundingClientRect(); m.style.left = Math.max(8, r.left - m.offsetWidth - 8) + 'px'; m.style.top = Math.max(8, Math.min(innerHeight - m.offsetHeight - 8, mr.top - 8)) + 'px'; }, 0));
+        }
+    }
+    // half-width library on phones
+    function libHalf() {
+        const L = $('paneLibrary'); if (!L) return; L.classList.toggle('lib-half', PH.matches);
+        if (!$('libX')) { const hd = L.firstElementChild; if (hd) { const x = document.createElement('button'); x.id = 'libX'; x.type = 'button'; x.title = 'إغلاق المكتبة'; x.setAttribute('aria-label', 'إغلاق المكتبة'); x.innerHTML = '<i class="fa-solid fa-xmark"></i>'; x.onclick = () => { try { switchMobileView('canvas'); } catch (e) { } }; hd.appendChild(x); } }
+    }
+    // while the library is open on a phone the canvas stays visible (and usable) beside it
+    if (typeof switchMobileView === 'function') {
+        const _sw = switchMobileView;
+        switchMobileView = function (view) {
+            if (adding && view === 'canvas') { try { sxToast('✓ أُضيف العنصر'); } catch (e) { } return; }
+            const r = _sw.apply(this, arguments);
+            try { if (PH.matches && view === 'library') { const c = $('paneCanvas'); if (c) { c.classList.remove('hidden'); c.style.display = ''; } } } catch (e) { }
+            return r;
+        };
+    }
+    // adding a part from the half library: keep the library open and drop the part in the visible half of the canvas
+    let adding = false;
+    if (typeof addComponentToCanvas === 'function') {
+        const _add = addComponentToCanvas;
+        addComponentToCanvas = function (type, x, y, customId) {
+            const L = $('paneLibrary'), half = PH.matches && L && L.classList.contains('lib-half') && L.offsetParent && !customId;
+            if (half && (x == null || y == null)) { try { const cv = $('paneCanvas').getBoundingClientRect(), lr = L.getBoundingClientRect(), w = $('componentsLayer') || $('canvasWorld'), wr = w.getBoundingClientRect(), z = state.zoom || 1, n = state.components.length;
+                const sx = cv.left + Math.max(40, (lr.left - cv.left) / 2 - 60) + (n % 3) * 14, sy = cv.top + cv.height * 0.35 + (n % 4) * 18;
+                x = Math.max(10, Math.round((sx - wr.left) / z / 10) * 10); y = Math.max(10, Math.round((sy - wr.top) / z / 10) * 10); } catch (e) { } }
+            adding = half; try { return _add.call(this, type, x == null ? null : x, y == null ? null : y, ...[].slice.call(arguments, 3)); } finally { adding = false; }
+        };
+    }
+    const all = () => { try { placeStatus(); } catch (e) { } try { toolsStrip(); } catch (e) { } try { libHalf(); } catch (e) { } };
+    addEventListener('load', () => { let n = 0; const t = setInterval(() => { all(); if ($('cvFold') || ++n > 20) clearInterval(t); }, 500); });
+    try { PH.addEventListener('change', all); } catch (e) { PH.addListener(all); }
+})();
+
+// h47 — air missions / quadcopter visible to the owner only
+(function () {
+    const own = () => { try { return sparkAcc.info().tier === 'owner'; } catch (e) { return false; } };
+    const st = document.createElement('style'); st.textContent = 'body:not(.sp-air) #rsTabDM{display:none!important}'; document.head.appendChild(st);
+    const AIR = /مروحي|درون|drone|quadcopter|طائر/i; let on = null, kb = null, ideas = null;
+    const enumr = (o, v) => { try { if (o && o.drone) Object.defineProperty(o, 'drone', { enumerable: v, configurable: true, writable: true, value: o.drone }); } catch (e) { } };
+    function sync() {
+        const o = own(); window.sparkAir = o; if (o === on) return; on = o; if (document.body) document.body.classList.toggle('sp-air', o);
+        try { enumr(RSB, o); } catch (e) { } try { enumr(RSPRE, o); } catch (e) { }
+        try { if (!ideas) ideas = RS_IDEAS.slice(); RS_IDEAS.length = 0; ideas.forEach(x => { if (o || !AIR.test(x)) RS_IDEAS.push(x); }); } catch (e) { }
+        try {
+            if (!kb) kb = KB2.map(r => r.slice()); KB2.length = 0;
+            kb.forEach(r => { if (o) return KB2.push(r.slice()); if (AIR.test(r[1] || '')) return; KB2.push(r.map(x => typeof x === 'string' ? x.replace(' والمروحيات الرباعية', '') : x)); });
+        } catch (e) { }
+        if (!o) { try { if (typeof DM !== 'undefined' && DM.on && typeof rsTab === 'function') rsTab('design'); } catch (e) { } }
+    }
+    try { const _dm = dmOpen; dmOpen = function () { sync(); if (!on) return; return _dm.apply(this, arguments); }; } catch (e) { }
+    try { const _ad = rsApplyDesign; rsApplyDesign = function (d) { sync(); if (!on && d && d.base === 'drone') d.base = '4wd'; return _ad.apply(this, arguments); }; } catch (e) { }
+    try { const _ld = rsLocalDesign; rsLocalDesign = function () { sync(); const r = _ld.apply(this, arguments); if (!on && r && r.base === 'drone') r.base = '4wd'; return r; }; } catch (e) { }
+    sync(); addEventListener('load', () => { sync(); setInterval(sync, 1500); });
 })();
 
         window.onload = function () {
