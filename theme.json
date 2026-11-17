@@ -1,0 +1,25 @@
+{
+ "v": 1,
+ "colors": {
+  "brand": "#ff0000"
+ },
+ "labels": {
+  "SPARKSimLab": "SimLab"
+ },
+ "icons": {},
+ "tabs": {
+  "order": [
+   "sim",
+   "pcb",
+   "ges",
+   "robot",
+   "iot",
+   "edison",
+   "dash"
+  ],
+  "hide": []
+ },
+ "panes": [],
+ "pos": {},
+ "at": 1794938132167
+}
