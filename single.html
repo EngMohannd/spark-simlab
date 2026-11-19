@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.7.3',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='2.8.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -13900,7 +13900,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.7.3', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.8.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -13954,11 +13954,11 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
                     const h = (await sparkSha('spark-lic|' + sm[1] + sm[2] + sm[3])).slice(0, 20); let L = await licList(false), e = L && L.c && L.c[h];
                     if (!e && net) { L = await licList(true); e = L && L.c && L.c[h]; }
                     if (!e) return { err: L ? 'كود غير معروف أو تم إيقافه' : 'تعذّر التحقق من الكود — اتصل بالإنترنت مرة واحدة لإتمام التفعيل' };
-                    const [t, x, eh] = e; if (!PLAN[t]) return { err: 'كود غير معروف' };
+                    const [t, x, eh, cls, crl, cn, cnm] = e; if (!PLAN[t]) return { err: 'كود غير معروف' };
                     if (email && eh && eh !== '*' && eh !== (await sparkSha('spark-mail|' + email.toLowerCase())).slice(0, 12)) return { err: 'هذا الكود مخصص لبريد آخر' };
                     const exp = x && x !== '0' ? new Date(x.slice(0, 4) + '-' + x.slice(4, 6) + '-' + x.slice(6, 8) + 'T23:59:59').getTime() : 0;
                     if (exp && exp < now()) return { err: 'انتهت صلاحية هذا الكود' };
-                    return { t, e: eh === '*' ? '*' : email, exp, n: '' };
+                    return { t, e: eh === '*' ? '*' : email, exp, n: '', cls: cls ? { id: String(cls), role: crl === 't' ? 't' : 's', seats: +cn || 30, cname: String(cnm || '') } : null };
                 }
                 const [p, s] = c.split('.'); if (!p || !s) return { err: 'صيغة الكود غير صحيحة — مثال: SPK-7K4M-Q2XR-9WDH' };
                 let raw; try { raw = Uint8Array.from(atob(p.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((p.length + 3) % 4)), ch => ch.charCodeAt(0)); } catch (e) { return { err: 'صيغة الكود غير صحيحة' }; }
@@ -14139,7 +14139,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             sxNavSync = (o => function () { const r = o.apply(this, arguments); markNav(); return r; })(sxNavSync);
             // public, read-only surface
             window.accPanel = panel;
-            window.sparkAcc = Object.freeze({ info: () => ({ signedIn: !!S.a, tier: S.tier, view: S.as || S.tier, days: daysLeft(), name: S.a && S.a.name }), can: f => can(f), recheck: async () => { await resolve(); if (S.ready && S.a && !S.tier && !$('accOv')) { closeMd(); login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); } }, profile: async () => S.a ? { name: S.a.name, email: S.a.email, org: S.a.org || '', tier: S.tier || 'none', days: daysLeft() === Infinity ? 'دائم' : String(daysLeft()), ch: S.a.code ? (await sparkSha(S.a.code)).slice(0, 16) : '' } : null, trialFrom: async ts => { ts = +ts; if (!(ts > 1.6e12) || ts > Date.now() || !S.a || S.lic) return; const b = +LS.g('spark_dv') || Infinity; if (ts >= b) return; await anchor(ts); await resolve(); if (!S.tier && S.a && !$('accOv')) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }, waLink: () => wa(null, S.a) });
+            window.sparkAcc = Object.freeze({ cls: () => S.a && S.lic && S.lic.cls && !S.as ? Object.assign({ code: S.a.code, email: S.a.email, name: S.a.name, exp: S.lic.exp }, S.lic.cls) : null, info: () => ({ signedIn: !!S.a, tier: S.tier, view: S.as || S.tier, days: daysLeft(), name: S.a && S.a.name }), can: f => can(f), recheck: async () => { await resolve(); if (S.ready && S.a && !S.tier && !$('accOv')) { closeMd(); login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); } }, profile: async () => S.a ? { name: S.a.name, email: S.a.email, org: S.a.org || '', tier: S.tier || 'none', days: daysLeft() === Infinity ? 'دائم' : String(daysLeft()), ch: S.a.code ? (await sparkSha(S.a.code)).slice(0, 16) : '' } : null, trialFrom: async ts => { ts = +ts; if (!(ts > 1.6e12) || ts > Date.now() || !S.a || S.lic) return; const b = +LS.g('spark_dv') || Infinity; if (ts >= b) return; await anchor(ts); await resolve(); if (!S.tier && S.a && !$('accOv')) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }, waLink: () => wa(null, S.a) });
             // ---------- boot ----------
             try { S.a = JSON.parse(LS.g('spark_acct_v1') || 'null'); } catch (e) { }
             const boot = async () => { try { if (window.sparkVaultReady) { await window.sparkVaultReady; S.a = JSON.parse(LS.g('spark_acct_v1') || 'null'); } } catch (e) { } try { if (S.a && SHORT.test(String(S.a.code || '').toUpperCase()) && !(await licRead())) await licList(true); } catch (e) { } await resolve(); S.ready = true; setTimeout(() => { try { sparkLicRefresh(); } catch (e) { } }, 6000); if (!S.a) login(); else if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); else if (S.tier === 'student' && !S.lic && daysLeft() <= 5) try { sxToast('متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية'); } catch (e) { } if (S.tier === 'student' && !S.lic && daysLeft() <= 7) try { sparkNotify({ id: 't:' + daysLeft(), title: 'متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية', text: 'اطلب كود تفعيل من صفحة حسابك لمتابعة العمل دون انقطاع.', ic: 'fa-hourglass-half', act: 'account' }); } catch (e) { } };
@@ -14247,7 +14247,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -16276,7 +16276,7 @@ class TouchScreen:
 // The account record itself stays readable synchronously (name, tier…) so the app boots exactly as before; only its code field moves into the vault.
 (function () {
     const SP = Storage.prototype, O0 = SP.__sp0 || (SP.__sp0 = { g: SP.getItem, s: SP.setItem, r: SP.removeItem }), _get = O0.g, _set = O0.s, _rem = O0.r;      // the true originals, even when an update re-runs this script in the same window
-    const SECRET = new Set(['sparkv_code', 'spark_ai_cfg_v1', 'spark_pi_pin', 'sparkv_gh']), ACCT = 'spark_acct_v1', HOLE = '\u00a7';
+    const SECRET = new Set(['sparkv_code', 'spark_ai_cfg_v1', 'spark_pi_pin', 'sparkv_gh', 'spark_cls_tok']), ACCT = 'spark_acct_v1', HOLE = '\u00a7';
     const isEnc = v => typeof v === 'string' && v.slice(0, 5) === 'enc1:';
     const GEN = SP.__spGen = (SP.__spGen || 0) + 1, live = () => SP.__spGen === GEN;      // an update re-runs this script: only the newest copy may touch storage
     const cache = {}, pending = new Set(); let key = null, ready = false, on = false;
@@ -16756,6 +16756,216 @@ header.sp-head>#btnRunSim,header.sp-head>.sp-ai{height:36px!important}header.sp-
     try { const _ld = rsLocalDesign; rsLocalDesign = function () { sync(); const r = _ld.apply(this, arguments); if (!on && r && r.base === 'drone') r.base = '4wd'; return r; }; } catch (e) { }
     function sweep() { if (on) return; document.querySelectorAll('option,button,li,.rs-card,[onclick*="dmOpen"],[onclick*="dmExample"]').forEach(e => { if (e.dataset.air) return; const t = e.textContent || ''; if (t.length < 90 && /مروحي|🚁|مهام الجو/.test(t) || /dmOpen|dmExample/.test(e.getAttribute('onclick') || '')) { e.dataset.air = 1; e.hidden = true; e.style.setProperty('display', 'none', 'important'); } }); }
     sync(); addEventListener('load', () => { sync(); setInterval(sync, 1500); new MutationObserver(() => { clearTimeout(sweep.t); sweep.t = setTimeout(sweep, 120); }).observe(document.body, { childList: true, subtree: true }); sweep(); });
+})();
+
+// h48 — each LED shows its own colour (library thumbnails, photo view, 3D) instead of one red photo
+(function () {
+    const HUE = { led_green: 125, led_yellow: 52, led_blue: 218, led_orange: 28, led_white: -1, led_ir: -2 };
+    function recolor(img, hue) {
+        const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+        const d = x.getImageData(0, 0, c.width, c.height), p = d.data;
+        for (let i = 0; i < p.length; i += 4) {
+            const r = p[i] / 255, g = p[i + 1] / 255, b = p[i + 2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, s = mx === mn ? 0 : (mx - mn) / (1 - Math.abs(2 * l - 1));
+            if (s < 0.25 || p[i + 3] < 8) continue;                      // leave the grey legs and transparent pixels
+            let H = hue, S = s, L = l;
+            if (hue === -1) { S = 0.06; H = 45; L = Math.min(0.97, 0.55 + l * 0.45); }       // white: milky clear body
+            else if (hue === -2) { S = 0.35; H = 270; L = l * 0.45; }                          // IR: dark violet body
+            else if (hue === 52) L = Math.min(0.9, l * 1.08);
+            const C = (1 - Math.abs(2 * L - 1)) * S, X = C * (1 - Math.abs((H / 60) % 2 - 1)), m = L - C / 2, k = Math.floor(H / 60) % 6;
+            const [R, G, B] = [[C, X, 0], [X, C, 0], [0, C, X], [0, X, C], [X, 0, C], [C, 0, X]][k];
+            p[i] = (R + m) * 255; p[i + 1] = (G + m) * 255; p[i + 2] = (B + m) * 255;
+        }
+        x.putImageData(d, 0, 0); return c.toDataURL('image/webp', 0.9);
+    }
+    function run() {
+        let P; try { P = PHOTO; } catch (e) { return; } const base = P.img && P.img.led; if (!base || P.img.led_blue) return;
+        const im = new Image(); im.onload = () => {
+            try {
+                Object.keys(HUE).forEach(t => { if (P.cat[t] !== 'led') return; P.img[t] = { w: base.w, h: base.h, d: recolor(im, HUE[t]) }; P.cat[t] = t; });
+                window.sparkLedColors = true;
+                try { renderComponentLibrary((document.getElementById('librarySearchInput') || {}).value || ''); } catch (e) { }
+                try { document.querySelectorAll('.ph-card').forEach(x => x.remove()); renderAllComponents(); } catch (e) { }
+            } catch (e) { }
+        }; im.src = base.d;
+    }
+    if (document.readyState === 'complete') setTimeout(run, 50); else addEventListener('load', () => setTimeout(run, 50));
+})();
+
+// h49 — SPARK classes: one class code for up to N students + a teacher code; submit projects, review, grades, messages
+(function () {
+    const $ = id => document.getElementById(id), LS = { g: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, s: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } }, d: k => { try { localStorage.removeItem(k); } catch (e) { } } };
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const toast = m => { try { sxToast(m); } catch (e) { } };
+    const when = t => { try { return new Date(t).toLocaleString('ar-EG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+    let C = null, ST = null, tab = null, REV = null, busy = false, poll = null;
+    const cls = () => { try { return sparkAcc.cls(); } catch (e) { return null; } };
+    const key = () => C ? C.id + '|' + String(C.email).toLowerCase() : '';
+    const token = () => { try { const j = JSON.parse(LS.g('spark_cls_tok') || 'null'); return j && j.k === key() ? j.t : null; } catch (e) { return null; } };
+    const T = () => C && C.role === 't';
+
+    async function api(a, x) {
+        const u = LS.g('spark_api'); if (!u) throw { m: 'خادم الصفوف غير مفعّل بعد — تواصل مع إدارة سبارك' };
+        if (navigator.onLine === false) throw { m: 'لا يوجد اتصال بالإنترنت' };
+        let j; try { const r = await fetch(u, { method: 'POST', body: JSON.stringify(Object.assign({ a, code: C.code, email: C.email, name: C.name, dev: LS.g('spark_dev') || '', token: token() }, x || {})) }); j = await r.json(); } catch (e) { throw { m: 'تعذّر الاتصال بالخادم — حاول مرة أخرى' }; }
+        if (!j || !j.ok) { const E = { full: `اكتمل عدد طلاب هذا الصف (${(j && j.seats) || C.seats} طالباً)`, dev: 'هذا البريد مسجّل في الصف على جهاز آخر — اطلب من معلمك إزالة تسجيلك ثم أعد المحاولة', code: 'كود الصف غير صالح أو انتهت مدته', auth: 'انتهت جلسة الصف — أعد الانضمام', size: 'المشروع أكبر من الحد المسموح', many: 'وصلت للحد الأقصى من التسليمات', role: 'هذا البريد مسجّل بدور آخر في الصف' }; if (j && j.err === 'auth') LS.d('spark_cls_tok'); throw { m: E[j && j.err] || 'تعذّر تنفيذ الطلب', e: j && j.err }; }
+        return j;
+    }
+
+    const css = document.createElement('style'); css.textContent = `
+#clsBtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;border:1px solid var(--sp-line,#353c46);background:var(--sp-surf,#1c2128);color:#c8741f;font-size:15px;cursor:pointer;flex:none}
+#clsBtn b{position:absolute;top:-5px;inset-inline-start:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:#d9443a;color:#fff;font-size:10px;line-height:17px;font-weight:700;display:none}
+#clsBtn.dot b{display:block}
+#clsPanel{position:fixed;inset:0 0 0 auto;z-index:9000;width:min(430px,100vw);background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border-inline-start:1px solid var(--sp-line,#353c46);box-shadow:-12px 0 40px rgba(0,0,0,.4);display:flex;flex-direction:column;font-size:13px}
+#clsPanel .ch{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--sp-line,#353c46)}
+#clsPanel .ch i.fa-chalkboard-user{color:#c8741f;font-size:20px}#clsPanel .ch h3{margin:0;font-size:15px;font-weight:800;flex:1}#clsPanel .ch small{display:block;color:var(--sp-mut,#8b949e);font-weight:500;font-size:11.5px}
+#clsPanel .cx{width:34px;height:34px;border-radius:9px;border:1px solid var(--sp-line,#353c46);background:transparent;color:inherit;cursor:pointer}
+#clsPanel .ct{display:flex;gap:4px;padding:8px 12px;border-bottom:1px solid var(--sp-line,#353c46)}
+#clsPanel .ct button{flex:1;padding:8px 6px;border-radius:9px;border:0;background:transparent;color:var(--sp-mut,#8b949e);font-weight:700;cursor:pointer;font-size:13px}
+#clsPanel .ct button.on{background:rgba(200,116,31,.14);color:#c8741f}
+#clsPanel .cb{flex:1;overflow:auto;padding:12px 14px}
+.cl-card{border:1px solid var(--sp-line,#353c46);border-radius:12px;padding:10px 12px;margin-bottom:9px;background:var(--sp-bg,#151a20)}
+.cl-card .r1{display:flex;align-items:center;gap:8px}.cl-card .r1 b{flex:1;font-size:13.5px}.cl-card small{color:var(--sp-mut,#8b949e);font-size:11.5px}
+.cl-chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(217,164,65,.15);color:#d9a441;white-space:nowrap}.cl-chip.ok{background:rgba(63,155,107,.15);color:#3f9b6b}
+.cl-grade{font-size:18px;font-weight:800;color:#c8741f;min-width:42px;text-align:center}
+.cl-cm{margin-top:6px;padding:7px 9px;border-radius:8px;background:rgba(200,116,31,.08);white-space:pre-wrap;font-size:12.5px}
+.cl-bt{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 11px;border-radius:9px;border:1px solid var(--sp-line,#353c46);background:transparent;color:inherit;font-weight:700;font-size:12px;cursor:pointer;margin-top:7px;margin-inline-end:6px}
+.cl-bt.pri{background:#c8741f;border-color:#c8741f;color:#fff}.cl-bt.warn{color:#d9443a}.cl-bt[disabled]{opacity:.5;cursor:default}
+.cl-in{width:100%;box-sizing:border-box;padding:9px 11px;border-radius:9px;border:1px solid var(--sp-line,#353c46);background:var(--sp-bg,#151a20);color:inherit;font:inherit;margin-top:6px}
+.cl-note{color:var(--sp-mut,#8b949e);font-size:12px;line-height:1.7;margin:6px 0 10px}
+.cl-msgs{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}.cl-m{max-width:85%;padding:7px 10px;border-radius:12px;background:var(--sp-bg,#151a20);border:1px solid var(--sp-line,#353c46);white-space:pre-wrap;align-self:flex-start}
+.cl-m.me{align-self:flex-end;background:rgba(200,116,31,.13);border-color:rgba(200,116,31,.35)}.cl-m.all{border-color:#3d82b8}.cl-m small{display:block;font-size:10.5px;color:var(--sp-mut,#8b949e);margin-bottom:2px}
+#clsGate{position:fixed;inset:0;z-index:99990;background:rgba(10,13,17,.86);display:flex;align-items:center;justify-content:center;padding:18px}
+#clsGate>div{width:min(420px,100%);background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border-radius:16px;border:1px solid var(--sp-line,#353c46);padding:22px;text-align:center}
+#clsGate i.big{font-size:34px;color:#c8741f}#clsGate h3{margin:10px 0 6px;font-size:17px}#clsGate p{color:var(--sp-mut,#8b949e);line-height:1.8;font-size:13px;margin:0 0 10px}
+#clsRev{position:fixed;z-index:8990;inset:auto 12px 12px 12px;max-width:560px;margin-inline:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid #c8741f;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.45);padding:10px 12px;font-size:12.5px}
+#clsRev .rr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}#clsRev .rr b{flex:1}#clsRev input.g{width:80px}#clsRev textarea{min-height:46px;resize:vertical}
+@media(max-width:768px){#clsBtn{width:30px;height:30px;font-size:13px}#clsRev{inset:auto 6px 6px 6px}}
+`; document.head.appendChild(css);
+
+    // ---------- joining (gate) ----------
+    function gate(state, msg) {
+        let g = $('clsGate'); if (state === 'ok') { if (g) g.remove(); return; }
+        if (!g) { g = document.createElement('div'); g.id = 'clsGate'; g.dir = 'rtl'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-modal', 'true'); document.body.appendChild(g); }
+        const ttl = C.cname ? `صف «${esc(C.cname)}»` : 'صف سبارك';
+        g.innerHTML = `<div><i class="fa-solid fa-chalkboard-user big"></i><h3>${state === 'wait' ? 'جارٍ تسجيلك في ' + ttl : T() ? 'تسجيل المعلم في ' + ttl : 'الانضمام إلى ' + ttl}</h3><p aria-live="polite">${state === 'wait' ? 'لحظات…' : esc(msg)}</p>
+${state === 'wait' ? '' : '<button class="cl-bt pri" id="clsRetry"><i class="fa-solid fa-rotate"></i>إعادة المحاولة</button><button class="cl-bt" id="clsOut"><i class="fa-solid fa-user"></i>الحساب / تسجيل الخروج</button>'}</div>`;
+        if ($('clsRetry')) $('clsRetry').onclick = join; if ($('clsOut')) $('clsOut').onclick = () => { try { accPanel(); const a = $('accMd'); if (a) a.style.zIndex = 99995; } catch (e) { } };
+    }
+    async function join() {
+        if (!C || busy) return; busy = true; gate('wait');
+        try { const j = await api('cjoin'); LS.s('spark_cls_tok', JSON.stringify({ k: key(), t: j.token })); gate('ok'); mount(); toast(T() ? 'تم تسجيلك معلماً للصف' : 'تم انضمامك للصف ✓'); refresh(); }
+        catch (e) { gate('err', e.m); } finally { busy = false; }
+    }
+    function sync() {
+        const c = cls(); if (JSON.stringify(c) === JSON.stringify(C)) { if (C && !token() && !$('clsGate') && !busy) join(); return; }
+        C = c; ST = null; tab = null; REV = null; const p = $('clsPanel'); if (p) p.remove(); const r = $('clsRev'); if (r) r.remove();
+        if (!C) { gate('ok'); const b = $('clsBtn'); if (b) b.remove(); clearInterval(poll); return; }
+        if (!token()) join(); else { gate('ok'); mount(); refresh(); }
+        clearInterval(poll); poll = setInterval(() => { if (C && token() && document.visibilityState !== 'hidden') refresh(); }, $('clsPanel') ? 60e3 : 240e3);
+    }
+
+    // ---------- header button ----------
+    function mount() {
+        if ($('clsBtn') || !token()) return; const chip = $('accChip'); if (!chip || !chip.parentElement) return setTimeout(mount, 800);
+        const b = document.createElement('button'); b.id = 'clsBtn'; b.title = T() ? 'صفّي: مراجعة مشاريع الطلاب' : 'صفّي: مشاريعي ودرجاتي'; b.setAttribute('aria-label', b.title);
+        b.innerHTML = '<i class="fa-solid fa-chalkboard-user"></i><b></b>'; b.onclick = panel; chip.after(b); badge();
+    }
+    const seenKey = () => 'spark_cls_seen|' + key();
+    function unread() {
+        if (!ST) return 0; const s = +LS.g(seenKey()) || 0;
+        if (T()) return ST.subs.filter(x => x.st !== 'done').length + ST.msgs.filter(m => m.to === 'T' && m.at > s).length;
+        return ST.subs.filter(x => x.st === 'done' && x.rat > s).length + ST.msgs.filter(m => m.f !== String(C.email).toLowerCase() && m.at > s).length;
+    }
+    function badge() { const b = $('clsBtn'); if (!b) return; const n = unread(); b.classList.toggle('dot', n > 0); b.querySelector('b').textContent = n > 9 ? '9+' : n; }
+    async function refresh() {
+        if (!C || !token()) return; try { ST = await api('cstate'); } catch (e) { if (e.e === 'auth' || e.e === 'code') { if (!token()) join(); } return; }
+        badge(); if ($('clsPanel')) body();
+        try { if (!T()) ST.subs.filter(x => x.st === 'done').forEach(x => sparkNotify({ id: 'cg:' + x.id + ':' + x.rat, title: 'تمت مراجعة «' + x.t + '»', text: x.g ? 'الدرجة: ' + x.g : 'اطّلع على ملاحظة المعلم' })); } catch (e) { }
+    }
+
+    // ---------- panel ----------
+    function panel() {
+        let p = $('clsPanel'); if (p) { p.remove(); return; }
+        p = document.createElement('aside'); p.id = 'clsPanel'; p.dir = 'rtl'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', 'صفّي'); document.body.appendChild(p);
+        tab = tab || (T() ? 'subs' : 'mine'); frame(); body(); refresh();
+    }
+    function frame() {
+        const p = $('clsPanel'); if (!p) return;
+        const tabs = T() ? [['subs', 'التسليمات'], ['stu', 'الطلاب'], ['msg', 'الرسائل']] : [['mine', 'مشاريعي'], ['msg', 'الرسائل']];
+        const sub = ST ? (T() ? `معلم الصف · ${ST.count} من ${ST.seats} طالباً` : `طالب · المعلم: ${esc(ST.teacher || 'لم يسجّل بعد')}`) : (T() ? 'معلم الصف' : 'طالب');
+        const left = C.exp ? Math.max(0, Math.floor((C.exp - Date.now()) / 864e5)) : 0;
+        p.innerHTML = `<div class="ch"><i class="fa-solid fa-chalkboard-user"></i><h3>${esc((ST && ST.name) || C.cname || 'صفّي')}<small>${sub}${left ? ' · متبقٍ ' + left + ' يوماً' : ''}</small></h3><button class="cx" id="clsX" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="ct" role="tablist">${tabs.map(t => `<button role="tab" data-t="${t[0]}" class="${tab === t[0] ? 'on' : ''}">${t[1]}</button>`).join('')}</div><div class="cb" id="clsB"></div>`;
+        $('clsX').onclick = () => p.remove(); p.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { tab = b.dataset.t; frame(); body(); });
+    }
+    function body() {
+        const b = $('clsB'); if (!b) return; frame(); const bb = $('clsB'); if (!ST) { bb.innerHTML = '<div class="cl-note">جارٍ التحميل…</div>'; return; }
+        LS.s(seenKey(), String(Date.now())); badge();
+        if (tab === 'mine') mine(bb); else if (tab === 'subs') subs(bb); else if (tab === 'stu') stu(bb); else msgs(bb);
+    }
+    const stChip = x => x.st === 'done' ? '<span class="cl-chip ok">تمت المراجعة</span>' : '<span class="cl-chip">بانتظار المراجعة</span>';
+    function mine(b) {
+        const L = ST.subs.slice().sort((a, c) => c.at - a.at);
+        b.innerHTML = `<div class="cl-card"><b>تسليم المشروع المفتوح الآن</b><input class="cl-in" id="clsTitle" maxlength="80" placeholder="عنوان المشروع (مثال: إشارة مرور ذكية)"><button class="cl-bt pri" id="clsSend"><i class="fa-solid fa-paper-plane"></i>تسليم للمعلم</button><div class="cl-note" id="clsSendMsg" aria-live="polite">يُرسل الدائرة والكود كما هما الآن، ويستطيع معلمك فتحه وتصحيحه.</div></div>
+${L.length ? L.map(x => `<div class="cl-card"><div class="r1"><b>${esc(x.t)}</b>${x.st === 'done' && x.g ? `<span class="cl-grade">${esc(x.g)}</span>` : ''}${stChip(x)}</div><small>أُرسل ${when(x.at)}${x.rat ? ' · رُوجع ' + when(x.rat) : ''}</small>${x.cm ? `<div class="cl-cm">${esc(x.cm)}</div>` : ''}
+<button class="cl-bt" data-o="${x.id}"><i class="fa-solid fa-folder-open"></i>فتح نسختي</button>${x.rev ? `<button class="cl-bt pri" data-r="${x.id}"><i class="fa-solid fa-pen-ruler"></i>فتح تصحيح المعلم</button>` : ''}</div>`).join('') : '<div class="cl-note">لم تسلّم أي مشروع بعد.</div>'}`;
+        $('clsSend').onclick = async e => {
+            const btn = e.currentTarget, m = $('clsSendMsg'), t = $('clsTitle').value.trim(); if (!t) { m.textContent = 'اكتب عنوان المشروع أولاً.'; $('clsTitle').focus(); return; }
+            let data; try { data = snapshotProject(); } catch (er) { m.textContent = 'تعذّر قراءة المشروع الحالي.'; return; }
+            if (!state.components || !state.components.length) { m.textContent = 'ساحة العمل فارغة — افتح مشروعك أولاً.'; return; }
+            btn.disabled = true; m.textContent = 'جارٍ الإرسال…'; try { await api('csubmit', { title: t, data }); m.textContent = '✓ تم التسليم'; toast('تم تسليم المشروع'); await refresh(); } catch (er) { m.textContent = '✗ ' + er.m; btn.disabled = false; }
+        };
+        b.querySelectorAll('[data-o]').forEach(x => x.onclick = () => openSub(x.dataset.o, false));
+        b.querySelectorAll('[data-r]').forEach(x => x.onclick = () => openSub(x.dataset.r, true));
+    }
+    async function openSub(id, rev, review) {
+        try { const j = await api('cget', { id, rev }); try { pushUndo(); } catch (e) { } restoreProject(j.data); try { switchMobileView('canvas'); } catch (e) { } toast(rev ? 'فُتح تصحيح المعلم' : 'فُتح المشروع'); if (review) reviewBar(id); else { const p = $('clsPanel'); if (p && innerWidth <= 768) p.remove(); } return true; }
+        catch (e) { toast(e.m); return false; }
+    }
+    function subs(b) {
+        const L = ST.subs.slice().sort((a, c) => (a.st === 'done') - (c.st === 'done') || c.at - a.at), n = L.filter(x => x.st !== 'done').length;
+        b.innerHTML = `<div class="cl-note">${n ? `<b>${n}</b> مشروع بانتظار المراجعة.` : 'لا توجد مشاريع جديدة.'} افتح المشروع، صحّحه في ساحة العمل إن أردت، ثم أعطِ الدرجة وأرجعه.</div>
+${L.map(x => `<div class="cl-card"><div class="r1"><b>${esc(x.n || x.e)} — ${esc(x.t)}</b>${x.g ? `<span class="cl-grade">${esc(x.g)}</span>` : ''}${stChip(x)}</div><small>${when(x.at)}</small>${x.cm ? `<div class="cl-cm">${esc(x.cm)}</div>` : ''}<button class="cl-bt pri" data-v="${x.id}"><i class="fa-solid fa-magnifying-glass"></i>${x.st === 'done' ? 'تعديل المراجعة' : 'فتح للمراجعة'}</button></div>`).join('')}`;
+        b.querySelectorAll('[data-v]').forEach(x => x.onclick = async () => { x.disabled = true; if (!(await openSub(x.dataset.v, false, true))) x.disabled = false; });
+    }
+    function reviewBar(id) {
+        const s = ST.subs.find(x => x.id === id); if (!s) return; REV = id; let r = $('clsRev'); if (r) r.remove(); const p = $('clsPanel'); if (p) p.remove();
+        r = document.createElement('div'); r.id = 'clsRev'; r.dir = 'rtl'; r.setAttribute('role', 'region'); r.setAttribute('aria-label', 'مراجعة مشروع');
+        r.innerHTML = `<div class="rr"><b><i class="fa-solid fa-pen-ruler" style="color:#c8741f"></i> مراجعة: ${esc(s.n || s.e)} — ${esc(s.t)}</b><input class="cl-in g" id="clsG" maxlength="12" placeholder="الدرجة" value="${esc(s.g || '')}" aria-label="الدرجة"></div>
+<textarea class="cl-in" id="clsC" maxlength="1500" placeholder="ملاحظاتك للطالب" aria-label="ملاحظات المعلم">${esc(s.cm || '')}</textarea>
+<label style="display:flex;gap:6px;align-items:center;margin-top:6px"><input type="checkbox" id="clsAtt" checked> إرفاق نسختي المصحّحة من ساحة العمل</label>
+<div class="rr"><button class="cl-bt pri" id="clsRet"><i class="fa-solid fa-reply"></i>إرجاع للطالب</button><button class="cl-bt" id="clsMin"><i class="fa-solid fa-chevron-down"></i>تصغير</button><button class="cl-bt" id="clsCan">إلغاء</button><span id="clsRm" aria-live="polite"></span></div>`;
+        document.body.appendChild(r);
+        $('clsCan').onclick = () => { r.remove(); REV = null; };
+        $('clsMin').onclick = () => { const h = r.dataset.min === '1'; r.dataset.min = h ? '' : '1'; [...r.children].slice(1, 3).forEach(x => x.style.display = h ? '' : 'none'); $('clsMin').innerHTML = h ? '<i class="fa-solid fa-chevron-down"></i>تصغير' : '<i class="fa-solid fa-chevron-up"></i>إظهار'; };
+        $('clsRet').onclick = async e => {
+            const btn = e.currentTarget, m = $('clsRm'); let data = ''; if ($('clsAtt').checked) try { data = snapshotProject(); } catch (er) { }
+            btn.disabled = true; m.textContent = 'جارٍ الإرسال…';
+            try { await api('creview', { id, grade: $('clsG').value.trim(), comment: $('clsC').value.trim(), data }); r.remove(); REV = null; toast('تم إرجاع المشروع للطالب ✓'); await refresh(); } catch (er) { m.textContent = '✗ ' + er.m; btn.disabled = false; }
+        };
+    }
+    function stu(b) {
+        const L = ST.members.slice().sort((a, c) => String(a.n).localeCompare(String(c.n), 'ar'));
+        b.innerHTML = `<div class="cl-note">${ST.count} من ${ST.seats} طالباً انضموا بكود الصف.</div>` + (L.length ? L.map(x => { const k = ST.subs.filter(s => s.e === x.e), g = k.filter(s => s.g).map(s => s.g); return `<div class="cl-card"><div class="r1"><b>${esc(x.n || x.e)}</b><small>${k.length} تسليم</small></div><small dir="ltr" style="display:block;text-align:right">${esc(x.e)}</small><small>آخر نشاط ${when(x.last)}${g.length ? ' · الدرجات: ' + esc(g.join('، ')) : ''}</small><br><button class="cl-bt" data-m="${esc(x.e)}"><i class="fa-solid fa-message"></i>مراسلة</button><button class="cl-bt warn" data-k="${esc(x.e)}"><i class="fa-solid fa-user-minus"></i>إزالة من الصف</button></div>`; }).join('') : '<div class="cl-note">لم ينضم أي طالب بعد. أعطِ الطلاب كود الصف.</div>');
+        b.querySelectorAll('[data-m]').forEach(x => x.onclick = () => { tab = 'msg'; TO = x.dataset.m; body(); });
+        b.querySelectorAll('[data-k]').forEach(x => x.onclick = async () => { if (!x.dataset.sure) { x.dataset.sure = 1; x.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>اضغط مرة ثانية للتأكيد'; return; } x.disabled = true; try { await api('ckick', { to: x.dataset.k }); toast('تمت الإزالة — يمكن لطالب آخر الانضمام'); await refresh(); } catch (e) { toast(e.m); x.disabled = false; } });
+    }
+    let TO = '*';
+    function msgs(b) {
+        const me = String(C.email).toLowerCase(), nm = e => { const m = (ST.members || []).find(x => x.e === e); return m ? m.n : e; };
+        let L = ST.msgs; if (T()) L = L.filter(m => TO === '*' ? m.to === '*' : (m.f === TO || m.to === TO));
+        const opts = T() ? `<select class="cl-in" id="clsTo" aria-label="إلى"><option value="*">📢 إعلان لكل الصف</option>${ST.members.map(x => `<option value="${esc(x.e)}" ${TO === x.e ? 'selected' : ''}>${esc(x.n || x.e)}</option>`).join('')}</select>` : '';
+        b.innerHTML = `${opts}<div class="cl-msgs" id="clsML">${L.length ? L.map(m => `<div class="cl-m ${m.f === me ? 'me' : ''} ${m.to === '*' ? 'all' : ''}"><small>${m.f === me ? 'أنت' : esc(m.n || nm(m.f))}${m.to === '*' ? ' · إعلان للصف' : ''} · ${when(m.at)}</small>${esc(m.tx)}</div>`).join('') : '<div class="cl-note">لا توجد رسائل بعد.</div>'}</div>
+<textarea class="cl-in" id="clsTx" maxlength="1500" placeholder="${T() ? (TO === '*' ? 'اكتب إعلاناً لكل الطلاب…' : 'اكتب رسالة للطالب…') : 'اكتب رسالة لمعلمك…'}" aria-label="الرسالة"></textarea><button class="cl-bt pri" id="clsMs"><i class="fa-solid fa-paper-plane"></i>إرسال</button>`;
+        if (T()) $('clsTo').onchange = e => { TO = e.target.value; body(); }
+        const ml = $('clsML'); ml.lastElementChild && ml.lastElementChild.scrollIntoView({ block: 'nearest' });
+        $('clsMs').onclick = async e => { const tx = $('clsTx').value.trim(); if (!tx) return; const btn = e.currentTarget; btn.disabled = true; try { await api('cmsg', { to: T() ? TO : 'T', text: tx }); await refresh(); } catch (er) { toast(er.m); btn.disabled = false; } };
+    }
+
+    window.sparkClass = { open: () => { if (C && token()) panel(); }, refresh, state: () => ST };
+    addEventListener('spark-acct', () => setTimeout(sync, 50));
+    addEventListener('spark-api', () => { if (C && !token()) join(); });
+    addEventListener('load', () => setTimeout(sync, 1500));
 })();
 
         window.onload = function () {
