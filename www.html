@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.8.3',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='2.8.4',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -13890,7 +13890,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.8.3', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.8.4', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14129,7 +14129,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             sxNavSync = (o => function () { const r = o.apply(this, arguments); markNav(); return r; })(sxNavSync);
             // public, read-only surface
             window.accPanel = panel;
-            window.sparkAcc = Object.freeze({ cls: () => S.a && S.lic && S.lic.cls && !S.as ? Object.assign({ code: S.a.code, email: S.a.email, name: S.a.name, exp: S.lic.exp }, S.lic.cls) : null, info: () => ({ signedIn: !!S.a, tier: S.tier, view: S.as || S.tier, days: daysLeft(), name: S.a && S.a.name }), can: f => can(f), recheck: async () => { await resolve(); if (S.ready && S.a && !S.tier && !$('accOv')) { closeMd(); login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); } }, profile: async () => S.a ? { name: S.a.name, email: S.a.email, org: S.a.org || '', tier: S.tier || 'none', days: daysLeft() === Infinity ? 'دائم' : String(daysLeft()), ch: S.a.code ? (await sparkSha(S.a.code)).slice(0, 16) : '' } : null, trialFrom: async ts => { ts = +ts; if (!(ts > 1.6e12) || ts > Date.now() || !S.a || S.lic) return; const b = +LS.g('spark_dv') || Infinity; if (ts >= b) return; await anchor(ts); await resolve(); if (!S.tier && S.a && !$('accOv')) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }, waLink: () => wa(null, S.a) });
+            window.sparkAcc = Object.freeze({ signOut: () => { const k = S.a; if (!k) return; S.a = null; S.as = null; LS.d('spark_acct_v1'); S.tier = null; S.lic = null; try { closeMd(); } catch (e) { } chip(); try { if (state.running) toggleSimulation(); } catch (e) { } login({ name: k.name, email: k.email === 'owner@spark' ? '' : k.email, org: k.org }); try { dispatchEvent(new Event('spark-acct')); } catch (e) { } }, cls: () => S.a && S.lic && S.lic.cls && !S.as ? Object.assign({ code: S.a.code, email: S.a.email, name: S.a.name, exp: S.lic.exp }, S.lic.cls) : null, info: () => ({ signedIn: !!S.a, tier: S.tier, view: S.as || S.tier, days: daysLeft(), name: S.a && S.a.name }), can: f => can(f), recheck: async () => { await resolve(); if (S.ready && S.a && !S.tier && !$('accOv')) { closeMd(); login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); } }, profile: async () => S.a ? { name: S.a.name, email: S.a.email, org: S.a.org || '', tier: S.tier || 'none', days: daysLeft() === Infinity ? 'دائم' : String(daysLeft()), ch: S.a.code ? (await sparkSha(S.a.code)).slice(0, 16) : '' } : null, trialFrom: async ts => { ts = +ts; if (!(ts > 1.6e12) || ts > Date.now() || !S.a || S.lic) return; const b = +LS.g('spark_dv') || Infinity; if (ts >= b) return; await anchor(ts); await resolve(); if (!S.tier && S.a && !$('accOv')) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); }, waLink: () => wa(null, S.a) });
             // ---------- boot ----------
             try { S.a = JSON.parse(LS.g('spark_acct_v1') || 'null'); } catch (e) { }
             const boot = async () => { try { if (window.sparkVaultReady) { await window.sparkVaultReady; S.a = JSON.parse(LS.g('spark_acct_v1') || 'null'); } } catch (e) { } try { if (S.a && SHORT.test(String(S.a.code || '').toUpperCase()) && !(await licRead())) await licList(true); } catch (e) { } await resolve(); S.ready = true; setTimeout(() => { try { sparkLicRefresh(); } catch (e) { } }, 6000); if (!S.a) login(); else if (!S.tier) login({ name: S.a.name, email: S.a.email, org: S.a.org, expired: true }); else if (S.tier === 'student' && !S.lic && daysLeft() <= 5) try { sxToast('متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية'); } catch (e) { } if (S.tier === 'student' && !S.lic && daysLeft() <= 7) try { sparkNotify({ id: 't:' + daysLeft(), title: 'متبقٍ ' + daysLeft() + ' أيام من الفترة المجانية', text: 'اطلب كود تفعيل من صفحة حسابك لمتابعة العمل دون انقطاع.', ic: 'fa-hourglass-half', act: 'account' }); } catch (e) { } };
@@ -14237,7 +14237,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.8.3</b><br>• تنزيل نموذج «العقل المحلي» يُكتب الآن مباشرة كملفات على الجهاز — إصلاح خطأ الحفظ على ويندوز.<br><b>الإصدار 2.8.2</b><br>• طريقة حفظ بديلة لنموذج «العقل المحلي» على الأجهزة التي يفشل فيها التخزين العادي (ويندوز).<br><b>الإصدار 2.8.1</b><br>• إصلاح تنزيل نموذج «العقل المحلي» في نسخة الويندوز (خطأ Failed to write blobs).<br><b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.8.4</b><br>• حسابات فريق التطوير تُفتح برقم سري من 6 أرقام، وعلى الجوال بالبصمة.<br><b>الإصدار 2.8.3</b><br>• تنزيل نموذج «العقل المحلي» يُكتب الآن مباشرة كملفات على الجهاز — إصلاح خطأ الحفظ على ويندوز.<br><b>الإصدار 2.8.2</b><br>• طريقة حفظ بديلة لنموذج «العقل المحلي» على الأجهزة التي يفشل فيها التخزين العادي (ويندوز).<br><b>الإصدار 2.8.1</b><br>• إصلاح تنزيل نموذج «العقل المحلي» في نسخة الويندوز (خطأ Failed to write blobs).<br><b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -16266,7 +16266,7 @@ class TouchScreen:
 // The account record itself stays readable synchronously (name, tier…) so the app boots exactly as before; only its code field moves into the vault.
 (function () {
     const SP = Storage.prototype, O0 = SP.__sp0 || (SP.__sp0 = { g: SP.getItem, s: SP.setItem, r: SP.removeItem }), _get = O0.g, _set = O0.s, _rem = O0.r;      // the true originals, even when an update re-runs this script in the same window
-    const SECRET = new Set(['sparkv_code', 'spark_ai_cfg_v1', 'spark_pi_pin', 'sparkv_gh', 'spark_cls_tok']), ACCT = 'spark_acct_v1', HOLE = '\u00a7';
+    const SECRET = new Set(['sparkv_code', 'spark_ai_cfg_v1', 'spark_pi_pin', 'sparkv_gh', 'spark_cls_tok', 'spark_lock_v1']), ACCT = 'spark_acct_v1', HOLE = '\u00a7';
     const isEnc = v => typeof v === 'string' && v.slice(0, 5) === 'enc1:';
     const GEN = SP.__spGen = (SP.__spGen || 0) + 1, live = () => SP.__spGen === GEN;      // an update re-runs this script: only the newest copy may touch storage
     const cache = {}, pending = new Set(); let key = null, ready = false, on = false;
@@ -16956,6 +16956,137 @@ ${L.map(x => `<div class="cl-card"><div class="r1"><b>${esc(x.n || x.e)} — ${e
     addEventListener('spark-acct', () => setTimeout(sync, 50));
     addEventListener('spark-api', () => { if (C && !token()) join(); });
     addEventListener('load', () => setTimeout(sync, 1500));
+})();
+
+// h50 — development-team lock: a PIN after sign-in, then fingerprint on Android (PIN on Windows / web)
+(function () {
+    const $ = id => document.getElementById(id), LS = { g: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, s: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } }, d: k => { try { localStorage.removeItem(k); } catch (e) { } } };
+    const KEY = 'spark_lock_v1', MARK = 'spark_lock_on', FAIL = 'spark_lock_fail', IDLE = 5 * 60e3, TEAM = ['owner', 'developer'];
+    const AND = () => { try { return !!(window.SparkAndroid && SparkAndroid.bioHas); } catch (e) { return false; } };
+    const bioHas = () => { try { return AND() && SparkAndroid.bioHas(); } catch (e) { return false; } };
+    const info = () => { try { return sparkAcc.info(); } catch (e) { return {}; } };
+    const team = () => { const i = info(); return i.signedIn && TEAM.includes(i.tier); };
+    const email = () => { try { return String(JSON.parse(LS.g('spark_acct_v1') || '{}').email || '').toLowerCase(); } catch (e) { return ''; } };
+    const rec = () => { try { const r = JSON.parse(LS.g(KEY) || 'null'); return r && r.h && r.e === email() ? r : null; } catch (e) { return null; } };
+    const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+    async function hash(pin, salt) {
+        const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
+        return hex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: new TextEncoder().encode(salt), iterations: 120000, hash: 'SHA-256' }, k, 256));
+    }
+    let locked = false, hidden = 0, setupOpen = false;
+
+    const css = document.createElement('style'); css.textContent = `
+#lkOv{position:fixed;inset:0;z-index:2147483000;background:radial-gradient(circle at 50% 20%,#24303d,#0e1318 70%);color:#e6ebf1;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:18px;overflow:auto}
+#lkOv>div{width:min(340px,100%);text-align:center}
+#lkOv .lg{width:58px;height:58px;border-radius:16px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;background:rgba(200,116,31,.15);color:#c8741f;font-size:26px}
+#lkOv h2{margin:0;font-size:18px;font-weight:800}#lkOv p{margin:6px 0 14px;color:#9aa6b2;font-size:13px;line-height:1.7;min-height:22px}
+#lkOv .dots{display:flex;gap:12px;justify-content:center;margin:6px 0 16px;direction:ltr}#lkOv .dots i{width:13px;height:13px;border-radius:50%;border:2px solid #5b6774}#lkOv .dots i.f{background:#c8741f;border-color:#c8741f}
+#lkOv .dots.err{animation:lkShake .35s}@keyframes lkShake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+#lkOv .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;direction:ltr;max-width:270px;margin:0 auto}
+#lkOv .pad button{height:58px;border-radius:16px;border:1px solid #2f3a46;background:#18212b;color:#e6ebf1;font-size:22px;font-weight:700;cursor:pointer;font-family:inherit}
+#lkOv .pad button:active{background:#24303d}#lkOv .pad button.k{font-size:16px;color:#9aa6b2}#lkOv .pad button.bio{color:#c8741f;font-size:24px}#lkOv .pad button[disabled]{opacity:.35}
+#lkOv .lnk{margin-top:14px;background:none;border:0;color:#9aa6b2;font-size:12.5px;cursor:pointer;text-decoration:underline;font-family:inherit}
+#lkOv .opt{display:flex;flex-direction:column;gap:9px;margin-top:6px}#lkOv .opt button{padding:12px;border-radius:12px;border:1px solid #2f3a46;background:#18212b;color:#e6ebf1;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
+#lkOv .opt button.pri{background:#c8741f;border-color:#c8741f;color:#fff}
+#lkOv input.hk{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+body.lk-on>*:not(#lkOv){visibility:hidden!important}`;
+    document.head.appendChild(css);
+
+    // ---------- the PIN pad (used for setting, confirming and unlocking) ----------
+    function pad({ title, sub, len, bio, onPin, cancel }) {
+        let o = $('lkOv'); if (!o) { o = document.createElement('div'); o.id = 'lkOv'; o.dir = 'rtl'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); document.body.appendChild(o); }
+        document.body.classList.add('lk-on');
+        let v = '';
+        const keys = [1, 2, 3, 4, 5, 6, 7, 8, 9, bio ? 'bio' : (cancel ? 'x' : ''), 0, 'del'];
+        o.innerHTML = `<div><div class="lg"><i class="fa-solid fa-lock"></i></div><h2>${title}</h2><p id="lkMsg" aria-live="polite">${sub || ''}</p>
+<div class="dots" id="lkDots" aria-hidden="true">${'<i></i>'.repeat(len || 6)}</div>
+<div class="pad">${keys.map(k => k === '' ? '<span></span>' : k === 'bio' ? '<button class="bio" data-k="bio" aria-label="الدخول بالبصمة"><i class="fa-solid fa-fingerprint"></i></button>' : k === 'x' ? '<button class="k" data-k="x">إلغاء</button>' : k === 'del' ? '<button class="k" data-k="del" aria-label="حذف رقم"><i class="fa-solid fa-delete-left"></i></button>' : `<button data-k="${k}">${k}</button>`).join('')}</div>
+<input class="hk" id="lkKb" inputmode="numeric" autocomplete="off" aria-label="الرقم السري">
+<div id="lkFoot"></div></div>`;
+        const dots = () => { const d = $('lkDots'); if (!d) return; [...d.children].forEach((x, i) => x.classList.toggle('f', i < v.length)); };
+        const max = len || 6;
+        const push = async k => {
+            if (o.dataset.wait === '1') return;
+            if (k === 'del') v = v.slice(0, -1); else if (k === 'x') { cancel && cancel(); return; } else if (k === 'bio') { bioGo(); return; } else if (v.length < max) v += k;
+            dots(); if (v.length === max) { const p = v; v = ''; setTimeout(dots, 160); o.dataset.wait = '1'; try { await onPin(p); } finally { o.dataset.wait = ''; } }
+        };
+        o.querySelectorAll('[data-k]').forEach(b => b.onclick = () => push(b.dataset.k));
+        o.onkeydown = e => { if (/^\d$/.test(e.key)) push(e.key); else if (e.key === 'Backspace') push('del'); else if (e.key === 'Escape' && cancel) cancel(); };
+        o.tabIndex = -1; setTimeout(() => { try { o.focus(); } catch (e) { } }, 30);
+        return { msg: (t, err) => { const m = $('lkMsg'); if (m) m.textContent = t; if (err) { const d = $('lkDots'); d.classList.remove('err'); void d.offsetWidth; d.classList.add('err'); try { navigator.vibrate && navigator.vibrate(120); } catch (e) { } } }, foot: h => { $('lkFoot').innerHTML = h; } };
+    }
+    function close() { const o = $('lkOv'); if (o) o.remove(); document.body.classList.remove('lk-on'); try { SparkAndroid.bioCancel(); } catch (e) { } }
+
+    // ---------- setting the PIN (first sign-in of a team member) ----------
+    function setup() {
+        if (setupOpen) return; setupOpen = true; let first = '';
+        const ask = () => {
+            const P = pad({ title: first ? 'أعد كتابة الرقم السري' : 'اختر رقماً سرياً', sub: first ? 'للتأكيد' : 'حساب فريق التطوير يُفتح برقم سري من 6 أرقام على هذا الجهاز.', len: 6,
+                onPin: async p => {
+                    if (!first) { if (/^(\d)\1{5}$/.test(p) || '0123456789'.includes(p) || '9876543210'.includes(p)) { P.msg('رقم سهل التخمين — اختر رقماً آخر', true); return; } first = p; ask(); return; }
+                    if (p !== first) { first = ''; ask(); setTimeout(() => { const m = $('lkMsg'); if (m) m.textContent = 'الرقمان غير متطابقين — ابدأ من جديد'; }, 0); return; }
+                    const s = hex(crypto.getRandomValues(new Uint8Array(16)));
+                    LS.s(KEY, JSON.stringify({ e: email(), s, h: await hash(p, s), bio: false })); LS.s(MARK, '1');
+                    if (bioHas()) askBio(); else { setupOpen = false; close(); toast('تم ضبط الرقم السري'); }
+                } });
+        };
+        ask();
+    }
+    function askBio() {
+        let o = $('lkOv'); o.innerHTML = `<div><div class="lg"><i class="fa-solid fa-fingerprint"></i></div><h2>الدخول بالبصمة</h2><p>افتح التطبيق ببصمتك بدل كتابة الرقم في كل مرة. يبقى الرقم السري متاحاً دائماً.</p>
+<div class="opt"><button class="pri" id="lkBioY"><i class="fa-solid fa-fingerprint"></i> تفعيل البصمة</button><button id="lkBioN">ليس الآن</button></div><p id="lkMsg" aria-live="polite"></p></div>`;
+        $('lkBioN').onclick = () => { setupOpen = false; close(); toast('تم ضبط الرقم السري'); };
+        $('lkBioY').onclick = () => { $('lkMsg').textContent = 'ضع إصبعك على حساس البصمة…'; bioWait(ok => { if (!ok) return; const r = rec(); r.bio = true; LS.s(KEY, JSON.stringify(r)); setupOpen = false; close(); toast('تم تفعيل الدخول بالبصمة'); }); };
+    }
+
+    // ---------- fingerprint ----------
+    let bioCb = null;
+    addEventListener('spark-bio', e => {
+        const d = e.detail || {}; if (!bioCb) return;
+        if (d.ok) { const f = bioCb; bioCb = null; f(true); return; }
+        const m = $('lkMsg'); if (m) m.textContent = d.soft ? (d.msg === 'nomatch' ? 'البصمة غير مطابقة — حاول مرة أخرى' : d.msg) : 'تعذّرت قراءة البصمة — استعمل الرقم السري';
+        if (!d.soft) { const f = bioCb; bioCb = null; f(false); }
+    });
+    function bioWait(cb) { bioCb = cb; try { SparkAndroid.bioAuth(); } catch (e) { bioCb = null; cb(false); } }
+    function bioGo() { const r = rec(); if (!r || !r.bio || !bioHas()) return; const m = $('lkMsg'); if (m) m.textContent = 'ضع إصبعك على حساس البصمة…'; bioWait(ok => { if (ok) unlocked(); }); }
+
+    // ---------- the lock screen ----------
+    const fails = () => { try { return JSON.parse(LS.g(FAIL) || '{"n":0,"u":0}'); } catch (e) { return { n: 0, u: 0 }; } };
+    function lock() {
+        const r = rec(); if (!r) return; locked = true; const bio = r.bio && bioHas(); const nm = info().name || '';
+        const P = pad({ title: 'مرحباً' + (nm ? ' ' + nm.split(' ')[0] : ''), sub: bio ? 'افتح بالبصمة أو اكتب الرقم السري' : 'اكتب الرقم السري لحساب فريق التطوير', len: 6, bio,
+            onPin: async p => {
+                const f = fails(); if (f.u > Date.now()) { P.msg('انتظر ' + Math.ceil((f.u - Date.now()) / 1e3) + ' ثانية ثم حاول', true); return; }
+                const cur = rec(); if (cur && await hash(p, cur.s) === cur.h) { unlocked(); return; }
+                f.n++; if (f.n >= 10) { LS.d(FAIL); forget(); return; }
+                if (f.n >= 5) f.u = Date.now() + 30e3 * Math.pow(2, f.n - 5); LS.s(FAIL, JSON.stringify(f));
+                P.msg(f.n >= 5 ? `رقم خاطئ — انتظر ${Math.round(30 * Math.pow(2, f.n - 5))} ثانية. بعد ${10 - f.n} محاولات يُسجَّل الخروج.` : 'الرقم السري غير صحيح', true);
+            } });
+        P.foot('<button class="lnk" id="lkForgot">نسيت الرقم السري؟</button>');
+        $('lkForgot').onclick = e => { const b = e.currentTarget; if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'سيُسجَّل خروجك وتحتاج كود الحساب للدخول من جديد — اضغط للتأكيد'; return; } forget(); };
+        if (bio) setTimeout(bioGo, 350);
+    }
+    function unlocked() { locked = false; LS.d(FAIL); close(); }
+    function forget() { LS.d(KEY); LS.d(MARK); locked = false; close(); try { sparkAcc.signOut(); } catch (e) { } toast('سُجِّل الخروج — ادخل بكود حسابك ثم اختر رقماً سرياً جديداً'); }
+    const toast = m => { try { sxToast(m); } catch (e) { } };
+
+    // ---------- when to lock ----------
+    function check(boot) {
+        if (navigator.webdriver && !window.__lockTest) return;           // automated test runs (Playwright) skip the lock unless a test asks for it
+        if (setupOpen) { if (!team()) { setupOpen = false; close(); } return; }
+        if (!team()) { if (!info().signedIn) { LS.d(KEY); LS.d(MARK); } if (locked || $('lkOv')) { locked = false; close(); } return; }
+        if (!rec()) { LS.d(MARK); setup(); return; }
+        LS.s(MARK, '1'); if (boot && !locked) lock();
+    }
+    // cover the app at once while the account and the vault load, so nothing flashes
+    if (LS.g(MARK) === '1' && !(navigator.webdriver && !window.__lockTest)) { const go = () => { if (!$('lkOv') && LS.g(MARK) === '1') { const o = document.createElement('div'); o.id = 'lkOv'; o.innerHTML = '<div><div class="lg"><i class="fa-solid fa-lock"></i></div></div>'; document.body.appendChild(o); document.body.classList.add('lk-on'); } }; if (document.body) go(); else addEventListener('DOMContentLoaded', go); }
+    const boot = () => Promise.resolve(window.sparkVaultReady).catch(() => { }).then(() => setTimeout(() => { if (LS.g(MARK) === '1' && !rec() && $('lkOv') && !setupOpen) close(); check(true); }, 400));
+    let booted = false; const once = () => { if (booted) return; booted = true; boot(); };
+    addEventListener('load', () => setTimeout(once, 1200));
+    addEventListener('spark-acct', () => setTimeout(() => { if (booted) check(false); }, 300));
+    document.addEventListener('visibilitychange', () => { if (document.hidden) hidden = Date.now(); else if (hidden && Date.now() - hidden > IDLE && rec() && team() && !locked) lock(); });
+    addEventListener('spark-pause', () => { hidden = hidden || Date.now(); });
+    window.sparkLock = { now: () => { if (rec() && team()) lock(); }, active: () => !!rec(), reset: () => { LS.d(KEY); LS.d(MARK); check(false); } };
 })();
 
         window.onload = function () {
