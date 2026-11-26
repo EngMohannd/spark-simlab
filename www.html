@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.8.8',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='2.9.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -13893,7 +13893,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.8.8', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '2.9.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14240,7 +14240,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.8.8</b><br>• المساعد الذكي يعمل متصلاً ومجاناً دون أي مفتاح، ويرجع للمساعد المحلي تلقائياً عند انقطاع الإنترنت.<br>• واجهة مساعد أهدأ: صف واحد للأوامر السريعة، واختيار النموذج داخل زر «النموذج».<br><b>الإصدار 2.8.7</b><br>• رسائل أوضح عند تعذّر الاتصال بخادم الصفوف.<br><b>الإصدار 2.8.6</b><br>• شاشة الدخول: زر واضح لطلاب ومعلمي الصفوف للدخول بكود الصف، وإصلاح زر «الرقم السري».<br><b>الإصدار 2.8.5</b><br>• شاشة الدخول: دخول فريق التطوير السريع بالرقم السري أو البصمة بدل الكود الطويل.<br><b>الإصدار 2.8.4</b><br>• حسابات فريق التطوير تُفتح برقم سري من 6 أرقام، وعلى الجوال بالبصمة.<br><b>الإصدار 2.8.3</b><br>• تنزيل نموذج «العقل المحلي» يُكتب الآن مباشرة كملفات على الجهاز — إصلاح خطأ الحفظ على ويندوز.<br><b>الإصدار 2.8.2</b><br>• طريقة حفظ بديلة لنموذج «العقل المحلي» على الأجهزة التي يفشل فيها التخزين العادي (ويندوز).<br><b>الإصدار 2.8.1</b><br>• إصلاح تنزيل نموذج «العقل المحلي» في نسخة الويندوز (خطأ Failed to write blobs).<br><b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.9.0</b><br>• «عنصر جديد بالوصف» في مكتبة العناصر: اكتب اسم العنصر أو صِفه فيقترح المساعد أطرافه وشكله وحساباته وكوده، ويُضاف للمكتبة والمحاكاة، ويمكنك اقتراحه للنشر للجميع.<br><b>الإصدار 2.8.8</b><br>• المساعد الذكي يعمل متصلاً ومجاناً دون أي مفتاح، ويرجع للمساعد المحلي تلقائياً عند انقطاع الإنترنت.<br>• واجهة مساعد أهدأ: صف واحد للأوامر السريعة، واختيار النموذج داخل زر «النموذج».<br><b>الإصدار 2.8.7</b><br>• رسائل أوضح عند تعذّر الاتصال بخادم الصفوف.<br><b>الإصدار 2.8.6</b><br>• شاشة الدخول: زر واضح لطلاب ومعلمي الصفوف للدخول بكود الصف، وإصلاح زر «الرقم السري».<br><b>الإصدار 2.8.5</b><br>• شاشة الدخول: دخول فريق التطوير السريع بالرقم السري أو البصمة بدل الكود الطويل.<br><b>الإصدار 2.8.4</b><br>• حسابات فريق التطوير تُفتح برقم سري من 6 أرقام، وعلى الجوال بالبصمة.<br><b>الإصدار 2.8.3</b><br>• تنزيل نموذج «العقل المحلي» يُكتب الآن مباشرة كملفات على الجهاز — إصلاح خطأ الحفظ على ويندوز.<br><b>الإصدار 2.8.2</b><br>• طريقة حفظ بديلة لنموذج «العقل المحلي» على الأجهزة التي يفشل فيها التخزين العادي (ويندوز).<br><b>الإصدار 2.8.1</b><br>• إصلاح تنزيل نموذج «العقل المحلي» في نسخة الويندوز (خطأ Failed to write blobs).<br><b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -17157,6 +17157,229 @@ body.lk-on>*:not(#lkOv){visibility:hidden!important}
     function clean() { const b = document.getElementById('aiBadge'); if (!b) return; [...b.childNodes].forEach(n => { if (n.nodeType === 3 && /·\s*openai\s*$/.test(n.textContent)) n.textContent = n.textContent.replace(/\s*·\s*openai\s*$/, ''); }); }
     try { const _o = openAI; openAI = function () { const r = _o.apply(this, arguments); setTimeout(tidy, 30); return r; }; } catch (e) { }
     addEventListener('load', () => setTimeout(tidy, 1500));
+})();
+
+// h52 — "add a part by description": the free online model proposes a full part (pins, look, simulation, code);
+// it is saved on this device, can be suggested to the owner, and owner-approved parts (parts.json in the repo) reach everyone.
+(function () {
+    const $ = id => document.getElementById(id), LS = { g: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, s: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } } };
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const toast = m => { try { sxToast(m); } catch (e) { } };
+    const MINE = 'spark_parts_mine', PUB = 'spark_parts_pub', REPO = 'EngMohannd/spark-simlab';
+    const FREE = 'https://text.pollinations.ai/openai';
+    XC.U = 'عناصر مضافة بالوصف (Custom)';
+    const COLORS = ['slate', 'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
+    const own = () => { try { return sparkAcc.info().tier === 'owner'; } catch (e) { return false; } };
+
+    // ---------- strict sanitizers (the model's answer is untrusted) ----------
+    const txt = (v, n) => String(v == null ? '' : v).replace(/[<>`$\\]/g, '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n || 80);
+    const pinId = v => String(v || '').toUpperCase().replace(/[^A-Z0-9_+\-]/g, '').slice(0, 8);
+    const num = (v, d, lo, hi) => { v = Number(v); if (!isFinite(v)) v = d; return Math.max(lo, Math.min(hi, v)); };
+    const SVG_T = new Set(['svg', 'g', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path', 'text', 'tspan', 'defs', 'lineargradient', 'radialgradient', 'stop']);
+    const SVG_A = new Set(['x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx', 'ry', 'width', 'height', 'd', 'points', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'opacity', 'fill-opacity', 'stroke-opacity', 'transform', 'viewbox', 'font-size', 'font-weight', 'text-anchor', 'id', 'offset', 'stop-color', 'stop-opacity', 'font-family', 'dominant-baseline']);
+    function cleanSvg(src) {
+        if (!src || typeof src !== 'string' || src.length > 12000) return '';
+        let doc; try { doc = new DOMParser().parseFromString(src, 'image/svg+xml'); } catch (e) { return ''; }
+        const root = doc.documentElement; if (!root || root.nodeName.toLowerCase() !== 'svg' || doc.getElementsByTagName('parsererror').length) return '';
+        const walk = el => {
+            [...el.children].forEach(ch => { if (!SVG_T.has(ch.nodeName.toLowerCase())) ch.remove(); else walk(ch); });
+            [...el.attributes].forEach(a => { const n = a.name.toLowerCase(), v = a.value; if (!SVG_A.has(n) || /javascript:|expression|url\((?!#[\w-]+\))|[<>]/i.test(v) || v.length > 3000) el.removeAttribute(a.name); });
+        };
+        walk(root); root.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); if (!root.getAttribute('viewBox')) root.setAttribute('viewBox', '0 0 120 80');
+        root.removeAttribute('width'); root.removeAttribute('height');
+        return new XMLSerializer().serializeToString(root);
+    }
+    function clean(p) {
+        if (!p || typeof p !== 'object') return null;
+        const id = 'u_' + String(p.id || p.name_en || 'part').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 28);
+        const pins = side => (Array.isArray(side) ? side : []).map(x => typeof x === 'string' ? { id: pinId(x), l: txt(x, 10) } : { id: pinId(x.id || x.name), l: txt(x.label || x.id || x.name, 12) }).filter(x => x.id).slice(0, 12);
+        const L = pins(p.left_pins), R = pins(p.right_pins); if (!L.length && !R.length) return null;
+        const all = new Set(L.concat(R).map(x => x.id)); const has = k => all.has(k);
+        const sim = p.sim || {};
+        const vals = (sim.vals || []).slice(0, 4).map(v => { const k = String(v.k || '').replace(/\W/g, '').slice(0, 10) || 'v'; const mn = num(v.min, 0, -1e6, 1e6), mx = num(v.max, 100, mn + 1e-6, 1e6); return { k, l: txt(v.l || v.label || k, 30), u: txt(v.u || v.unit, 8), min: mn, max: mx, step: num(v.step, (mx - mn) / 100, 1e-6, 1e6), def: num(v.def, (mn + mx) / 2, mn, mx) }; });
+        const vk = new Set(vals.map(v => v.k)), tgs = (sim.toggles || []).slice(0, 3).map(t => ({ k: String(t.k || '').replace(/\W/g, '').slice(0, 10) || 't', l: txt(t.l || t.label, 30) || 'تفعيل' }));
+        const tk = new Set(tgs.map(t => t.k));
+        const outs = (sim.outs || []).slice(0, 6).map(o => {
+            const pin = pinId(o.pin); if (!has(pin)) return null;
+            if (o.type === 'linear' && vk.has(o.k)) return { pin, type: 'linear', k: o.k, in: [num((o.in || [])[0], 0, -1e6, 1e6), num((o.in || [])[1], 100, -1e6, 1e6)], out: [num((o.out || [])[0], 0, 0, 24), num((o.out || [])[1], 5, 0, 24)] };
+            if (o.type === 'thr' && vk.has(o.k)) return { pin, type: 'thr', k: o.k, thr: num(o.thr, 50, -1e6, 1e6), above: o.high !== 'below' };
+            if (o.type === 'toggle' && tk.has(o.k)) return { pin, type: 'toggle', k: o.k, inv: !!o.inv };
+            return null;
+        }).filter(Boolean);
+        const leds = (sim.leds || []).slice(0, 3).map(l => ({ a: pinId(l.a), k: pinId(l.k), vf: num(l.vf, 2, 1.2, 4) })).filter(l => has(l.a) && has(l.k));
+        const loads = (sim.loads || []).slice(0, 3).map(l => ({ a: pinId(l.a), b: pinId(l.b), ohm: num(l.ohm, 1000, 0.1, 1e9) })).filter(l => has(l.a) && has(l.b) && l.a !== l.b);
+        const code = s => String(s || '').replace(/\r/g, '').slice(0, 6000);
+        return {
+            id, name: txt(p.name_ar || p.name, 50) || 'عنصر جديد', en: txt(p.name_en, 50), sub: txt(p.subtitle, 70), desc: txt(p.description_ar || p.description, 600),
+            icon: /^fa-[a-z0-9-]{2,30}$/.test(p.icon || '') ? p.icon : 'fa-microchip', color: COLORS.includes(p.color) ? p.color : 'cyan',
+            L, R, vals, tgs, outs, leds, loads, specs: Object.fromEntries(Object.entries(p.specs || {}).slice(0, 10).map(([k, v]) => [txt(k, 30), txt(v, 60)])),
+            calc: txt(p.calculations || p.calc, 900), wiring: txt(p.wiring, 600), ino: code(p.arduino_code), esp: code(p.esp32_code), svg: cleanSvg(p.svg), at: Date.now()
+        };
+    }
+
+    // ---------- registering a part in the library and the simulator ----------
+    function register(p, pub) {
+        if (!p || !p.id) return; const fv = (o, s, vcc) => {
+            if (o.type === 'linear') { const [a, b] = o.in, [x, y] = o.out, t = b === a ? 0 : (s[o.k] - a) / (b - a); return Math.max(0, Math.min(vcc || 5, x + (y - x) * Math.max(0, Math.min(1, t)))); }
+            if (o.type === 'thr') return o.above ? s[o.k] >= o.thr : s[o.k] < o.thr;
+            return o.inv ? !s[o.k] : !!s[o.k];
+        };
+        const st = {}; p.vals.forEach(v => st[v.k] = v.def); p.tgs.forEach(t => st[t.k] = false);
+        X(p.id, XC.U, p.name, p.sub || (pub ? 'معتمد من سبارك' : 'أضفته بالوصف'), p.icon, p.color, 200, p.L.map(x => x.id + '=' + x.l).join(','), p.R.map(x => x.id + '=' + x.l).join(','), {
+            state: st, vals: p.vals.map(v => ({ k: v.k, l: v.l, u: v.u, min: v.min, max: v.max, step: v.step })), tg: p.tgs,
+            outs: p.outs.map(o => ({ pin: o.pin, d: o.type !== 'linear' ? 1 : 0, f: (s, vcc) => fv(o, s, vcc) })),
+            leds: p.leds.map(l => ({ a: l.a, k: l.k, vf: l.vf, g: 0.05, imax: 0.03 })), res: p.loads.map(l => ({ a: l.a, b: l.b, r: () => l.ohm })),
+            vis: p.svg ? () => `<div class="up-svg" style="background:#0b1016;border-radius:8px;padding:4px">${p.svg}</div>` : null,
+            status: () => `<button class="up-info" onclick="sparkParts.info('${p.id}')" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">ℹ البيانات والكود</button>`
+        });
+        P[p.id] = Object.assign({ pub: !!pub }, p);
+    }
+    const P = {};
+    function loadAll() {
+        let n = 0; const get = k => { try { return JSON.parse(LS.g(k) || '[]'); } catch (e) { return []; } };
+        get(PUB).forEach(p => { const c = clean(p.raw || p); if (c) { c.id = p.id || c.id; register(Object.assign(c, { raw: p.raw }), true); n++; } });
+        get(MINE).forEach(p => { if (!P[p.id] || !P[p.id].pub) { const c = clean(p.raw); if (c) { c.id = p.id; register(Object.assign(c, { raw: p.raw }), false); n++; } } });
+        if (n) try { renderComponentLibrary((($('librarySearchInput') || {}).value) || ''); } catch (e) { }
+    }
+
+    // ---------- the free model ----------
+    const SYS = `You are an electronics part designer for an Arabic circuit simulator. Reply with ONE JSON object only, no prose, no markdown.
+Schema: {"id":"short_snake_case","name_ar":"Arabic name","name_en":"exact part number / English name","subtitle":"short Arabic","description_ar":"2-3 Arabic sentences: what it is and what it is used for",
+"icon":"fa-... (Font Awesome 6 free solid)","color":"one of ${COLORS.join('|')}",
+"left_pins":[{"id":"VCC","label":"VCC"},{"id":"GND","label":"GND"}],"right_pins":[{"id":"OUT","label":"OUT"}],
+"specs":{"Supply":"3.3–5V","Current":"..."},"calculations":"Arabic: the key formulas / conversion (e.g. V = ...)","wiring":"Arabic: how to wire to Arduino UNO and ESP32 (pins)",
+"sim":{"vals":[{"k":"t","l":"Arabic label","u":"unit","min":0,"max":100,"step":1,"def":25}],"toggles":[{"k":"on","l":"Arabic label"}],
+"outs":[{"pin":"AO","type":"linear","k":"t","in":[0,100],"out":[0,5]},{"pin":"DO","type":"thr","k":"t","thr":50,"high":"above"},{"pin":"OUT","type":"toggle","k":"on"}],
+"leds":[{"a":"A","k":"K","vf":2}],"loads":[{"a":"IN","b":"GND","ohm":100}]},
+"arduino_code":"complete Arduino sketch using the real library if one exists, Arabic comments","esp32_code":"complete ESP32 sketch",
+"svg":"<svg viewBox='0 0 120 80'>simple realistic top view of the real module/package, shapes only, no images, no scripts</svg>"}
+Use the real pin names of the real part. Pins: at most 12 per side. Use only sim fields that make sense (sensors: vals+outs; switches: toggles+outs; indicators: leds; heaters/motors: loads).`;
+    async function ask(desc) {
+        const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 60e3);
+        try {
+            const r = await fetch(FREE, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ model: 'openai', messages: [{ role: 'system', content: SYS }, { role: 'user', content: 'Part request (Arabic or English): ' + desc }], response_format: { type: 'json_object' }, temperature: 0.2 }) });
+            if (!r.ok) throw new Error(r.status === 429 ? 'busy' : 'http');
+            const t = await r.text(); let j; try { const o = JSON.parse(t); j = o.choices ? o.choices[0].message.content : t; } catch (e) { j = t; }
+            if (typeof j === 'string') { const a = j.indexOf('{'), b = j.lastIndexOf('}'); j = JSON.parse(j.slice(a, b + 1)); }
+            return j;
+        } finally { clearTimeout(to); }
+    }
+
+    // ---------- UI ----------
+    const css = document.createElement('style'); css.textContent = `
+#upBtn{display:flex;align-items:center;justify-content:center;gap:7px;width:calc(100% - 16px);margin:8px;padding:9px;border-radius:10px;border:1px dashed #c8741f;background:rgba(200,116,31,.08);color:#e0a060;font-weight:800;font-size:12.5px;cursor:pointer}
+#upSheet{position:fixed;inset:0;z-index:9500;background:rgba(5,8,12,.6);display:flex;align-items:flex-end;justify-content:center}
+#upSheet>div{width:min(560px,100%);max-height:92vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border-radius:18px 18px 0 0;border:1px solid var(--sp-line,#353c46);padding:16px}
+@media(min-width:769px){#upSheet{align-items:center}#upSheet>div{border-radius:18px}}
+#upSheet h3{margin:0 0 4px;font-size:16px;font-weight:800;display:flex;gap:8px;align-items:center}#upSheet h3 i{color:#c8741f}
+#upSheet .m{color:var(--sp-mut,#8b949e);font-size:12.5px;line-height:1.7}
+#upSheet textarea,#upSheet input{width:100%;box-sizing:border-box;margin-top:8px;padding:10px 12px;border-radius:10px;border:1px solid var(--sp-line,#353c46);background:var(--sp-bg,#151a20);color:inherit;font:inherit;font-size:14px}
+#upSheet .b{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:10px;border:1px solid var(--sp-line,#353c46);background:transparent;color:inherit;font-weight:700;font-size:13px;cursor:pointer;margin:10px 0 0 6px}
+#upSheet .b.p{background:#c8741f;border-color:#c8741f;color:#fff}#upSheet .b[disabled]{opacity:.5}
+#upSheet .pv{display:grid;grid-template-columns:130px 1fr;gap:12px;margin-top:12px;align-items:start}@media(max-width:480px){#upSheet .pv{grid-template-columns:1fr}}
+#upSheet .pv .svg{background:#0b1016;border-radius:12px;padding:8px;min-height:80px;display:flex;align-items:center;justify-content:center}#upSheet .pv .svg svg{width:100%;height:auto;max-height:140px}
+#upSheet table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}#upSheet td{border-bottom:1px solid var(--sp-line,#353c46);padding:4px 6px}
+#upSheet pre{direction:ltr;text-align:left;background:#0b1016;border-radius:10px;padding:10px;font-size:11.5px;max-height:220px;overflow:auto;white-space:pre}
+#upSheet .tabs{display:flex;gap:6px;margin-top:10px}#upSheet .tabs button{flex:1;padding:7px;border-radius:9px;border:1px solid var(--sp-line,#353c46);background:transparent;color:inherit;font-weight:700;cursor:pointer}#upSheet .tabs button.on{background:rgba(200,116,31,.15);border-color:#c8741f;color:#e0a060}
+.up-svg svg{width:100%;height:auto;max-height:90px;display:block}.up-info{width:100%;padding:3px;border-radius:6px;border:1px solid #353c46;background:#1c2128;color:#93c5fd;font-size:10px;font-weight:700;cursor:pointer}`;
+    document.head.appendChild(css);
+
+    function sheet(html) { let s = $('upSheet'); if (!s) { s = document.createElement('div'); s.id = 'upSheet'; s.dir = 'rtl'; s.setAttribute('role', 'dialog'); s.setAttribute('aria-modal', 'true'); s.onclick = e => { if (e.target === s) s.remove(); }; document.body.appendChild(s); } s.innerHTML = '<div>' + html + '</div>'; return s; }
+    function open(pre) {
+        sheet(`<h3><i class="fa-solid fa-wand-magic-sparkles"></i>عنصر جديد بالوصف</h3><div class="m">اكتب الاسم الدقيق للعنصر (مثل <b dir="ltr">MAX30102</b> أو <b dir="ltr">BMP280</b>) أو صِف ما تريده، وسأقترح العنصر بأطرافه الحقيقية وشكله وحساباته وكوده.</div>
+<textarea id="upQ" rows="3" maxlength="400" placeholder="مثال: حساس نبض وأكسجين الدم MAX30102 يعمل على I2C">${esc(pre || '')}</textarea>
+<div id="upMsg" class="m" aria-live="polite"></div><button class="b p" id="upGo"><i class="fa-solid fa-wand-magic-sparkles"></i>اقترح العنصر</button>${own() ? '<button class="b" id="upRev"><i class="fa-solid fa-inbox"></i>اقتراحات المستخدمين</button>' : ''}<button class="b" id="upX">إغلاق</button>
+${Object.values(P).filter(p => !p.pub).length ? `<div class="m" style="margin-top:12px">عناصرك: ${Object.values(P).filter(p => !p.pub).map(p => `<button class="b" data-i="${p.id}">${esc(p.name)}</button>`).join('')}</div>` : ''}`);
+        $('upX').onclick = () => $('upSheet').remove(); if ($('upRev')) $('upRev').onclick = review;
+        document.querySelectorAll('#upSheet [data-i]').forEach(b => b.onclick = () => info(b.dataset.i));
+        $('upGo').onclick = go; setTimeout(() => { const q = $('upQ'); if (q) q.focus(); }, 50);
+    }
+    async function go() {
+        const q = $('upQ').value.trim(), m = $('upMsg'), b = $('upGo'); if (q.length < 3) { m.textContent = 'اكتب اسم العنصر أو وصفه أولاً.'; return; }
+        // already in the library? say so instead of inventing a copy
+        try { const h = sparkPartExpert.find(q); if (h && h.sure && COMPONENT_CATALOG[h.ix.k]) { m.innerHTML = `هذا العنصر موجود في المكتبة: <b>${esc(COMPONENT_CATALOG[h.ix.k].name)}</b>. <button class="b p" id="upAddEx">أضفه للساحة</button> <button class="b" id="upAnyway">أريد عنصراً جديداً رغم ذلك</button>`; $('upAddEx').onclick = () => { $('upSheet').remove(); addComponentToCanvas(h.ix.k); }; $('upAnyway').onclick = () => gen(q); return; } } catch (e) { }
+        gen(q);
+    }
+    async function gen(q) {
+        const m = $('upMsg'), b = $('upGo'); if (navigator.onLine === false) { m.textContent = 'إضافة عنصر جديد تحتاج اتصالاً بالإنترنت.'; return; }
+        b.disabled = true; m.innerHTML = '<span class="ai-typing"><i></i><i></i><i></i></span> أصمّم العنصر: الأطراف، الشكل، الحسابات والكود… (حتى دقيقة)';
+        let p, raw; try { raw = await ask(q); p = clean(raw); } catch (e) { p = null; m.textContent = e && e.message === 'busy' ? 'الخدمة المجانية مشغولة الآن — حاول بعد دقيقة.' : 'تعذّر الحصول على اقتراح — تأكد من الإنترنت وحاول مرة أخرى.'; b.disabled = false; return; }
+        b.disabled = false; if (!p) { m.textContent = 'لم يصل اقتراح صالح — جرّب كتابة الاسم الدقيق للعنصر.'; return; }
+        p.raw = raw; preview(p, q);
+    }
+    function card(p) {
+        const sp = Object.entries(p.specs || {}).map(([k, v]) => `<tr><td>${esc(k)}</td><td dir="auto">${esc(v)}</td></tr>`).join('');
+        const pins = p.L.concat(p.R).map(x => `<code dir="ltr">${esc(x.id)}</code>`).join(' ');
+        return `<div class="pv"><div class="svg">${p.svg || `<i class="fa-solid ${p.icon}" style="font-size:42px;color:#c8741f"></i>`}</div><div><b style="font-size:15px">${esc(p.name)}</b>${p.en ? ` <span class="m" dir="ltr">${esc(p.en)}</span>` : ''}<div class="m">${esc(p.desc)}</div><div class="m">الأطراف: ${pins}</div></div></div>
+${sp ? `<table>${sp}</table>` : ''}${p.calc ? `<div class="m" style="margin-top:8px"><b>الحسابات:</b> ${esc(p.calc)}</div>` : ''}${p.wiring ? `<div class="m"><b>التوصيل:</b> ${esc(p.wiring)}</div>` : ''}
+${p.ino || p.esp ? `<div class="tabs">${p.ino ? '<button data-c="ino" class="on">Arduino</button>' : ''}${p.esp ? `<button data-c="esp" ${p.ino ? '' : 'class="on"'}>ESP32</button>` : ''}</div><pre id="upCode">${esc(p.ino || p.esp)}</pre>` : ''}`;
+    }
+    function codeTabs(p) { document.querySelectorAll('#upSheet [data-c]').forEach(b => b.onclick = () => { document.querySelectorAll('#upSheet [data-c]').forEach(x => x.classList.toggle('on', x === b)); $('upCode').textContent = b.dataset.c === 'esp' ? p.esp : p.ino; }); }
+    function preview(p, q) {
+        sheet(`<h3><i class="fa-solid fa-microchip"></i>العنصر المقترح</h3>${card(p)}<div id="upMsg" class="m" aria-live="polite"></div>
+<button class="b p" id="upSave"><i class="fa-solid fa-plus"></i>أضفه للمكتبة والساحة</button><button class="b" id="upAgain"><i class="fa-solid fa-rotate"></i>اقتراح آخر</button><button class="b" id="upX">إلغاء</button>`);
+        codeTabs(p); $('upX').onclick = () => $('upSheet').remove(); $('upAgain').onclick = () => open(q);
+        $('upSave').onclick = () => {
+            let id = p.id, i = 2; while (COMPONENT_CATALOG[id] && !(P[id] && !P[id].pub)) id = p.id + '_' + i++; p.id = id;
+            const mine = (() => { try { return JSON.parse(LS.g(MINE) || '[]'); } catch (e) { return []; } })().filter(x => x.id !== id); mine.push({ id, raw: p.raw, q, at: Date.now() }); LS.s(MINE, JSON.stringify(mine.slice(-60)));
+            register(p, false); try { renderComponentLibrary(''); } catch (e) { } try { addComponentToCanvas(id); } catch (e) { }
+            sheet(`<h3><i class="fa-solid fa-circle-check" style="color:#3f9b6b"></i>أُضيف «${esc(p.name)}»</h3><div class="m">تجده في المكتبة تحت «${XC.U}» وعلى ساحة العمل. هو محفوظ على جهازك فقط.</div>
+<div class="m" style="margin-top:8px">هل تريد أن يصل لكل مستخدمي المنصة؟ أرسله لإدارة سبارك لمراجعته ونشره.</div><div id="upMsg" class="m" aria-live="polite"></div>
+<button class="b p" id="upSug"><i class="fa-solid fa-paper-plane"></i>اقترحه للنشر</button><button class="b" id="upX">تم</button>`);
+            $('upX').onclick = () => $('upSheet').remove(); $('upSug').onclick = () => suggest(id);
+        };
+    }
+    async function suggest(id) {
+        const p = P[id], m = $('upMsg'), b = $('upSug'), u = LS.g('spark_api'); if (!p) return; if (!u) { m.textContent = 'خادم المنصة غير مفعّل بعد.'; return; }
+        b.disabled = true; m.textContent = 'جارٍ الإرسال…'; let who = {}; try { const i = sparkAcc.info(); who = { name: i.name || '' }; } catch (e) { }
+        try { const r = await fetch(u, { method: 'POST', body: JSON.stringify({ a: 'psug', id, part: JSON.stringify(p.raw), name: who.name, dev: LS.g('spark_dev') || '' }) }); const j = JSON.parse(await r.text()); if (!j.ok) throw 0; m.textContent = '✓ وصل اقتراحك لإدارة سبارك. سيظهر للجميع بعد الموافقة.'; }
+        catch (e) { m.textContent = 'تعذّر الإرسال الآن — العنصر محفوظ عندك، وحاول لاحقاً من «عنصر جديد بالوصف».'; b.disabled = false; }
+    }
+    function info(id) {
+        const p = P[id]; if (!p) return;
+        sheet(`<h3><i class="fa-solid ${p.icon}"></i>${esc(p.name)}</h3>${card(p)}<div id="upMsg" class="m" aria-live="polite"></div>${p.ino || p.esp ? '<button class="b p" id="upUse"><i class="fa-solid fa-code"></i>ضع الكود في المحرر</button>' : ''}${p.pub ? '' : '<button class="b" id="upSug"><i class="fa-solid fa-paper-plane"></i>اقترحه للنشر</button><button class="b" id="upDel"><i class="fa-solid fa-trash"></i>حذف من جهازي</button>'}<button class="b" id="upX">إغلاق</button>`);
+        codeTabs(p); $('upX').onclick = () => $('upSheet').remove();
+        if ($('upUse')) $('upUse').onclick = () => { const on = document.querySelector('#upSheet [data-c].on'); try { aiSetCode(on && on.dataset.c === 'esp' ? p.esp : (p.ino || p.esp)); toast('تم وضع الكود في المحرر'); $('upSheet').remove(); } catch (e) { } };
+        if ($('upSug')) $('upSug').onclick = () => suggest(id);
+        if ($('upDel')) $('upDel').onclick = e => { const b = e.currentTarget; if (!b.dataset.s) { b.dataset.s = 1; b.textContent = 'اضغط مرة ثانية للتأكيد'; return; } const mine = JSON.parse(LS.g(MINE) || '[]').filter(x => x.id !== id); LS.s(MINE, JSON.stringify(mine)); $('upSheet').remove(); toast('حُذف — يختفي من المكتبة بعد إعادة فتح التطبيق'); };
+    }
+
+    // ---------- owner: review suggestions and publish approved parts to the repo ----------
+    async function review() {
+        const u = LS.g('spark_api'); sheet('<h3><i class="fa-solid fa-inbox"></i>اقتراحات المستخدمين</h3><div class="m" id="upMsg">جارٍ التحميل…</div><div id="upL"></div><button class="b" id="upX">إغلاق</button>'); $('upX').onclick = () => $('upSheet').remove();
+        let L = []; try { const r = await fetch(u, { method: 'POST', body: JSON.stringify({ a: 'plist' }) }); const j = JSON.parse(await r.text()); L = j.list || []; } catch (e) { $('upMsg').textContent = 'تعذّر التحميل من الخادم.'; return; }
+        const pub = (() => { try { return JSON.parse(LS.g(PUB) || '[]'); } catch (e) { return []; } })(), done = new Set(pub.map(x => x.id));
+        L = L.filter(x => !done.has(x.id)); $('upMsg').textContent = L.length ? L.length + ' اقتراح بانتظار المراجعة' : 'لا توجد اقتراحات جديدة.';
+        $('upL').innerHTML = L.map((x, i) => { let p = null; try { p = clean(JSON.parse(x.part)); } catch (e) { } return p ? `<div style="border:1px solid var(--sp-line,#353c46);border-radius:12px;padding:10px;margin-top:10px">${card(p)}<div class="m">من: ${esc(x.name || 'مستخدم')}</div><button class="b p" data-ok="${i}"><i class="fa-solid fa-check"></i>موافقة ونشر للجميع</button></div>` : ''; }).join('');
+        document.querySelectorAll('#upSheet [data-ok]').forEach(b => b.onclick = async () => {
+            const x = L[+b.dataset.ok], tok = LS.g('sparkv_gh'); if (!tok) { $('upMsg').textContent = 'اربط المستودع أولاً من استوديو المالك ← النشر.'; return; }
+            b.disabled = true; b.textContent = 'جارٍ النشر…';
+            try { await publish(tok, { id: x.id, raw: JSON.parse(x.part) }); b.innerHTML = '<i class="fa-solid fa-circle-check"></i>نُشر — يصل للجميع خلال دقائق'; } catch (e) { b.disabled = false; b.textContent = 'تعذّر النشر — حاول مرة أخرى'; }
+        });
+    }
+    async function publish(tok, item) {
+        const api = 'https://api.github.com/repos/' + REPO + '/contents/parts.json', h = { authorization: 'Bearer ' + tok, accept: 'application/vnd.github+json' };
+        let sha, cur = { v: 1, parts: [] }; const g = await fetch(api, { headers: h }); if (g.ok) { const j = await g.json(); sha = j.sha; try { cur = JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))))); } catch (e) { } } else if (g.status !== 404) throw new Error('gh');
+        cur.parts = (cur.parts || []).filter(x => x.id !== item.id).concat([item]); cur.at = Date.now();
+        const body = { message: 'Approve part ' + item.id, content: btoa(unescape(encodeURIComponent(JSON.stringify(cur, null, 1)))) }; if (sha) body.sha = sha;
+        const r = await fetch(api, { method: 'PUT', headers: h, body: JSON.stringify(body) }); if (!r.ok) throw new Error('gh');
+        LS.s(PUB, JSON.stringify(cur.parts)); loadAll();
+    }
+    async function syncPub() {
+        if (navigator.onLine === false) return;
+        for (const u of ['https://raw.githubusercontent.com/' + REPO + '/main/parts.json?t=' + Math.floor(Date.now() / 3e5), 'https://cdn.jsdelivr.net/gh/' + REPO + '@main/parts.json']) {
+            try { const r = await fetch(u, { cache: 'no-store' }); if (!r.ok) continue; const j = await r.json(); if (!Array.isArray(j.parts)) continue; const s = JSON.stringify(j.parts.slice(0, 300)); if (s !== LS.g(PUB)) { LS.s(PUB, s); loadAll(); } return; } catch (e) { }
+        }
+    }
+    async function ownerPing() { if (!own()) return; const u = LS.g('spark_api'); if (!u) return; try { const r = await fetch(u, { method: 'POST', body: JSON.stringify({ a: 'plist' }) }); const j = JSON.parse(await r.text()); const done = new Set((JSON.parse(LS.g(PUB) || '[]')).map(x => x.id)); const n = (j.list || []).filter(x => !done.has(x.id)).length; if (n) sparkNotify({ id: 'psug:' + n, title: n + ' عنصر مقترح بانتظار موافقتك', text: 'افتح المكتبة ← «عنصر جديد بالوصف» ← اقتراحات المستخدمين' }); } catch (e) { } }
+
+    function mountBtn() {
+        const lib = $('paneLibrary'); if (!lib || $('upBtn')) return; const hd = lib.firstElementChild; if (!hd) return;
+        const b = document.createElement('button'); b.id = 'upBtn'; b.type = 'button'; b.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>عنصر جديد بالوصف'; b.onclick = () => open(''); hd.after(b);
+    }
+    window.sparkParts = { open, info, list: () => Object.values(P).map(p => ({ id: p.id, name: p.name, pub: p.pub })), _clean: clean, _register: register };
+    loadAll();
+    addEventListener('load', () => setTimeout(() => { mountBtn(); syncPub(); setTimeout(ownerPing, 8000); }, 1600));
 })();
 
         window.onload = function () {
