@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='2.9.1',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='3.0.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -9810,7 +9810,7 @@ void loop() {
             while (BR.on) {
                 try {
                     const m = await (await fetch(BR.base + '/bridge/poll', { cache: 'no-store' })).json();
-                    if (m.type === 'http') { const rq = { path: m.path, q: m.query || {}, resp: null, bid: m.id, method: m.method, t: Date.now(), client: m.client }; iot.web.pending.push(rq); iot.web.waiting = true; BR.reqs.push(rq); iotLog('http', '📱 ' + m.client + ' ← ' + m.method + ' ' + m.path); }
+                    if (m.type === 'http') { const rq = { path: m.path, q: m.query || {}, resp: null, bid: m.id, method: m.method, t: Date.now(), client: m.client }; if (!(window.sparkNetLocal && window.sparkNetLocal(rq))) { iot.web.pending.push(rq); iot.web.waiting = true; } BR.reqs.push(rq); iotLog('http', '📱 ' + m.client + ' ← ' + m.method + ' ' + m.path); }
                     else if (m.type === 'remote') { const c = m.cmd || {}; RS.remote = { x: +c.x || 0, y: +c.y || 0, z: +c.z || 0, led: c.led, horn: c.horn, grip: c.grip, t: performance.now() }; if (typeof RS !== 'undefined') RS.grip = !!c.grip; }
                 } catch (e) { BR.on = false; BR.err = 'انقطع الاتصال بالجسر'; brUI(); break; }
             }
@@ -9819,7 +9819,7 @@ void loop() {
         setInterval(() => {
             if (!BR.reqs.length) return; const now = Date.now();
             BR.reqs = BR.reqs.filter(rq => {
-                if (rq.resp) { fetch(BR.base + '/bridge/reply', { method: 'POST', body: JSON.stringify({ id: rq.bid, code: rq.resp.code, type: rq.resp.type, body: rq.resp.body }) }).catch(() => { }); return false; }
+                if (rq.resp) { fetch(BR.base + '/bridge/reply', { method: 'POST', body: JSON.stringify({ id: rq.bid, code: rq.resp.code, type: rq.resp.type, body: rq.resp.body, b64: !!rq.resp.b64 }) }).catch(() => { }); return false; }
                 if (now - rq.t > 9500) { const i = iot.web.pending.indexOf(rq); if (i >= 0) iot.web.pending.splice(i, 1); return false; }
                 return true;
             });
@@ -10142,7 +10142,7 @@ ${parts}`;
         const AIB = {
             claude: { n: 'Claude', ic: '✦', c: '#d97757', d: 'الأدق في البرمجة والشرح' },
             gemini: { n: 'Gemini', ic: '◆', c: '#4f8df5', d: 'مجاني بمفتاح Google' },
-            free: { n: 'نماذج مجانية', ic: '🆓', c: '#10b981', d: 'Llama · Gemma · DeepSeek…' },
+            free: { n: 'SPARK AI مجاني', ic: '⚡', c: '#10b981', d: 'متصل بلا مفتاح · ويرجع للمحلي بدون إنترنت' },
             local: { n: 'محلي', ic: '💻', c: '#909aa8', d: 'بدون إنترنت' }
         };
         // ---------- route resolution: which real service serves each brand ----------
@@ -10165,6 +10165,7 @@ ${parts}`;
             if (b === 'free') {
                 if (aiKey('openrouter')) return { p: 'openrouter', model: m.orFree || OR_DEF.free, how: 'OpenRouter (مجاني)' };
                 if (aiKey('groq')) return { p: 'groq', model: m.groq || AIP.groq.model, how: 'Groq (مجاني)' };
+                if (aiFreeOk()) return { p: 'free', how: 'SPARK AI المجاني — بلا مفتاح' };
                 return null;
             }
             return null;
@@ -10172,11 +10173,11 @@ ${parts}`;
         function aiCurRoute() { const b = AI.cfg.brand; if (b && b !== 'auto' && b !== 'local') return aiRoute(b); return null; }
         function aiBrandNow() {
             const b = AI.cfg.brand; if (b && b !== 'auto') return b; const p = aiProv();
-            return /claude_ai|bridge|anthropic/.test(p) ? 'claude' : p === 'gemini' ? 'gemini' : /openrouter|groq/.test(p) ? 'free' : p === 'local' ? 'local' : '';
+            return /claude_ai|bridge|anthropic/.test(p) ? 'claude' : p === 'gemini' ? 'gemini' : /openrouter|groq|^free$/.test(p) ? 'free' : p === 'local' ? 'local' : '';
         }
         function aiSetBrand(b) {
             AI.cfg.brand = b; if (b !== 'auto') AI.cfg.provider = 'auto'; aiSaveCfg(); aiStatus();
-            if (b !== 'local' && b !== 'auto' && !aiRoute(b)) aiAccounts(b);
+            if (b !== 'local' && b !== 'auto' && b !== 'free' && !aiRoute(b)) aiAccounts(b);
         }
         // ---------- OpenAI-compatible chat with tool calling (Gemini, OpenRouter, Groq, Ollama, custom) ----------
         aiOpenAI = async function (p, msgs, onText, signal, useTools) {
@@ -13909,7 +13910,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '2.9.1', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '3.0.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14256,7 +14257,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 2.9.1</b><br>• قسم جديد «مديولات أردوينو»: أكثر من 30 مديولاً (MLX90614، INA219، VL53L0X، MAX30102، ADS1115، RC522، MQ-3/4/9، KY-040، A4988، HC-05، nRF24، GPS، SD، DS3231، PCA9685، DFPlayer، ESP-01، SIM800L…) بشكلها وأطرافها الحقيقية وكود جاهز ومستلزماتها، ومكتبات كثير منها تعمل داخل المحاكي.<br><b>الإصدار 2.9.0</b><br>• «عنصر جديد بالوصف» في مكتبة العناصر: اكتب اسم العنصر أو صِفه فيقترح المساعد أطرافه وشكله وحساباته وكوده، ويُضاف للمكتبة والمحاكاة، ويمكنك اقتراحه للنشر للجميع.<br><b>الإصدار 2.8.8</b><br>• المساعد الذكي يعمل متصلاً ومجاناً دون أي مفتاح، ويرجع للمساعد المحلي تلقائياً عند انقطاع الإنترنت.<br>• واجهة مساعد أهدأ: صف واحد للأوامر السريعة، واختيار النموذج داخل زر «النموذج».<br><b>الإصدار 2.8.7</b><br>• رسائل أوضح عند تعذّر الاتصال بخادم الصفوف.<br><b>الإصدار 2.8.6</b><br>• شاشة الدخول: زر واضح لطلاب ومعلمي الصفوف للدخول بكود الصف، وإصلاح زر «الرقم السري».<br><b>الإصدار 2.8.5</b><br>• شاشة الدخول: دخول فريق التطوير السريع بالرقم السري أو البصمة بدل الكود الطويل.<br><b>الإصدار 2.8.4</b><br>• حسابات فريق التطوير تُفتح برقم سري من 6 أرقام، وعلى الجوال بالبصمة.<br><b>الإصدار 2.8.3</b><br>• تنزيل نموذج «العقل المحلي» يُكتب الآن مباشرة كملفات على الجهاز — إصلاح خطأ الحفظ على ويندوز.<br><b>الإصدار 2.8.2</b><br>• طريقة حفظ بديلة لنموذج «العقل المحلي» على الأجهزة التي يفشل فيها التخزين العادي (ويندوز).<br><b>الإصدار 2.8.1</b><br>• إصلاح تنزيل نموذج «العقل المحلي» في نسخة الويندوز (خطأ Failed to write blobs).<br><b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 3.0.0</b><br>• أدوات لوحة PCB صارت في قائمة منسدلة مرتبة، ونصوص قائمة المشاريع أوضح.<br>• مساعد ذكي مجاني موحّد «SPARK AI» يعمل بلا مفتاح افتراضياً.<br>• 119 تجربة ومشروعاً جاهزاً جديداً (70 أردوينو و49 ESP32): الدائرة والكود الكامل، تعمل في المحاكي، ولوحة PCB موجّهة لكل تجربة.<br>• 200 مشروع متكامل إضافي (حساس + إخراج: مرحّل، شاشات، سيرفو، NeoPixel، مسجّل بيانات) — المجموع 356 مشروعاً جاهزاً.<br>• نافذة «المشاريع الجاهزة» الجديدة: قائمتان منسدلتان (اللوحة والقسم) وبحث، أقسام قابلة للطي حسب الموضوع، وصورة معبّرة لكل مشروع.<br>• تحكم بالمشروع من جوال آخر عبر واي فاي حقيقي (تطبيق أندرويد): خادم مدمج على نفس الشبكة أو نقطة اتصال يبثها الجوال، صفحة المشروع من كود ESP32 أو لوحة تحكم تلقائية، و16 مشروعاً جاهزاً لـ ESP32 وESP32-CAM مع بث الكاميرا.<br>• شاشة دخول أهدأ: قائمة منسدلة واحدة لنوع الحساب (طالب، صف، مهندس، مطوّر، فريق التطوير) والحقول الاختيارية مطوية.<br><b>الإصدار 2.9.1</b><br>• قسم جديد «مديولات أردوينو»: أكثر من 30 مديولاً (MLX90614، INA219، VL53L0X، MAX30102، ADS1115، RC522، MQ-3/4/9، KY-040، A4988، HC-05، nRF24، GPS، SD، DS3231، PCA9685، DFPlayer، ESP-01، SIM800L…) بشكلها وأطرافها الحقيقية وكود جاهز ومستلزماتها، ومكتبات كثير منها تعمل داخل المحاكي.<br><b>الإصدار 2.9.0</b><br>• «عنصر جديد بالوصف» في مكتبة العناصر: اكتب اسم العنصر أو صِفه فيقترح المساعد أطرافه وشكله وحساباته وكوده، ويُضاف للمكتبة والمحاكاة، ويمكنك اقتراحه للنشر للجميع.<br><b>الإصدار 2.8.8</b><br>• المساعد الذكي يعمل متصلاً ومجاناً دون أي مفتاح، ويرجع للمساعد المحلي تلقائياً عند انقطاع الإنترنت.<br>• واجهة مساعد أهدأ: صف واحد للأوامر السريعة، واختيار النموذج داخل زر «النموذج».<br><b>الإصدار 2.8.7</b><br>• رسائل أوضح عند تعذّر الاتصال بخادم الصفوف.<br><b>الإصدار 2.8.6</b><br>• شاشة الدخول: زر واضح لطلاب ومعلمي الصفوف للدخول بكود الصف، وإصلاح زر «الرقم السري».<br><b>الإصدار 2.8.5</b><br>• شاشة الدخول: دخول فريق التطوير السريع بالرقم السري أو البصمة بدل الكود الطويل.<br><b>الإصدار 2.8.4</b><br>• حسابات فريق التطوير تُفتح برقم سري من 6 أرقام، وعلى الجوال بالبصمة.<br><b>الإصدار 2.8.3</b><br>• تنزيل نموذج «العقل المحلي» يُكتب الآن مباشرة كملفات على الجهاز — إصلاح خطأ الحفظ على ويندوز.<br><b>الإصدار 2.8.2</b><br>• طريقة حفظ بديلة لنموذج «العقل المحلي» على الأجهزة التي يفشل فيها التخزين العادي (ويندوز).<br><b>الإصدار 2.8.1</b><br>• إصلاح تنزيل نموذج «العقل المحلي» في نسخة الويندوز (خطأ Failed to write blobs).<br><b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -17002,7 +17003,7 @@ ${L.map(x => `<div class="cl-card"><div class="r1"><b>${esc(x.n || x.e)} — ${e
         const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
         return hex(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: new TextEncoder().encode(salt), iterations: 120000, hash: 'SHA-256' }, k, 256));
     }
-    let locked = false, hidden = 0, setupOpen = false;
+    let locked = false, hidden = 0, setupOpen = false, tries = 0;
 
     const css = document.createElement('style'); css.textContent = `
 #lkOv{position:fixed;inset:0;z-index:2147483000;background:radial-gradient(circle at 50% 20%,#24303d,#0e1318 70%);color:#e6ebf1;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:18px;overflow:auto}
@@ -17082,8 +17083,9 @@ body.lk-on>*:not(#lkOv){visibility:hidden!important}
 
     // ---------- the lock screen ----------
     const fails = () => { try { return JSON.parse(LS.g(FAIL) || '{"n":0,"u":0}'); } catch (e) { return { n: 0, u: 0 }; } };
-    function lock() {
-        const r = rec(); if (!r) return; locked = true; const bio = r.bio && bioHas(); const nm = info().name || '';
+    function justIn() { try { return Date.now() - (+sessionStorage.getItem('spark_lk_ok') || 0) < 20000; } catch (e) { return false; } }
+    function lock(force) {
+        const r = rec(); if (!r || (!force && justIn())) { if (r && $('lkOv') && !setupOpen) close(); return; } locked = true; const bio = r.bio && bioHas(); const nm = info().name || '';
         const P = pad({ title: 'مرحباً' + (nm ? ' ' + nm.split(' ')[0] : ''), sub: bio ? 'افتح بالبصمة أو اكتب الرقم السري' : 'اكتب الرقم السري لحساب فريق التطوير', len: 6, bio,
             onPin: async p => {
                 const f = fails(); if (f.u > Date.now()) { P.msg('انتظر ' + Math.ceil((f.u - Date.now()) / 1e3) + ' ثانية ثم حاول', true); return; }
@@ -17108,7 +17110,7 @@ body.lk-on>*:not(#lkOv){visibility:hidden!important}
         d.innerHTML = `<div style="font-weight:800;margin-bottom:4px"><i class="fa-solid fa-user-shield" style="color:#c8741f"></i> دخول فريق التطوير</div><div class="acc-mut" style="margin-bottom:8px">${String(r.n || '').replace(/[<>&"]/g, '')}</div>
 <div style="display:flex;gap:8px">${bio ? '<button type="button" class="acc-go" id="lkQB" style="flex:1;margin:0"><i class="fa-solid fa-fingerprint"></i> البصمة</button>' : ''}<button type="button" class="acc-go${bio ? ' lk-sec' : ''}" id="lkQP" style="flex:1;margin:0"><i class="fa-solid fa-key"></i> الرقم السري</button></div>`;
         f.insertBefore(d, f.firstChild);
-        const enter = () => { LS.s('spark_acct_v1', r.a); LS.s(MARK, '1'); LS.d(FAIL); try { sessionStorage.setItem('spark_lk_ok', '1'); } catch (e) { } location.reload(); };
+        const enter = () => { LS.s('spark_acct_v1', r.a); LS.s(MARK, '1'); LS.d(FAIL); try { sessionStorage.setItem('spark_lk_ok', String(Date.now())); } catch (e) { } location.reload(); };
         const pin = () => {
             const P = pad({ title: 'دخول فريق التطوير', sub: (r.n ? r.n + ' — ' : '') + 'اكتب الرقم السري', len: 6, bio, cancel: () => close(),
                 onPin: async p => { const fl = fails(); if (fl.u > Date.now()) { P.msg('انتظر ' + Math.ceil((fl.u - Date.now()) / 1e3) + ' ثانية ثم حاول', true); return; }
@@ -17126,9 +17128,14 @@ body.lk-on>*:not(#lkOv){visibility:hidden!important}
         if (navigator.webdriver && !window.__lockTest) return;           // automated test runs (Playwright) skip the lock unless a test asks for it
         if (setupOpen) { if (!team()) { setupOpen = false; close(); } return; }
         if (!team()) { LS.d(MARK); if (locked || $('lkOv')) { locked = false; close(); } if (!info().signedIn) quick(); return; }
-        const r = rec(); if (!r) { LS.d(MARK); setup(); return; }
+        const r = rec(); if (!r) {
+            // a lock existed on this device: its encrypted record may not be readable yet — wait instead of asking for a new PIN
+            if ((LS.g(MARK) === '1' || saved()) && tries < 16) { tries++; setTimeout(() => check(boot), 400); return; }
+            LS.d(MARK); setup(); return;
+        }
+        tries = 0;
         const raw = LS.g('spark_acct_v1'); if (raw && r.a !== raw) { r.a = raw; r.n = info().name || r.n; LS.s(KEY, JSON.stringify(r)); }
-        LS.s(MARK, '1'); let ok = false; try { ok = sessionStorage.getItem('spark_lk_ok') === '1'; sessionStorage.removeItem('spark_lk_ok'); } catch (e) { }
+        LS.s(MARK, '1'); const ok = justIn();
         if (boot && !locked) { if (ok) { if ($('lkOv')) close(); } else lock(); }
     }
     // cover the app at once while the account and the vault load, so nothing flashes
@@ -17139,7 +17146,7 @@ body.lk-on>*:not(#lkOv){visibility:hidden!important}
     addEventListener('spark-acct', () => setTimeout(() => { if (booted) check(false); }, 300));
     document.addEventListener('visibilitychange', () => { if (document.hidden) hidden = Date.now(); else if (hidden && Date.now() - hidden > IDLE && rec() && team() && !locked) lock(); });
     addEventListener('spark-pause', () => { hidden = hidden || Date.now(); });
-    window.sparkLock = { now: () => { if (rec() && team()) lock(); }, active: () => !!rec(), reset: () => { LS.d(KEY); LS.d(MARK); check(false); } };
+    window.sparkLock = { now: () => { if (rec() && team()) lock(true); }, active: () => !!rec(), reset: () => { LS.d(KEY); LS.d(MARK); check(false); } };
 })();
 
 // h51 — calmer, faster assistant panel: one scrolling row of quick actions, provider chips folded into ⚙, clean status line
@@ -17172,7 +17179,15 @@ body.lk-on>*:not(#lkOv){visibility:hidden!important}
     // status line: "المساعد الذكي المجاني (متصل) · openai" → drop the internal model id
     function clean() { const b = document.getElementById('aiBadge'); if (!b) return; [...b.childNodes].forEach(n => { if (n.nodeType === 3 && /·\s*openai\s*$/.test(n.textContent)) n.textContent = n.textContent.replace(/\s*·\s*openai\s*$/, ''); }); }
     try { const _o = openAI; openAI = function () { const r = _o.apply(this, arguments); setTimeout(tidy, 30); return r; }; } catch (e) { }
-    addEventListener('load', () => setTimeout(tidy, 1500));
+    // one unified free model by default: devices still on "local" (or nothing chosen) and without keys move to SPARK AI (free, online, no key)
+    function freeDefault() {
+        try {
+            if (localStorage.getItem('spark_ai_free1')) return; localStorage.setItem('spark_ai_free1', '1');
+            const noKeys = !['anthropic', 'gemini', 'openrouter', 'groq'].some(k => aiKey(k));
+            if (noKeys && (!AI.cfg.brand || AI.cfg.brand === 'auto' || AI.cfg.brand === 'local') && !(AI.cfg.provider && AI.cfg.provider !== 'auto')) { AI.cfg.brand = 'free'; aiSaveCfg(); try { aiStatus(); } catch (e) { } }
+        } catch (e) { }
+    }
+    addEventListener('load', () => setTimeout(() => { tidy(); freeDefault(); }, 1500));
 })();
 
 // h52 — "add a part by description": the free online model proposes a full part (pins, look, simulation, code);
@@ -17466,13 +17481,13 @@ ${p.ino || p.esp ? `<div class="tabs">${p.ino ? '<button data-c="ino" class="on"
           ino: `void setup() { Serial.begin(9600); }\n\nvoid loop() {\n  float v = analogRead(A0) * 5.0 / 1023.0;\n  float cm = 29.988 * pow(v, -1.173);\n  Serial.print("المسافة: "); Serial.print(cm); Serial.println(" cm");\n  delay(200);\n}` },
         { id: 'guva_uv', n: 'GUVA-S12SD حساس الأشعة فوق البنفسجية', s: 'مؤشر UV · تناظري', ic: 'fa-sun', pcb: 'purple', part: 'sens', dot: '#6a3', L: 'VCC,GND', R: 'SIG', vals: [V('uv', 'مؤشر UV', '', 0, 11, 3, 0.1)],
           outs: [{ pin: 'SIG', f: st => clamp(st.uv * 0.1, 0, 1.1) }], specs: { 'الجهد': '2.5–5V', 'الطول الموجي': '240–370 nm' }, calc: 'UV index ≈ V / 0.1', ino: `void setup() { Serial.begin(9600); }\n\nvoid loop() {\n  float v = analogRead(A0) * 5.0 / 1023.0;\n  Serial.print("UV index: "); Serial.println(v / 0.1);\n  delay(500);\n}` },
-        { id: 'pulse_sensor', n: 'حساس النبض Pulse Sensor', s: 'إشارة نبض تناظرية', ic: 'fa-heart', pcb: 'green', part: 'dome', L: '+,-', R: 'S', vals: [V('bpm', 'النبض', 'bpm', 40, 180, 72, 1)],
+        { id: 'pulse_sensor', n: 'حساس النبض Pulse Sensor', s: 'إشارة نبض تناظرية', ic: 'fa-heart', pcb: 'green', part: 'dome', L: '+,GND=-', R: 'S', vals: [V('bpm', 'النبض', 'bpm', 40, 180, 72, 1)],
           outs: [{ pin: 'S', f: (st, v) => { const ph = (tnow() * st.bpm / 60) % 1; return clamp(v * (0.5 + 0.35 * Math.exp(-Math.pow((ph - 0.15) * 12, 2)) - 0.08 * Math.exp(-Math.pow((ph - 0.32) * 10, 2))), 0, v); } }], specs: { 'الجهد': '3–5V' }, calc: 'BPM = 60000 / الزمن بين نبضتين (ms)',
           ino: `int threshold = 560; bool high = false; unsigned long last = 0;\n\nvoid setup() { Serial.begin(9600); }\n\nvoid loop() {\n  int s = analogRead(A0);\n  if (s > threshold && !high) {\n    high = true; unsigned long now = millis();\n    if (last) { Serial.print("BPM = "); Serial.println(60000.0 / (now - last)); }\n    last = now;\n  }\n  if (s < threshold - 40) high = false;\n  delay(5);\n}` },
         { id: 'rcwl0516', n: 'RCWL-0516 رادار الحركة', s: 'ميكروويف يكشف خلف الجدران الرقيقة', ic: 'fa-satellite-dish', pcb: 'blue', part: 'chip', chip: 'RCWL', L: 'VIN,GND', R: 'OUT,3V3,CDS', tg: [{ k: 'm', l: 'حركة أمامه' }],
           outs: [{ pin: 'OUT', d: 1, f: st => !!st.m }], specs: { 'الجهد': '4–28V', 'المدى': '5–7 m', 'الخرج': '3.3V لمدة 2 ثانية' },
           ino: `void setup() { Serial.begin(9600); pinMode(2, INPUT); pinMode(13, OUTPUT); }\n\nvoid loop() {\n  bool m = digitalRead(2);\n  digitalWrite(13, m);\n  if (m) Serial.println("حركة!");\n  delay(200);\n}` },
-        { id: 'ky031', n: 'KY-031 حساس الطرق', s: 'خرج رقمي عند الطرق', ic: 'fa-hand-back-fist', pcb: 'black', part: 'sens', L: '+,-', R: 'S', tg: [{ k: 'k', l: 'طَرق' }], outs: [{ pin: 'S', d: 1, f: st => !st.k }], specs: { 'الجهد': '3.3–5V', 'الخرج': 'LOW عند الطرق' },
+        { id: 'ky031', n: 'KY-031 حساس الطرق', s: 'خرج رقمي عند الطرق', ic: 'fa-hand-back-fist', pcb: 'black', part: 'sens', L: '+,GND=-', R: 'S', tg: [{ k: 'k', l: 'طَرق' }], outs: [{ pin: 'S', d: 1, f: st => !st.k }], specs: { 'الجهد': '3.3–5V', 'الخرج': 'LOW عند الطرق' },
           ino: `void setup() { Serial.begin(9600); pinMode(3, INPUT); }\n\nvoid loop() {\n  if (digitalRead(3) == LOW) { Serial.println("طَرق!"); delay(300); }\n}` },
         { id: 'line5', n: 'متتبع خط 5 حساسات TCRT5000', s: 'لروبوت تتبع الخط', ic: 'fa-road', pcb: 'black', part: 'row', L: 'VCC,GND', R: 'S1,S2,S3,S4,S5', tg: [1, 2, 3, 4, 5].map(i => ({ k: 's' + i, l: 'خط تحت ' + i })),
           outs: [1, 2, 3, 4, 5].map(i => ({ pin: 'S' + i, d: 1, f: st => !st['s' + i] })), specs: { 'الجهد': '3.3–5V', 'الخرج': 'LOW فوق الخط الأسود' },
@@ -17482,7 +17497,7 @@ ${p.ino || p.esp ? `<div class="tabs">${p.ino ? '<button data-c="ino" class="on"
           ino: `volatile unsigned long n = 0;\nvoid count() { n++; }\n\nvoid setup() { Serial.begin(9600); attachInterrupt(digitalPinToInterrupt(2), count, RISING); }\n\nvoid loop() {\n  n = 0; delay(1000);\n  Serial.print("RPM = "); Serial.println(n * 60 / 20);\n}` },
         { id: 'ky040', n: 'KY-040 مشفّر دوّار Rotary Encoder', s: '20 خطوة + زر', ic: 'fa-arrows-rotate', pcb: 'black', part: 'knob', L: '+,GND', R: 'CLK,DT,SW', enc: true, specs: { 'الجهد': '5V', 'الخطوات': '20 في الدورة' },
           ino: `int last, pos = 0;\n\nvoid setup() { Serial.begin(9600); pinMode(2, INPUT); pinMode(3, INPUT); pinMode(4, INPUT_PULLUP); last = digitalRead(2); }\n\nvoid loop() {\n  int c = digitalRead(2);\n  if (c != last && c == LOW) { pos += digitalRead(3) != c ? 1 : -1; Serial.print("الموضع: "); Serial.println(pos); }\n  last = c;\n  if (digitalRead(4) == LOW) { Serial.println("ضغطة الزر"); delay(250); }\n}` },
-        { id: 'ky008', n: 'KY-008 ليزر أحمر', s: '650nm 5mW', ic: 'fa-bullseye', pcb: 'black', part: 'laser', L: '-,+', R: 'S', laser: true, specs: { 'الجهد': '5V', 'التيار': '≈30 mA' }, warn: 'لا توجّه الليزر نحو العين', ino: `void setup() { pinMode(8, OUTPUT); }\n\nvoid loop() {\n  digitalWrite(8, HIGH); delay(500);\n  digitalWrite(8, LOW);  delay(500);\n}` },
+        { id: 'ky008', n: 'KY-008 ليزر أحمر', s: '650nm 5mW', ic: 'fa-bullseye', pcb: 'black', part: 'laser', L: 'GND=-,+', R: 'S', laser: true, specs: { 'الجهد': '5V', 'التيار': '≈30 mA' }, warn: 'لا توجّه الليزر نحو العين', ino: `void setup() { pinMode(8, OUTPUT); }\n\nvoid loop() {\n  digitalWrite(8, HIGH); delay(500);\n  digitalWrite(8, LOW);  delay(500);\n}` },
         { id: 'a4988', n: 'A4988 مشغّل محرك خطوي + NEMA17', s: 'STEP / DIR · 200 خطوة', ic: 'fa-gear', pcb: 'green', part: 'chip', chip: 'A4988', L: 'VMOT,GND,VDD', R: 'STEP,DIR,EN', step: true, specs: { 'جهد المحرك': '8–35V', 'التيار': 'حتى 2A (بمبرّد)', 'الخطوة': '1.8°' }, needs: 'مكثف 100µF على VMOT + ضبط تيار المقاومة المتغيرة', calc: 'الزاوية = الخطوات × 1.8°',
           ino: `const int STEP = 3, DIR = 4;\n\nvoid setup() { pinMode(STEP, OUTPUT); pinMode(DIR, OUTPUT); }\n\nvoid loop() {\n  digitalWrite(DIR, HIGH);\n  for (int i = 0; i < 200; i++) { digitalWrite(STEP, HIGH); delayMicroseconds(800); digitalWrite(STEP, LOW); delayMicroseconds(800); }\n  delay(1000);\n  digitalWrite(DIR, LOW);\n  for (int i = 0; i < 200; i++) { digitalWrite(STEP, HIGH); delayMicroseconds(800); digitalWrite(STEP, LOW); delayMicroseconds(800); }\n  delay(1000);\n}` },
         // ---- communication / storage modules (code for the real board; the simulator shows their state) ----
@@ -17511,16 +17526,17 @@ ${p.ino || p.esp ? `<div class="tabs">${p.ino ? '<button data-c="ino" class="on"
     // the simulator powers a module's outputs from its VCC pin: map VIN / + / VDD / 3.3V to VCC (label kept)
     const PW = { 'VIN': 1, '+': 1, 'VDD': 1, '3.3V': 1, '3V3': 1 };
     const pinSpec = L => L.split(',').map(p => PW[p] ? 'VCC=' + p : p).join(',');
+    const pinNames = m => (m.L + ',' + m.R).split(',').map(p => p.split('=').pop());
     M.forEach(m => {
         const st = {}; (m.vals || []).forEach(v => st[v.k] = v.def); (m.tg || []).forEach(t => st[t.k] = false); if (m.enc) Object.assign(st, { pos: 0, ph: 0, t: {}, m: {} }); if (m.step) Object.assign(st, { steps: 0, lastS: 0 }); if (m.adc) Object.assign(st, { a: [0, 0, 0, 0] });
-        const pins = (m.L + ',' + m.R).split(',');
+        const pins = pinNames(m);
         const lookSvg = look({ pins, pcb: m.pcb, part: m.part, chip: m.chip, dot: m.dot, label: m.n.split(' ')[0] });
         const o = { state: st, vals: (m.vals || []).map(v => ({ k: v.k, l: v.l, u: v.u, min: v.min, max: v.max, step: v.step })), tg: m.tg, outs: m.outs || [],
             vis: c => `<div style="background:#0b1016;border-radius:8px;padding:3px">${lookSvg}</div>${m.laser ? `<div style="text-align:center;font-size:10px;color:${(c.pinVoltages.S || 0) > 2.5 ? '#f55' : '#6b7684'}">${(c.pinVoltages.S || 0) > 2.5 ? '● الليزر يعمل' : '○ الليزر مطفأ'}</div>` : ''}${m.step ? `<div style="text-align:center;font-size:10px;color:#93c5fd">الخطوات: ${c.state.steps} · الزاوية: ${((c.state.steps * 1.8) % 360 + 360) % 360}°</div>` : ''}${m.enc ? `<div style="text-align:center;font-size:10px;color:#93c5fd">الموضع: ${c.state.pos}</div>` : ''}${m.adc ? `<div style="font-size:9.5px;color:#93c5fd;direction:ltr;text-align:center">${['A0', 'A1', 'A2', 'A3'].map(p => p + '=' + (c.pinVoltages[p] || 0).toFixed(2) + 'V').join(' ')}</div>` : ''}`,
             status: () => `<button class="up-info" onclick="sparkModInfo('${m.id}')" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">ℹ البيانات والكود${m.warn ? ' · ⚠' : ''}</button>`
         };
         if (m.derive) { const d = m.derive; o.stamp2 = (c, A, pv, s) => d(s); }
-        if (m.laser) o.res = [{ a: 'S', b: '-', r: () => 160 }];
+        if (m.laser) o.res = [{ a: 'S', b: 'GND', r: () => 160 }];
         if (m.adc) o.res = ['A0', 'A1', 'A2', 'A3'].map(p => ({ a: p, b: 'GND', r: () => 1e7 }));
         if (m.step) o.commit = (c, dt, pv, s) => { const v = pv.STEP || 0, hi = v > 2.5; if (hi && !s.lastS && (pv.EN || 0) < 2.5) s.steps += (pv.DIR || 0) > 2.5 ? 1 : -1; s.lastS = hi ? 1 : 0; };
         if (m.enc) {
@@ -17547,9 +17563,2101 @@ ${p.ino || p.esp ? `<div class="tabs">${p.ino ? '<button data-c="ino" class="on"
     window.sparkModInfo = id => {
         const m = M.find(x => x.id === id); if (!m) return;
         const sp = Object.assign({}, m.specs); if (m.needs) sp['المستلزمات'] = m.needs; if (m.warn) sp['⚠ تنبيه'] = m.warn; if (m.lib) sp['المحاكاة'] = 'المكتبة الحقيقية تعمل داخل المحاكي'; else if (!m.outs && !m.enc && !m.step && !m.laser) sp['المحاكاة'] = 'الكود جاهز للقطعة الحقيقية';
-        sparkParts.show({ id: 'm_' + id, name: m.n, en: '', sub: m.s, desc: m.s, icon: m.ic, svg: look({ pins: (m.L + ',' + m.R).split(','), pcb: m.pcb, part: m.part, chip: m.chip, dot: m.dot, label: m.n.split(' ')[0] }), L: m.L.split(',').map(x => ({ id: x })), R: m.R.split(',').map(x => ({ id: x })), specs: sp, calc: m.calc || '', wiring: '', ino: m.ino, esp: '' });
+        sparkParts.show({ id: 'm_' + id, name: m.n, en: '', sub: m.s, desc: m.s, icon: m.ic, svg: look({ pins: pinNames(m), pcb: m.pcb, part: m.part, chip: m.chip, dot: m.dot, label: m.n.split(' ')[0] }), L: m.L.split(',').map(x => ({ id: x.split('=').pop() })), R: m.R.split(',').map(x => ({ id: x })), specs: sp, calc: m.calc || '', wiring: '', ino: m.ino, esp: '' });
     };
     window.sparkModules = M.map(m => 'm_' + m.id);
+})();
+
+// h54 — 100 ready experiments (Arduino UNO + ESP32): circuit, full code, runs in the simulator; PCB / 3D come from the same circuit
+(function () {
+    const N0 = EXAMPLES.length;
+    const U = ['arduino_uno', 'u', 640, 90], E = ['esp32_devkit', 'e', 640, 90];
+    // ---- small builders ----
+    function P() { const c = [], w = []; [].slice.call(arguments).forEach(p => { if (!p) return; if (p.c) c.push(...p.c); if (p.w) w.push(p.w); }); return { c, w: w.join(' ') }; }
+    const C = (t, id, x, y, s) => ({ c: [s ? [t, id, x, y, s] : [t, id, x, y]] });
+    const W = s => ({ w: s });
+    const led = (b, pin, id, col, x, y) => ({ c: [['led_' + col, id, x, y], ['res_e12', id + 'r', x, y + 90, { ohms: 220 }]], w: `${b}.${pin}-${id}r.P1 ${id}r.P2-${id}.A ${id}.K-${b}.GND` });
+    const pw = (b, id, v) => `${b}.${v || '5V'}-${id}.VCC ${b}.GND-${id}.GND`;
+    const sen = (b, t, id, x, y, wires, v, st) => ({ c: [st ? [t, id, x, y, st] : [t, id, x, y]], w: pw(b, id, v) + ' ' + wires });
+    const btn = (b, pin, id, x, y) => ({ c: [['push_button', id, x, y]], w: `${b}.${pin}-${id}.P1 ${id}.P2-${b}.GND` });
+    const relay = (b, pin, id, x, y, load) => ({ c: [['relay_module', id, x, y]].concat(load ? [[load[0], load[1], x, y + 170]] : []), w: pw(b, id) + ` ${b}.${pin}-${id}.IN` + (load ? ` ${b}.5V-${id}.COM ${id}.NO-${load[1]}.${load[0] === 'water_pump' ? 'POS' : 'P1'} ${load[1]}.${load[0] === 'water_pump' ? 'NEG' : 'P2'}-${b}.GND` : '') });
+    const buz = (b, pin, id, x, y) => ({ c: [['active_buzzer', id, x, y]], w: `${b}.${pin}-${id}.POS ${id}.NEG-${b}.GND` });
+    const servo = (b, pin, id, x, y) => ({ c: [['servo_motor', id, x, y]], w: `${b}.5V-${id}.VCC ${b}.GND-${id}.GND ${b}.${pin}-${id}.PWM` });
+    const i2c = (b, t, id, x, y, v) => ({ c: [[t, id, x, y]], w: pw(b, id, v) + ` ${b}.SDA-${id}.SDA ${b}.SCL-${id}.SCL` });
+    const lcd = (b, x, y) => i2c(b, 'lcd_i2c', 'lcd', x || 60, y || 470);
+    const oled = (b, x, y) => i2c(b, 'oled_128x64', 'oled', x || 60, y || 470, '3V3');
+    const ex = (name, parts, code) => EXP(name, parts.c, parts.w, code);
+    const LCDH = `#include <Wire.h>\n#include <LiquidCrystal_I2C.h>\nLiquidCrystal_I2C lcd(0x27, 16, 2);\n`;
+    const OLH = `#include <Wire.h>\n#include <Adafruit_SSD1306.h>\nAdafruit_SSD1306 oled(128, 64, &Wire, -1);\n`;
+    const OLS = `  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);\n  oled.setTextColor(SSD1306_WHITE);\n`;
+    const show = (l1, l2) => `  oled.clearDisplay();\n  oled.setTextSize(1); oled.setCursor(0, 0); oled.println(${l1});\n  oled.setTextSize(2); oled.setCursor(0, 24); oled.println(${l2});\n  oled.display();\n`;
+
+    // ====================== Arduino UNO ======================
+    const A = '🟦 أردوينو · ';
+    ex(A + 'وميض نداء استغاثة SOS بشفرة مورس', P(C(...U), led('u', 'D13', 'l', 'red', 300, 120)),
+`// إشارة SOS: ثلاث قصيرة، ثلاث طويلة، ثلاث قصيرة
+const int LED = 13;
+void flash(int ms) { digitalWrite(LED, HIGH); delay(ms); digitalWrite(LED, LOW); delay(200); }
+
+void setup() { pinMode(LED, OUTPUT); }
+
+void loop() {
+  for (int i = 0; i < 3; i++) flash(200);
+  for (int i = 0; i < 3; i++) flash(600);
+  for (int i = 0; i < 3; i++) flash(200);
+  delay(1500);
+}`);
+    ex(A + 'ليدان يومضان بالتناوب', P(C(...U), led('u', 'D12', 'a', 'green', 260, 120), led('u', 'D11', 'b', 'yellow', 360, 120)),
+`void setup() { pinMode(12, OUTPUT); pinMode(11, OUTPUT); }
+
+void loop() {
+  digitalWrite(12, HIGH); digitalWrite(11, LOW);  delay(500);
+  digitalWrite(12, LOW);  digitalWrite(11, HIGH); delay(500);
+}`);
+    ex(A + 'ضوء الفارس: 6 ليدات تتحرك ذهاباً وإياباً', P(C(...U), ...['D2', 'D3', 'D4', 'D5', 'D6', 'D7'].map((p, i) => led('u', p, 'l' + i, 'red', 40 + i * 90, 120))),
+`int pins[6] = {2, 3, 4, 5, 6, 7};
+
+void setup() { for (int i = 0; i < 6; i++) pinMode(pins[i], OUTPUT); }
+
+void loop() {
+  for (int i = 0; i < 6; i++) { digitalWrite(pins[i], HIGH); delay(90); digitalWrite(pins[i], LOW); }
+  for (int i = 4; i > 0; i--) { digitalWrite(pins[i], HIGH); delay(90); digitalWrite(pins[i], LOW); }
+}`);
+    ex(A + 'عدّاد ثنائي بأربعة ليدات (0–15)', P(C(...U), ...['D8', 'D9', 'D10', 'D11'].map((p, i) => led('u', p, 'b' + i, 'green', 60 + i * 110, 120))),
+`int pins[4] = {8, 9, 10, 11};
+
+void setup() { for (int i = 0; i < 4; i++) pinMode(pins[i], OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  for (int n = 0; n < 16; n++) {
+    for (int b = 0; b < 4; b++) digitalWrite(pins[b], (n >> b) & 1);
+    Serial.print("العدد: "); Serial.println(n);
+    delay(600);
+  }
+}`);
+    ex(A + 'زر يشغّل ويطفئ الضوء (مع منع الارتداد)', P(C(...U), btn('u', 'D2', 'k', 200, 330), led('u', 'D13', 'l', 'red', 300, 120)),
+`bool on = false, lastBtn = HIGH;
+
+void setup() { pinMode(2, INPUT_PULLUP); pinMode(13, OUTPUT); }
+
+void loop() {
+  bool b = digitalRead(2);
+  if (lastBtn == HIGH && b == LOW) { on = !on; digitalWrite(13, on); delay(40); }
+  lastBtn = b;
+}`);
+    ex(A + 'زرّان يرفعان ويخفضان سطوع الضوء', P(C(...U), btn('u', 'D2', 'up', 120, 330), btn('u', 'D4', 'dn', 260, 330), led('u', 'D9', 'l', 'blue', 300, 100)),
+`int level = 0;
+
+void setup() { pinMode(2, INPUT_PULLUP); pinMode(4, INPUT_PULLUP); pinMode(9, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  if (digitalRead(2) == LOW && level < 255) level += 15;
+  if (digitalRead(4) == LOW && level > 0) level -= 15;
+  analogWrite(9, level);
+  Serial.print("السطوع: "); Serial.println(level);
+  delay(120);
+}`);
+    ex(A + 'عدّاد ضغطات الزر على الشاشة التسلسلية', P(C(...U), btn('u', 'D3', 'k', 220, 330)),
+`int count = 0; bool last = HIGH;
+
+void setup() { pinMode(3, INPUT_PULLUP); Serial.begin(9600); Serial.println("اضغط الزر"); }
+
+void loop() {
+  bool b = digitalRead(3);
+  if (last == HIGH && b == LOW) { count++; Serial.print("عدد الضغطات: "); Serial.println(count); delay(40); }
+  last = b;
+}`);
+    ex(A + 'مقياس مستوى: مقاومة متغيرة على شريط 10 ليدات', P(C(...U), C('potentiometer', 'p', 60, 330), W('u.5V-p.VCC u.GND-p.GND p.WIPER-u.A0'), C('led_bar', 'bar', 160, 80), W('u.D2-bar.A1 u.D3-bar.A2 u.D4-bar.A3 u.D5-bar.A4 u.D6-bar.A5 u.D7-bar.A6 u.D8-bar.A7 u.D9-bar.A8 u.D10-bar.A9 u.D11-bar.A10 bar.K-u.GND')),
+`int pins[10] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+
+void setup() { for (int i = 0; i < 10; i++) pinMode(pins[i], OUTPUT); }
+
+void loop() {
+  int lvl = map(analogRead(A0), 0, 1023, 0, 10);
+  for (int i = 0; i < 10; i++) digitalWrite(pins[i], i < lvl ? HIGH : LOW);
+  delay(50);
+}`);
+    ex(A + 'سرعة الوميض بالمقاومة المتغيرة', P(C(...U), C('potentiometer', 'p', 60, 330), W('u.5V-p.VCC u.GND-p.GND p.WIPER-u.A0'), led('u', 'D13', 'l', 'yellow', 300, 120)),
+`void setup() { pinMode(13, OUTPUT); }
+
+void loop() {
+  int t = map(analogRead(A0), 0, 1023, 50, 1000);
+  digitalWrite(13, HIGH); delay(t);
+  digitalWrite(13, LOW);  delay(t);
+}`);
+    ex(A + 'ليد RGB بألوان عشوائية', P(C(...U), C('rgb_led', 'rgb', 260, 120), W('u.D9-rgb.R u.D10-rgb.G u.D11-rgb.B rgb.K-u.GND')),
+`void setup() { pinMode(9, OUTPUT); pinMode(10, OUTPUT); pinMode(11, OUTPUT); randomSeed(analogRead(A3)); }
+
+void loop() {
+  analogWrite(9, random(256)); analogWrite(10, random(256)); analogWrite(11, random(256));
+  delay(700);
+}`);
+    ex(A + 'جرس إنذار متقطع', P(C(...U), buz('u', 'D8', 'bz', 280, 140)),
+`void setup() { pinMode(8, OUTPUT); }
+
+void loop() {
+  for (int i = 0; i < 4; i++) { digitalWrite(8, HIGH); delay(120); digitalWrite(8, LOW); delay(120); }
+  delay(1200);
+}`);
+    ex(A + 'قياس شدة الضوء LDR بالنسبة المئوية', P(C(...U), sen('u', 'ldr_sensor', 'ldr', 120, 120, 'ldr.AO-u.A0')),
+`void setup() { Serial.begin(9600); }
+
+void loop() {
+  int v = analogRead(A0);
+  Serial.print("الإضاءة: "); Serial.print(map(v, 0, 1023, 0, 100)); Serial.println("%");
+  delay(400);
+}`);
+    ex(A + 'إنارة شارع تلقائية: LDR + مرحّل ومصباح', P(C(...U), sen('u', 'ldr_sensor', 'ldr', 80, 100, 'ldr.AO-u.A0'), relay('u', 'D7', 'rl', 300, 300, ['bulb_12v', 'lamp'])),
+`const int DARK = 350;
+
+void setup() { pinMode(7, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  int v = analogRead(A0);
+  bool night = v < DARK;
+  digitalWrite(7, night ? HIGH : LOW);
+  Serial.print(v); Serial.println(night ? "  ليل: المصباح يعمل" : "  نهار: المصباح مطفأ");
+  delay(500);
+}`);
+    ex(A + 'ميزان حرارة LM35', P(C(...U), sen('u', 'lm35', 't', 160, 120, 't.OUT-u.A0')),
+`void setup() { Serial.begin(9600); }
+
+void loop() {
+  float v = analogRead(A0) * 5.0 / 1023.0;
+  float c = v * 100.0;          // LM35: 10mV لكل درجة
+  Serial.print("الحرارة: "); Serial.print(c); Serial.println(" C");
+  delay(500);
+}`);
+    ex(A + 'مروحة تبريد تعمل عند ارتفاع الحرارة (LM35 + مرحّل)', P(C(...U), sen('u', 'lm35', 't', 80, 100, 't.OUT-u.A0'), relay('u', 'D7', 'rl', 300, 300), C('cooling_fan', 'fan', 300, 520), W('rl.NO-fan.VCC u.5V-rl.COM fan.GND-u.GND u.5V-fan.PWM')),
+`const float LIMIT = 30.0;
+
+void setup() { pinMode(7, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  float c = analogRead(A0) * 500.0 / 1023.0;
+  digitalWrite(7, c > LIMIT ? HIGH : LOW);
+  Serial.print(c); Serial.println(c > LIMIT ? " C  المروحة تعمل" : " C");
+  delay(800);
+}`);
+    ex(A + 'حرارة ورطوبة DHT22 على شاشة LCD', P(C(...U), sen('u', 'dht22_sensor', 'dht', 120, 100, 'dht.DATA-u.D2'), lcd('u')),
+LCDH + `#include <DHT.h>
+DHT dht(2, DHT22);
+
+void setup() { lcd.init(); lcd.backlight(); dht.begin(); }
+
+void loop() {
+  float t = dht.readTemperature(), h = dht.readHumidity();
+  lcd.setCursor(0, 0); lcd.print("Temp: "); lcd.print(t, 1); lcd.print(" C  ");
+  lcd.setCursor(0, 1); lcd.print("Hum:  "); lcd.print(h, 0); lcd.print(" %   ");
+  delay(2000);
+}`);
+    ex(A + 'مروحة بسرعة تتبع الحرارة (DHT22 + PWM)', P(C(...U), sen('u', 'dht22_sensor', 'dht', 120, 100, 'dht.DATA-u.D2'), C('cooling_fan', 'fan', 300, 330), W('u.5V-fan.VCC u.GND-fan.GND u.D9-fan.PWM')),
+`#include <DHT.h>
+DHT dht(2, DHT22);
+
+void setup() { dht.begin(); pinMode(9, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  float t = dht.readTemperature();
+  int speed = constrain(map(t, 24, 40, 0, 255), 0, 255);
+  analogWrite(9, speed);
+  Serial.print("الحرارة "); Serial.print(t); Serial.print(" → سرعة "); Serial.println(speed);
+  delay(2000);
+}`);
+    ex(A + 'حساس ركن السيارة: صفير يتسارع مع الاقتراب', P(C(...U), sen('u', 'ultrasonic_sensor', 'us', 100, 100, 'us.TRIG-u.D9 us.ECHO-u.D10'), buz('u', 'D8', 'bz', 300, 330)),
+`long distanceCm() {
+  digitalWrite(9, LOW); delayMicroseconds(2);
+  digitalWrite(9, HIGH); delayMicroseconds(10); digitalWrite(9, LOW);
+  return pulseIn(10, HIGH) / 58;
+}
+
+void setup() { pinMode(9, OUTPUT); pinMode(10, INPUT); pinMode(8, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  long d = distanceCm();
+  Serial.print("المسافة: "); Serial.println(d);
+  if (d < 100) { digitalWrite(8, HIGH); delay(60); digitalWrite(8, LOW); delay(d * 6); }
+  else delay(200);
+}`);
+    ex(A + 'مؤشر مسافة بثلاثة ألوان (أخضر/أصفر/أحمر)', P(C(...U), sen('u', 'ultrasonic_sensor', 'us', 60, 100, 'us.TRIG-u.D9 us.ECHO-u.D10'), led('u', 'D5', 'g', 'green', 260, 330), led('u', 'D6', 'y', 'yellow', 360, 330), led('u', 'D7', 'r', 'red', 460, 330)),
+`long cm() { digitalWrite(9, HIGH); delayMicroseconds(10); digitalWrite(9, LOW); return pulseIn(10, HIGH) / 58; }
+
+void setup() { pinMode(9, OUTPUT); pinMode(10, INPUT); for (int p = 5; p <= 7; p++) pinMode(p, OUTPUT); }
+
+void loop() {
+  long d = cm();
+  digitalWrite(5, d > 60);
+  digitalWrite(6, d > 25 && d <= 60);
+  digitalWrite(7, d <= 25);
+  delay(150);
+}`);
+    ex(A + 'إنذار حركة PIR بضوء وصفارة', P(C(...U), sen('u', 'pir_sensor', 'pir', 100, 100, 'pir.OUT-u.D2'), led('u', 'D13', 'l', 'red', 280, 300), buz('u', 'D8', 'bz', 420, 330)),
+`void setup() { pinMode(2, INPUT); pinMode(13, OUTPUT); pinMode(8, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  if (digitalRead(2) == HIGH) {
+    Serial.println("تم رصد حركة!");
+    for (int i = 0; i < 5; i++) { digitalWrite(13, HIGH); digitalWrite(8, HIGH); delay(100); digitalWrite(13, LOW); digitalWrite(8, LOW); delay(100); }
+  }
+}`);
+    ex(A + 'ري تلقائي: رطوبة التربة تشغّل المضخة', P(C(...U), sen('u', 'soil_sensor', 'soil', 80, 100, 'soil.AOUT-u.A0'), relay('u', 'D7', 'rl', 300, 300, ['water_pump', 'pump'])),
+`const int DRY = 40;   // أقل من 40% = جافة
+
+void setup() { pinMode(7, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  int m = map(analogRead(A0), 0, 1023, 0, 100);
+  digitalWrite(7, m < DRY ? HIGH : LOW);
+  Serial.print("رطوبة التربة: "); Serial.print(m); Serial.println(m < DRY ? "% → ري" : "%");
+  delay(1000);
+}`);
+    ex(A + 'كاشف تسرب الغاز MQ-2 بإنذار', P(C(...U), sen('u', 'mq2', 'gas', 80, 100, 'gas.AO-u.A0 gas.DO-u.D2'), led('u', 'D13', 'l', 'red', 300, 300), buz('u', 'D8', 'bz', 420, 330)),
+`void setup() { pinMode(13, OUTPUT); pinMode(8, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  int g = analogRead(A0);
+  bool danger = g > 400;
+  digitalWrite(13, danger); digitalWrite(8, danger);
+  Serial.print("الغاز: "); Serial.print(g); Serial.println(danger ? "  ⚠ خطر!" : "");
+  delay(300);
+}`);
+    ex(A + 'إنذار حريق بحساس اللهب', P(C(...U), sen('u', 'flame', 'f', 80, 100, 'f.AO-u.A0 f.DO-u.D2'), buz('u', 'D8', 'bz', 320, 330), led('u', 'D13', 'l', 'red', 440, 300)),
+`void setup() { pinMode(2, INPUT); pinMode(8, OUTPUT); pinMode(13, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  bool fire = digitalRead(2) == LOW;
+  digitalWrite(8, fire); digitalWrite(13, fire);
+  if (fire) Serial.println("🔥 حريق!");
+  delay(200);
+}`);
+    ex(A + 'منبّه المطر لجمع الغسيل', P(C(...U), sen('u', 'rain', 'rn', 80, 100, 'rn.AO-u.A0 rn.DO-u.D2'), buz('u', 'D8', 'bz', 320, 330)),
+`void setup() { pinMode(8, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  int w = analogRead(A0);
+  bool rain = w < 500;
+  digitalWrite(8, rain);
+  Serial.print("قراءة المطر: "); Serial.print(w); Serial.println(rain ? "  ☔ تمطر!" : "");
+  delay(500);
+}`);
+    ex(A + 'تصفيقة تشغّل الضوء وتطفئه', P(C(...U), sen('u', 'sound', 'mic', 80, 100, 'mic.AO-u.A0 mic.DO-u.D2'), led('u', 'D13', 'l', 'yellow', 320, 300)),
+`bool on = false;
+
+void setup() { pinMode(13, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  if (analogRead(A0) > 600) { on = !on; digitalWrite(13, on); Serial.println(on ? "تشغيل" : "إطفاء"); delay(400); }
+}`);
+    ex(A + 'عدّاد زوار بحساس العوائق IR', P(C(...U), sen('u', 'ir_obst', 'ir', 80, 100, 'ir.OUT-u.D2'), lcd('u')),
+LCDH + `int visitors = 0; bool was = false;
+
+void setup() { pinMode(2, INPUT); lcd.init(); lcd.backlight(); }
+
+void loop() {
+  bool now = digitalRead(2) == LOW;
+  if (now && !was) visitors++;
+  was = now;
+  lcd.setCursor(0, 0); lcd.print("Visitors:");
+  lcd.setCursor(0, 1); lcd.print(visitors); lcd.print("   ");
+  delay(50);
+}`);
+    ex(A + 'مفتاح لمس TTP223 للإنارة', P(C(...U), sen('u', 'touch', 'tc', 80, 100, 'tc.OUT-u.D2'), relay('u', 'D7', 'rl', 300, 300, ['bulb_12v', 'lamp'])),
+`bool on = false, last = LOW;
+
+void setup() { pinMode(2, INPUT); pinMode(7, OUTPUT); }
+
+void loop() {
+  bool t = digitalRead(2);
+  if (t == HIGH && last == LOW) { on = !on; digitalWrite(7, on); }
+  last = t; delay(30);
+}`);
+    ex(A + 'إنذار سرقة بحساس الميل', P(C(...U), sen('u', 'tilt', 'tl', 80, 100, 'tl.OUT-u.D2'), buz('u', 'D8', 'bz', 320, 330)),
+`void setup() { pinMode(2, INPUT); pinMode(8, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  if (digitalRead(2) == HIGH) { Serial.println("تم تحريك القطعة!"); digitalWrite(8, HIGH); delay(1500); digitalWrite(8, LOW); }
+  delay(100);
+}`);
+    ex(A + 'جويستيك يحرك محركي سيرفو (أفقي/عمودي)', P(C(...U), sen('u', 'joystick', 'js', 60, 100, 'js.VRX-u.A0 js.VRY-u.A1 js.SW-u.D2'), servo('u', 'D9', 's1', 280, 300), servo('u', 'D10', 's2', 440, 300)),
+`#include <Servo.h>
+Servo pan, tilt;
+
+void setup() { pan.attach(9); tilt.attach(10); }
+
+void loop() {
+  pan.write(map(analogRead(A0), 0, 1023, 0, 180));
+  tilt.write(map(analogRead(A1), 0, 1023, 0, 180));
+  delay(20);
+}`);
+    ex(A + 'مقبض يدير السيرفو (Knob)', P(C(...U), C('potentiometer', 'p', 60, 330), W('u.5V-p.VCC u.GND-p.GND p.WIPER-u.A0'), servo('u', 'D9', 's', 300, 120)),
+`#include <Servo.h>
+Servo s;
+
+void setup() { s.attach(9); }
+
+void loop() {
+  s.write(map(analogRead(A0), 0, 1023, 0, 180));
+  delay(15);
+}`);
+    ex(A + 'متتبع الشمس بحساسي ضوء وسيرفو', P(C(...U), sen('u', 'ldr_sensor', 'l1', 40, 80, 'l1.AO-u.A0'), sen('u', 'ldr_sensor', 'l2', 220, 80, 'l2.AO-u.A1'), servo('u', 'D9', 's', 300, 330)),
+`#include <Servo.h>
+Servo s; int angle = 90;
+
+void setup() { s.attach(9); s.write(angle); Serial.begin(9600); }
+
+void loop() {
+  int diff = analogRead(A0) - analogRead(A1);
+  if (diff > 30 && angle < 180) angle++;
+  if (diff < -30 && angle > 0) angle--;
+  s.write(angle);
+  Serial.print("زاوية اللوح: "); Serial.println(angle);
+  delay(30);
+}`);
+    const SEG = `int seg[7] = {2, 3, 4, 5, 6, 7, 8};
+byte digits[10] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
+void showDigit(int d) { for (int i = 0; i < 7; i++) digitalWrite(seg[i], (digits[d] >> i) & 1); }
+`;
+    const segParts = P(C('seven_segment', 'sg', 200, 90), W('u.D2-sg.A u.D3-sg.B u.D4-sg.C u.D5-sg.D u.D6-sg.E u.D7-sg.F u.D8-sg.G sg.COM-u.GND'));
+    ex(A + 'عدّاد 0–9 على شاشة السبع قطع', P(C(...U), segParts), SEG + `
+void setup() { for (int i = 0; i < 7; i++) pinMode(seg[i], OUTPUT); }
+
+void loop() { for (int d = 0; d < 10; d++) { showDigit(d); delay(700); } }`);
+    ex(A + 'نرد إلكتروني بزر وشاشة سبع قطع', P(C(...U), segParts, btn('u', 'D10', 'k', 120, 360)), SEG + `
+void setup() { for (int i = 0; i < 7; i++) pinMode(seg[i], OUTPUT); pinMode(10, INPUT_PULLUP); randomSeed(analogRead(A3)); showDigit(0); }
+
+void loop() {
+  if (digitalRead(10) == LOW) {
+    for (int i = 0; i < 12; i++) { showDigit(random(1, 7)); delay(60 + i * 15); }
+    delay(300);
+  }
+}`);
+    const TM = `#include <TM1637Display.h>\nTM1637Display disp(2, 3);\n`;
+    ex(A + 'ساعة إيقاف بزرين على شاشة TM1637', P(C(...U), sen('u', 'tm1637', 'tm', 80, 90, 'tm.CLK-u.D2 tm.DIO-u.D3'), btn('u', 'D4', 'go', 80, 330), btn('u', 'D5', 'rs', 220, 330)),
+TM + `bool run = false; unsigned long start = 0, shown = 0;
+
+void setup() { disp.setBrightness(5); pinMode(4, INPUT_PULLUP); pinMode(5, INPUT_PULLUP); disp.showNumberDec(0, true); }
+
+void loop() {
+  if (digitalRead(4) == LOW) { run = !run; start = millis() - shown * 100; delay(250); }
+  if (digitalRead(5) == LOW) { run = false; shown = 0; disp.showNumberDec(0, true); delay(250); }
+  if (run) { shown = (millis() - start) / 100; disp.showNumberDec(shown % 10000, true); }
+}`);
+    ex(A + 'ميزان حرارة LM35 على شاشة TM1637', P(C(...U), sen('u', 'tm1637', 'tm', 80, 90, 'tm.CLK-u.D2 tm.DIO-u.D3'), sen('u', 'lm35', 't', 80, 330, 't.OUT-u.A0')),
+TM + `void setup() { disp.setBrightness(5); }
+
+void loop() {
+  int c = analogRead(A0) * 500.0 / 1023.0;
+  disp.showNumberDec(c);
+  delay(500);
+}`);
+    ex(A + 'وجه مبتسم وقلب على مصفوفة MAX7219', P(C(...U), sen('u', 'max7219', 'mx', 100, 100, 'mx.DIN-u.D12 mx.CLK-u.D11 mx.CS-u.D10')),
+`#include <LedControl.h>
+LedControl lc(12, 11, 10, 1);
+byte smile[8] = {0x3C, 0x42, 0xA5, 0x81, 0xA5, 0x99, 0x42, 0x3C};
+byte heart[8] = {0x00, 0x66, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C, 0x18};
+
+void draw(byte *p) { for (int r = 0; r < 8; r++) lc.setRow(0, r, p[r]); }
+
+void setup() { lc.shutdown(0, false); lc.setIntensity(0, 6); lc.clearDisplay(0); }
+
+void loop() { draw(smile); delay(1200); draw(heart); delay(1200); }`);
+    const NEO = `#include <Adafruit_NeoPixel.h>\nAdafruit_NeoPixel px(8, 6, NEO_GRB + NEO_KHZ800);\n`;
+    ex(A + 'قوس قزح متحرك على شريط NeoPixel', P(C(...U), sen('u', 'neopixel_8', 'np', 120, 120, 'np.DIN-u.D6')),
+NEO + `int shift = 0;
+
+void setup() { px.begin(); px.setBrightness(80); }
+
+void loop() {
+  for (int i = 0; i < 8; i++) {
+    int h = (i * 32 + shift) % 256;
+    int r = h < 85 ? 255 - h * 3 : h < 170 ? 0 : (h - 170) * 3;
+    int g = h < 85 ? h * 3 : h < 170 ? 255 - (h - 85) * 3 : 0;
+    int b = h < 85 ? 0 : h < 170 ? (h - 85) * 3 : 255 - (h - 170) * 3;
+    px.setPixelColor(i, px.Color(r, g, b));
+  }
+  px.show(); shift = (shift + 8) % 256; delay(60);
+}`);
+    ex(A + 'مؤشر مستوى ملوّن على NeoPixel', P(C(...U), sen('u', 'neopixel_8', 'np', 120, 120, 'np.DIN-u.D6'), C('potentiometer', 'p', 60, 330), W('u.5V-p.VCC u.GND-p.GND p.WIPER-u.A0')),
+NEO + `void setup() { px.begin(); px.setBrightness(80); }
+
+void loop() {
+  int n = map(analogRead(A0), 0, 1023, 0, 8);
+  for (int i = 0; i < 8; i++) px.setPixelColor(i, i < n ? (i < 4 ? px.Color(0, 200, 0) : i < 6 ? px.Color(220, 160, 0) : px.Color(220, 0, 0)) : 0);
+  px.show(); delay(40);
+}`);
+    ex(A + 'رسم بياني حي للضوء على شاشة OLED', P(C(...U), sen('u', 'ldr_sensor', 'ldr', 80, 100, 'ldr.AO-u.A0'), i2c('u', 'oled_128x64', 'oled', 60, 470)),
+OLH + `int x = 0;
+
+void setup() {
+${OLS}  oled.clearDisplay(); oled.display();
+}
+
+void loop() {
+  int y = 63 - map(analogRead(A0), 0, 1023, 0, 50);
+  if (x == 0) { oled.clearDisplay(); oled.setCursor(0, 0); oled.print("Light"); }
+  oled.drawPixel(x, y, SSD1306_WHITE);
+  oled.display();
+  x = (x + 1) % 128; delay(60);
+}`);
+    ex(A + 'عدّاد زمن تشغيل على LCD 16×2', P(C(...U), lcd('u')),
+LCDH + `void setup() { lcd.init(); lcd.backlight(); lcd.print("SPARK Uptime"); }
+
+void loop() {
+  unsigned long s = millis() / 1000;
+  lcd.setCursor(0, 1);
+  lcd.print(s / 60); lcd.print(" min "); lcd.print(s % 60); lcd.print(" sec   ");
+  delay(250);
+}`);
+    ex(A + 'لوحة بيانات على LCD 20×4 (حرارة + رطوبة + ضوء)', P(C(...U), sen('u', 'dht22_sensor', 'dht', 60, 90, 'dht.DATA-u.D2'), sen('u', 'ldr_sensor', 'ldr', 220, 90, 'ldr.AO-u.A0'), i2c('u', 'lcd_20x4', 'lcd', 60, 470)),
+`#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DHT.h>
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+DHT dht(2, DHT22);
+
+void setup() { lcd.init(); lcd.backlight(); dht.begin(); lcd.print("== SPARK Station =="); }
+
+void loop() {
+  lcd.setCursor(0, 1); lcd.print("Temp : "); lcd.print(dht.readTemperature(), 1); lcd.print(" C  ");
+  lcd.setCursor(0, 2); lcd.print("Hum  : "); lcd.print(dht.readHumidity(), 0); lcd.print(" %  ");
+  lcd.setCursor(0, 3); lcd.print("Light: "); lcd.print(map(analogRead(A0), 0, 1023, 0, 100)); lcd.print(" %  ");
+  delay(1500);
+}`);
+    ex(A + 'محرك تيار مستمر بسرعة متغيرة عبر ترانزستور', P(C(...U), C('potentiometer', 'p', 60, 330), W('u.5V-p.VCC u.GND-p.GND p.WIPER-u.A0'), C('res_e12', 'rb', 220, 120, { ohms: 1000 }), C('npn_2n2222', 'q', 320, 120), C('motor_dc6', 'm', 320, 300), C('d_1n4007', 'd', 460, 300), W('u.D9-rb.P1 rb.P2-q.B q.E-u.GND u.5V-m.P1 m.P2-q.C d.A-q.C d.K-u.5V')),
+`void setup() { pinMode(9, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  int speed = map(analogRead(A0), 0, 1023, 0, 255);
+  analogWrite(9, speed);
+  Serial.print("السرعة: "); Serial.println(speed);
+  delay(100);
+}`);
+    ex(A + 'محركان بمشغّل L298N: أمام، خلف، دوران', P(C(...U), C('drv_l298n', 'drv', 260, 90), C('motor_dc6', 'ml', 120, 400), C('motor_dc6', 'mr', 420, 400), C('bat_9v', 'bat', 520, 90), W('bat.POS-drv.VS bat.NEG-drv.GND drv.GND-u.GND u.D5-drv.ENA u.D6-drv.IN1 u.D7-drv.IN2 u.D8-drv.IN3 u.D9-drv.IN4 u.D10-drv.ENB drv.OUT1-ml.P1 drv.OUT2-ml.P2 drv.OUT3-mr.P1 drv.OUT4-mr.P2')),
+`void drive(int a1, int a2, int b1, int b2) { digitalWrite(6, a1); digitalWrite(7, a2); digitalWrite(8, b1); digitalWrite(9, b2); }
+
+void setup() { for (int p = 5; p <= 10; p++) pinMode(p, OUTPUT); analogWrite(5, 200); analogWrite(10, 200); Serial.begin(9600); }
+
+void loop() {
+  Serial.println("أمام");  drive(1, 0, 1, 0); delay(1500);
+  Serial.println("خلف");   drive(0, 1, 0, 1); delay(1500);
+  Serial.println("دوران"); drive(1, 0, 0, 1); delay(1000);
+  drive(0, 0, 0, 0); delay(800);
+}`);
+    ex(A + 'محرك خطوي 28BYJ-48 مع ULN2003 (بدون مكتبة)', P(C(...U), C('drv_uln2003', 'drv', 240, 100), C('stepper_28byj', 'st', 260, 360), W('u.D8-drv.IN1 u.D9-drv.IN2 u.D10-drv.IN3 u.D11-drv.IN4 drv.GND-u.GND drv.OUT1-st.A drv.OUT2-st.B drv.OUT3-st.C drv.OUT4-st.D u.5V-st.COM')),
+`int pins[4] = {8, 9, 10, 11};
+// خطوة كاملة: لفّة واحدة نشطة في كل مرة (1000 ← 0100 ← 0010 ← 0001)
+void stepOnce(int s) { for (int i = 0; i < 4; i++) digitalWrite(pins[i], i == s ? HIGH : LOW); delay(4); }
+
+void setup() { for (int i = 0; i < 4; i++) pinMode(pins[i], OUTPUT); }
+
+void loop() {
+  for (int n = 0; n < 512; n++) stepOnce(n % 4);       // باتجاه
+  delay(500);
+  for (int n = 511; n >= 0; n--) stepOnce(n % 4);      // بالعكس
+  delay(500);
+}`);
+    ex(A + 'مقياس الارتفاع والضغط BMP280 على LCD', P(C(...U), i2c('u', 'bmp280', 'bmp', 80, 100), lcd('u')),
+LCDH + `#include <Adafruit_BMP280.h>
+Adafruit_BMP280 bmp;
+
+void setup() { lcd.init(); lcd.backlight(); bmp.begin(0x76); }
+
+void loop() {
+  lcd.setCursor(0, 0); lcd.print("P: "); lcd.print(bmp.readPressure() / 100.0, 1); lcd.print(" hPa ");
+  lcd.setCursor(0, 1); lcd.print("Alt: "); lcd.print(bmp.readAltitude(1013.25), 0); lcd.print(" m   ");
+  delay(1000);
+}`);
+    ex(A + 'ميزان ماء إلكتروني MPU6050 على شريط ليدات', P(C(...U), i2c('u', 'mpu6050', 'imu', 80, 100), C('led_bar', 'bar', 260, 90), W('u.D2-bar.A1 u.D3-bar.A2 u.D4-bar.A3 u.D5-bar.A4 u.D6-bar.A5 u.D7-bar.A6 u.D8-bar.A7 u.D9-bar.A8 u.D10-bar.A9 u.D11-bar.A10 bar.K-u.GND')),
+`#include <Wire.h>
+#include <MPU6050.h>
+MPU6050 imu;
+int pins[10] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+
+void setup() { imu.initialize(); for (int i = 0; i < 10; i++) pinMode(pins[i], OUTPUT); }
+
+void loop() {
+  float ax = imu.getAccelX();
+  int pos = constrain(map(ax * 100, -100, 100, 0, 9), 0, 9);
+  for (int i = 0; i < 10; i++) digitalWrite(pins[i], i == pos);
+  delay(50);
+}`);
+    ex(A + 'إنارة ذكية تتبع الضوء BH1750', P(C(...U), i2c('u', 'bh1750', 'bh', 80, 100), led('u', 'D9', 'l', 'white', 320, 300)),
+`#include <Wire.h>
+#include <BH1750.h>
+BH1750 meter;
+
+void setup() { Wire.begin(); meter.begin(); pinMode(9, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  float lux = meter.readLightLevel();
+  int pwm = constrain(map(lux, 0, 500, 255, 0), 0, 255);
+  analogWrite(9, pwm);
+  Serial.print(lux); Serial.print(" lux → سطوع "); Serial.println(pwm);
+  delay(300);
+}`);
+    ex(A + 'حوض أسماك: DS18B20 + سخان عبر مرحّل', P(C(...U), sen('u', 'ds18b20', 'ds', 80, 100, 'ds.DQ-u.D2'), C('res_e12', 'pu', 220, 100, { ohms: 4700 }), W('u.5V-pu.P1 pu.P2-u.D2'), relay('u', 'D7', 'rl', 300, 300), C('heater', 'ht', 300, 520), W('u.5V-rl.COM rl.NO-ht.P1 ht.P2-u.GND')),
+`#include <OneWire.h>
+#include <DallasTemperature.h>
+OneWire ow(2);
+DallasTemperature temp(&ow);
+const float TARGET = 26.0;
+
+void setup() { temp.begin(); pinMode(7, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  temp.requestTemperatures();
+  float c = temp.getTempCByIndex(0);
+  digitalWrite(7, c < TARGET - 0.5 ? HIGH : (c > TARGET + 0.5 ? LOW : digitalRead(7)));
+  Serial.print("ماء الحوض: "); Serial.print(c); Serial.println(" C");
+  delay(1000);
+}`);
+    ex(A + 'ميزان إلكتروني HX711 على LCD', P(C(...U), sen('u', 'hx711', 'hx', 80, 100, 'hx.DT-u.D3 hx.SCK-u.D2'), lcd('u')),
+LCDH + `#include <HX711.h>
+HX711 scale;
+
+void setup() { lcd.init(); lcd.backlight(); scale.begin(3, 2); scale.set_scale(420.0); scale.tare(); }
+
+void loop() {
+  lcd.setCursor(0, 0); lcd.print("Weight:");
+  lcd.setCursor(0, 1); lcd.print(scale.get_units(5), 1); lcd.print(" g      ");
+  delay(500);
+}`);
+    ex(A + 'قياس التيار بحساس ACS712', P(C(...U), sen('u', 'acs712', 'cs', 120, 120, 'cs.OUT-u.A0')),
+`void setup() { Serial.begin(9600); }
+
+void loop() {
+  float v = analogRead(A0) * 5.0 / 1023.0;
+  float amps = (v - 2.5) / 0.185;          // نسخة 5A: 185mV لكل أمبير
+  Serial.print("التيار: "); Serial.print(amps, 2); Serial.println(" A");
+  delay(500);
+}`);
+    ex(A + 'قياس جهد بطارية بحساس الجهد (مقسّم 5:1)', P(C(...U), sen('u', 'vsens', 'vs', 120, 120, 'vs.OUT-u.A0')),
+`void setup() { Serial.begin(9600); }
+
+void loop() {
+  float v = analogRead(A0) * 5.0 / 1023.0 * 5.0;
+  Serial.print("جهد البطارية: "); Serial.print(v, 2); Serial.println(v < 11.5 ? " V  ⚠ منخفض" : " V");
+  delay(700);
+}`);
+    ex(A + 'عدّاد دورات العجلة بحساس هول 3144', P(C(...U), sen('u', 'hall3144', 'h', 100, 120, 'h.OUT-u.D2')),
+`volatile unsigned long turns = 0;
+void hit() { turns++; }
+
+void setup() { pinMode(2, INPUT_PULLUP); attachInterrupt(digitalPinToInterrupt(2), hit, FALLING); Serial.begin(9600); }
+
+void loop() {
+  Serial.print("عدد الدورات: "); Serial.println(turns);
+  delay(1000);
+}`);
+    ex(A + 'ترمومتر جبهة بدون لمس MLX90614 مع إنذار حمّى', P(C(...U), i2c('u', 'm_mlx90614', 'ir', 80, 100), lcd('u'), buz('u', 'D8', 'bz', 440, 330)),
+LCDH + `#include <Adafruit_MLX90614.h>
+Adafruit_MLX90614 mlx;
+
+void setup() { lcd.init(); lcd.backlight(); mlx.begin(); pinMode(8, OUTPUT); }
+
+void loop() {
+  float t = mlx.readObjectTempC();
+  lcd.setCursor(0, 0); lcd.print("Temp: "); lcd.print(t, 1); lcd.print(" C  ");
+  lcd.setCursor(0, 1); lcd.print(t >= 37.8 ? "FEVER!          " : "Normal          ");
+  digitalWrite(8, t >= 37.8);
+  delay(500);
+}`);
+    ex(A + 'مراقب طاقة لوح شمسي INA219 على LCD', P(C(...U), i2c('u', 'm_ina219', 'ina', 80, 100), lcd('u')),
+LCDH + `#include <Adafruit_INA219.h>
+Adafruit_INA219 ina;
+
+void setup() { lcd.init(); lcd.backlight(); ina.begin(); }
+
+void loop() {
+  lcd.setCursor(0, 0); lcd.print(ina.getBusVoltage_V(), 2); lcd.print("V ");
+  lcd.print(ina.getCurrent_mA(), 0); lcd.print("mA   ");
+  lcd.setCursor(0, 1); lcd.print("P="); lcd.print(ina.getPower_mW() / 1000.0, 2); lcd.print(" W    ");
+  delay(1000);
+}`);
+    ex(A + 'قياس مسافة بالليزر VL53L0X على شريط ليدات', P(C(...U), i2c('u', 'm_vl53l0x', 'tof', 80, 100), C('led_bar', 'bar', 260, 90), W('u.D2-bar.A1 u.D3-bar.A2 u.D4-bar.A3 u.D5-bar.A4 u.D6-bar.A5 u.D7-bar.A6 u.D8-bar.A7 u.D9-bar.A8 u.D10-bar.A9 u.D11-bar.A10 bar.K-u.GND')),
+`#include <Wire.h>
+#include <VL53L0X.h>
+VL53L0X tof;
+int pins[10] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+
+void setup() { Wire.begin(); tof.init(); for (int i = 0; i < 10; i++) pinMode(pins[i], OUTPUT); }
+
+void loop() {
+  int mm = tof.readRangeSingleMillimeters();
+  int n = constrain(map(mm, 1000, 50, 0, 10), 0, 10);   // كلما اقترب الجسم أضاءت ليدات أكثر
+  for (int i = 0; i < 10; i++) digitalWrite(pins[i], i < n);
+  delay(100);
+}`);
+    ex(A + 'جهاز قياس النبض بالإصبع MAX30102', P(C(...U), i2c('u', 'm_max30102', 'hr', 80, 100), led('u', 'D13', 'l', 'red', 320, 300)),
+`#include <Wire.h>
+#include "MAX30105.h"
+MAX30105 sensor;
+long lastBeat = 0; bool up = false;
+
+void setup() { Serial.begin(115200); sensor.begin(); sensor.setup(); pinMode(13, OUTPUT); }
+
+void loop() {
+  long ir = sensor.getIR();
+  if (ir > 91200 && !up) {
+    up = true; digitalWrite(13, HIGH);
+    long now = millis();
+    if (lastBeat) { Serial.print("النبض: "); Serial.println(60000 / (now - lastBeat)); }
+    lastBeat = now;
+  }
+  if (ir < 90800) { up = false; digitalWrite(13, LOW); }
+  delay(10);
+}`);
+    ex(A + 'فولتميتر دقيق 16 بت ADS1115', P(C(...U), i2c('u', 'm_ads1115', 'adc', 80, 100), C('potentiometer', 'p', 80, 340), W('u.5V-p.VCC u.GND-p.GND p.WIPER-adc.A0'), lcd('u', 300, 470)),
+LCDH + `#include <Adafruit_ADS1X15.h>
+Adafruit_ADS1115 ads;
+
+void setup() { lcd.init(); lcd.backlight(); ads.setGain(GAIN_ONE); ads.begin(); }
+
+void loop() {
+  int16_t raw = ads.readADC_SingleEnded(0);
+  lcd.setCursor(0, 0); lcd.print("Raw: "); lcd.print(raw); lcd.print("     ");
+  lcd.setCursor(0, 1); lcd.print("V  : "); lcd.print(ads.computeVolts(raw), 4); lcd.print("   ");
+  delay(400);
+}`);
+    ex(A + 'قفل باب ببطاقة RFID وسيرفو', P(C(...U), C('m_rc522', 'rf', 80, 90), W('u.5V-rf.VCC u.GND-rf.GND u.D10-rf.SDA u.D13-rf.SCK u.D11-rf.MOSI u.D12-rf.MISO u.D9-rf.RST'), servo('u', 'D6', 's', 320, 330), led('u', 'D7', 'g', 'green', 460, 300)),
+`#include <SPI.h>
+#include <MFRC522.h>
+#include <Servo.h>
+MFRC522 rfid(10, 9);
+Servo lock;
+
+void setup() { SPI.begin(); rfid.PCD_Init(); lock.attach(6); lock.write(0); pinMode(7, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;
+  Serial.println("بطاقة مقبولة — فتح الباب");
+  digitalWrite(7, HIGH); lock.write(90); delay(3000);
+  lock.write(0); digitalWrite(7, LOW);
+}`);
+    ex(A + 'فاحص نسبة الكحول MQ-3', P(C(...U), C('m_mq3', 'al', 80, 100), W('u.5V-al.VCC u.GND-al.GND al.AO-u.A0 al.DO-u.D2'), led('u', 'D5', 'g', 'green', 300, 300), led('u', 'D6', 'r', 'red', 420, 300)),
+`void setup() { pinMode(5, OUTPUT); pinMode(6, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  int v = analogRead(A0);
+  bool high = v > 450;
+  digitalWrite(5, !high); digitalWrite(6, high);
+  Serial.print("قراءة الكحول: "); Serial.println(v);
+  delay(400);
+}`);
+    ex(A + 'قائمة على LCD بالمشفّر الدوّار KY-040', P(C(...U), C('m_ky040', 'enc', 80, 90), W('u.5V-enc.VCC u.GND-enc.GND enc.CLK-u.D2 enc.DT-u.D3 enc.SW-u.D4'), lcd('u')),
+LCDH + `String items[4] = {"1) LED", "2) Fan", "3) Pump", "4) Alarm"};
+int pos = 0, last;
+
+void setup() { lcd.init(); lcd.backlight(); pinMode(2, INPUT); pinMode(3, INPUT); pinMode(4, INPUT_PULLUP); last = digitalRead(2); lcd.print(items[0]); }
+
+void loop() {
+  int c = digitalRead(2);
+  if (c != last && c == LOW) {
+    pos = (pos + (digitalRead(3) != c ? 1 : 3)) % 4;
+    lcd.clear(); lcd.print(items[pos]);
+  }
+  last = c;
+  if (digitalRead(4) == LOW) { lcd.setCursor(0, 1); lcd.print("Selected!"); delay(300); }
+}`);
+    ex(A + 'محرك NEMA17 دقيق بمشغّل A4988 وزرين', P(C(...U), C('m_a4988', 'drv', 80, 90), W('u.5V-drv.VCC u.GND-drv.GND u.D3-drv.STEP u.D4-drv.DIR'), btn('u', 'D6', 'cw', 120, 380), btn('u', 'D7', 'ccw', 260, 380)),
+`void steps(int n, bool dir) { digitalWrite(4, dir); for (int i = 0; i < n; i++) { digitalWrite(3, HIGH); delay(2); digitalWrite(3, LOW); delay(2); } }
+
+void setup() { pinMode(3, OUTPUT); pinMode(4, OUTPUT); pinMode(6, INPUT_PULLUP); pinMode(7, INPUT_PULLUP); }
+
+void loop() {
+  if (digitalRead(6) == LOW) steps(50, HIGH);   // 90° باتجاه عقارب الساعة
+  if (digitalRead(7) == LOW) steps(50, LOW);    // 90° عكسها
+}`);
+    ex(A + 'قراءة متتبع الخط بخمسة حساسات وحساب موقع الخط', P(C(...U), C('m_line5', 'ln', 80, 90), W('u.5V-ln.VCC u.GND-ln.GND ln.S1-u.D2 ln.S2-u.D3 ln.S3-u.D4 ln.S4-u.D5 ln.S5-u.D6')),
+`int S[5] = {2, 3, 4, 5, 6};
+
+void setup() { for (int i = 0; i < 5; i++) pinMode(S[i], INPUT); Serial.begin(9600); }
+
+void loop() {
+  int sum = 0, n = 0;
+  for (int i = 0; i < 5; i++) if (digitalRead(S[i]) == LOW) { sum += (i - 2) * 100; n++; }
+  if (n) { Serial.print("موقع الخط: "); Serial.println(sum / n); }
+  else Serial.println("لا يوجد خط");
+  delay(200);
+}`);
+    ex(A + 'رادار ميكروويف RCWL-0516 يشغّل الإنارة', P(C(...U), C('m_rcwl0516', 'rd', 80, 100), W('u.5V-rd.VCC u.GND-rd.GND rd.OUT-u.D2'), relay('u', 'D7', 'rl', 300, 300, ['bulb_12v', 'lamp'])),
+`unsigned long lastMove = 0;
+
+void setup() { pinMode(2, INPUT); pinMode(7, OUTPUT); }
+
+void loop() {
+  if (digitalRead(2) == HIGH) lastMove = millis();
+  digitalWrite(7, millis() - lastMove < 10000);   // يبقى الضوء 10 ثوانٍ بعد آخر حركة
+  delay(100);
+}`);
+    ex(A + 'حساس النبض التناظري وحساب BPM', P(C(...U), C('m_pulse_sensor', 'ps', 80, 100), W('u.5V-ps.VCC u.GND-ps.GND ps.S-u.A0'), led('u', 'D13', 'l', 'red', 320, 300)),
+`int threshold = 560; bool high = false; unsigned long last = 0;
+
+void setup() { Serial.begin(9600); pinMode(13, OUTPUT); }
+
+void loop() {
+  int s = analogRead(A0);
+  if (s > threshold && !high) {
+    high = true; digitalWrite(13, HIGH);
+    unsigned long now = millis();
+    if (last) { Serial.print("BPM = "); Serial.println(60000 / (now - last)); }
+    last = now;
+  }
+  if (s < threshold - 40) { high = false; digitalWrite(13, LOW); }
+  delay(5);
+}`);
+    ex(A + 'حاجز ليزر أمني (ليزر + حساس ضوء)', P(C(...U), C('m_ky008', 'lz', 60, 100), W('u.D8-lz.S lz.GND-u.GND'), sen('u', 'ldr_sensor', 'ldr', 240, 100, 'ldr.AO-u.A0'), buz('u', 'D9', 'bz', 360, 330)),
+`void setup() { pinMode(8, OUTPUT); pinMode(9, OUTPUT); digitalWrite(8, HIGH); Serial.begin(9600); }
+
+void loop() {
+  bool broken = analogRead(A0) < 500;   // انقطع الشعاع → ضوء أقل
+  digitalWrite(9, broken);
+  if (broken) Serial.println("⚠ عبور الحاجز!");
+  delay(100);
+}`);
+    ex(A + 'مقياس مستوى الصوت على شريط ليدات', P(C(...U), sen('u', 'sound', 'mic', 60, 90, 'mic.AO-u.A0 mic.DO-u.D12'), C('led_bar', 'bar', 260, 90), W('u.D2-bar.A1 u.D3-bar.A2 u.D4-bar.A3 u.D5-bar.A4 u.D6-bar.A5 u.D7-bar.A6 u.D8-bar.A7 u.D9-bar.A8 u.D10-bar.A9 u.D11-bar.A10 bar.K-u.GND')),
+`int pins[10] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+
+void setup() { for (int i = 0; i < 10; i++) pinMode(pins[i], OUTPUT); }
+
+void loop() {
+  int lvl = map(analogRead(A0), 0, 1023, 0, 10);
+  for (int i = 0; i < 10; i++) digitalWrite(pins[i], i < lvl);
+  delay(40);
+}`);
+    ex(A + 'إشارة مرور مع زر عبور المشاة', P(C(...U), led('u', 'D5', 'r', 'red', 100, 120), led('u', 'D6', 'y', 'yellow', 200, 120), led('u', 'D7', 'g', 'green', 300, 120), led('u', 'D8', 'pg', 'green', 420, 120), btn('u', 'D2', 'k', 200, 380)),
+`bool request = false;
+void lights(int r, int y, int g, int p) { digitalWrite(5, r); digitalWrite(6, y); digitalWrite(7, g); digitalWrite(8, p); }
+
+void setup() { for (int i = 5; i <= 8; i++) pinMode(i, OUTPUT); pinMode(2, INPUT_PULLUP); }
+
+void loop() {
+  lights(0, 0, 1, 0);
+  for (int i = 0; i < 40 && !request; i++) { if (digitalRead(2) == LOW) request = true; delay(100); }
+  lights(0, 1, 0, 0); delay(1500);
+  lights(1, 0, 0, 1); delay(request ? 4000 : 2500);
+  request = false;
+}`);
+    ex(A + 'مقياس الأشعة فوق البنفسجية وتحذير الشمس', P(C(...U), C('m_guva_uv', 'uv', 80, 100), W('u.5V-uv.VCC u.GND-uv.GND uv.SIG-u.A0'), led('u', 'D6', 'r', 'red', 320, 300)),
+`void setup() { pinMode(6, OUTPUT); Serial.begin(9600); }
+
+void loop() {
+  float v = analogRead(A0) * 5.0 / 1023.0;
+  float uv = v / 0.1;
+  digitalWrite(6, uv >= 6);
+  Serial.print("مؤشر UV: "); Serial.print(uv, 1); Serial.println(uv >= 6 ? "  استخدم واقي الشمس!" : "");
+  delay(700);
+}`);
+    ex(A + 'قياس مسافة بحساس Sharp IR', P(C(...U), C('m_gp2y0a21', 'ir', 80, 100), W('u.5V-ir.VCC u.GND-ir.GND ir.VO-u.A0')),
+`void setup() { Serial.begin(9600); }
+
+void loop() {
+  float v = analogRead(A0) * 5.0 / 1023.0;
+  float cm = 29.988 * pow(v, -1.173);
+  Serial.print("المسافة: "); Serial.print(cm, 1); Serial.println(" cm");
+  delay(300);
+}`);
+    ex(A + 'عدّاد سرعة دوران بحساس LM393', P(C(...U), C('m_speed_lm393', 'sp', 80, 100), W('u.5V-sp.VCC u.GND-sp.GND sp.DO-u.D2'), lcd('u')),
+LCDH + `volatile unsigned long n = 0;
+void count() { n++; }
+
+void setup() { lcd.init(); lcd.backlight(); attachInterrupt(digitalPinToInterrupt(2), count, RISING); }
+
+void loop() {
+  n = 0; delay(1000);
+  lcd.setCursor(0, 0); lcd.print("RPM: "); lcd.print(n * 60 / 20); lcd.print("     ");
+}`);
+
+    // ====================== ESP32 ======================
+    const S = '🟩 ESP32 · ';
+    ex(S + 'وميض LED على ESP32', P(C(...E), led('e', 'G2', 'l', 'blue', 300, 120)),
+`const int LED = 2;
+
+void setup() { pinMode(LED, OUTPUT); }
+
+void loop() { digitalWrite(LED, HIGH); delay(500); digitalWrite(LED, LOW); delay(500); }`);
+    ex(S + 'تنفّس الضوء بالـ PWM', P(C(...E), led('e', 'G25', 'l', 'green', 300, 120)),
+`void setup() { pinMode(25, OUTPUT); }
+
+void loop() {
+  for (int i = 0; i <= 255; i += 5) { analogWrite(25, i); delay(20); }
+  for (int i = 255; i >= 0; i -= 5) { analogWrite(25, i); delay(20); }
+}`);
+    ex(S + 'محطة حرارة ورطوبة DHT22 على OLED', P(C(...E), sen('e', 'dht22_sensor', 'dht', 100, 100, 'dht.DATA-e.G4', '3V3'), oled('e')),
+OLH + `#include <DHT.h>
+DHT dht(4, DHT22);
+
+void setup() {
+${OLS}  dht.begin();
+}
+
+void loop() {
+  float t = dht.readTemperature(), h = dht.readHumidity();
+${show('"Temp / Humidity"', 'String(t, 1) + "C " + String(h, 0) + "%"')}  delay(2000);
+}`);
+    ex(S + 'مسافة HC-SR04 على OLED', P(C(...E), sen('e', 'ultrasonic_sensor', 'us', 100, 100, 'us.TRIG-e.G5 us.ECHO-e.G18'), oled('e')),
+OLH + `long cm() { digitalWrite(5, LOW); delayMicroseconds(2); digitalWrite(5, HIGH); delayMicroseconds(10); digitalWrite(5, LOW); return pulseIn(18, HIGH) / 58; }
+
+void setup() {
+${OLS}  pinMode(5, OUTPUT); pinMode(18, INPUT);
+}
+
+void loop() {
+  long d = cm();
+${show('"Distance"', 'String(d) + " cm"')}  delay(300);
+}`);
+    ex(S + 'ري ذكي: تربة + مضخة + OLED', P(C(...E), sen('e', 'soil_sensor', 'soil', 80, 100, 'soil.AOUT-e.G34', '3V3'), relay('e', 'G26', 'rl', 300, 300, ['water_pump', 'pump']), oled('e')),
+OLH + `void setup() {
+${OLS}  pinMode(26, OUTPUT);
+}
+
+void loop() {
+  int m = map(analogRead(34), 0, 4095, 0, 100);
+  bool dry = m < 40;
+  digitalWrite(26, dry);
+${show('dry ? "Watering..." : "Soil OK"', 'String(m) + "%"')}  delay(1000);
+}`);
+    ex(S + 'تهوية تلقائية: غاز MQ-2 يشغّل المروحة', P(C(...E), sen('e', 'mq2', 'gas', 80, 100, 'gas.AO-e.G34'), relay('e', 'G26', 'rl', 300, 300), C('cooling_fan', 'fan', 300, 520), W('e.5V-rl.COM rl.NO-fan.VCC fan.GND-e.GND e.5V-fan.PWM')),
+`void setup() { pinMode(26, OUTPUT); Serial.begin(115200); }
+
+void loop() {
+  int g = analogRead(34);
+  digitalWrite(26, g > 1600);
+  Serial.print("الغاز: "); Serial.println(g);
+  delay(500);
+}`);
+    ex(S + 'جرس حركة PIR', P(C(...E), sen('e', 'pir_sensor', 'pir', 80, 100, 'pir.OUT-e.G27'), buz('e', 'G25', 'bz', 320, 330)),
+`void setup() { pinMode(27, INPUT); pinMode(25, OUTPUT); Serial.begin(115200); }
+
+void loop() {
+  if (digitalRead(27)) { Serial.println("زائر عند الباب"); digitalWrite(25, HIGH); delay(800); digitalWrite(25, LOW); delay(2000); }
+}`);
+    ex(S + 'إنارة تلقائية LDR بدرجات سطوع', P(C(...E), sen('e', 'ldr_sensor', 'ldr', 80, 100, 'ldr.AO-e.G34', '3V3'), led('e', 'G25', 'l', 'white', 320, 300)),
+`void setup() { pinMode(25, OUTPUT); }
+
+void loop() {
+  int v = analogRead(34);
+  analogWrite(25, constrain(map(v, 0, 4095, 255, 0), 0, 255));
+  delay(50);
+}`);
+    ex(S + 'مقبض يدير السيرفو على ESP32', P(C(...E), C('potentiometer', 'p', 60, 330), W('e.3V3-p.VCC e.GND-p.GND p.WIPER-e.G34'), servo('e', 'G18', 's', 300, 120)),
+`#include <Servo.h>
+Servo s;
+
+void setup() { s.attach(18); }
+
+void loop() { s.write(map(analogRead(34), 0, 4095, 0, 180)); delay(15); }`);
+    ex(S + 'حرارة بالألوان على NeoPixel (أزرق→أحمر)', P(C(...E), sen('e', 'dht22_sensor', 'dht', 80, 100, 'dht.DATA-e.G4', '3V3'), sen('e', 'neopixel_8', 'np', 260, 330, 'np.DIN-e.G5')),
+`#include <DHT.h>
+#include <Adafruit_NeoPixel.h>
+DHT dht(4, DHT22);
+Adafruit_NeoPixel px(8, 5, NEO_GRB + NEO_KHZ800);
+
+void setup() { dht.begin(); px.begin(); px.setBrightness(80); }
+
+void loop() {
+  float t = dht.readTemperature();
+  int r = constrain(map(t, 15, 40, 0, 255), 0, 255);
+  for (int i = 0; i < 8; i++) px.setPixelColor(i, px.Color(r, 0, 255 - r));
+  px.show(); delay(1000);
+}`);
+    ex(S + 'محطة طقس BMP280 على OLED', P(C(...E), i2c('e', 'bmp280', 'bmp', 80, 100, '3V3'), oled('e')),
+OLH + `#include <Adafruit_BMP280.h>
+Adafruit_BMP280 bmp;
+
+void setup() {
+${OLS}  bmp.begin(0x76);
+}
+
+void loop() {
+${show('"Pressure  T=" + String(bmp.readTemperature(), 1)', 'String(bmp.readPressure() / 100.0, 0) + "hPa"')}  delay(1000);
+}`);
+    ex(S + 'كاشف سقوط MPU6050 بإنذار', P(C(...E), i2c('e', 'mpu6050', 'imu', 80, 100, '3V3'), buz('e', 'G25', 'bz', 320, 330)),
+`#include <Wire.h>
+#include <MPU6050.h>
+MPU6050 imu;
+
+void setup() { imu.initialize(); pinMode(25, OUTPUT); Serial.begin(115200); }
+
+void loop() {
+  float ax = imu.getAccelX(), ay = imu.getAccelY(), az = imu.getAccelZ();
+  float g = sqrt(ax * ax + ay * ay + az * az);
+  if (g < 0.4 || g > 2.5) { Serial.println("⚠ سقوط!"); digitalWrite(25, HIGH); delay(1500); digitalWrite(25, LOW); }
+  delay(50);
+}`);
+    ex(S + 'إضاءة مكتب BH1750 تحافظ على 300 لوكس', P(C(...E), i2c('e', 'bh1750', 'bh', 80, 100, '3V3'), led('e', 'G25', 'l', 'white', 320, 300)),
+`#include <Wire.h>
+#include <BH1750.h>
+BH1750 meter; int pwm = 128;
+
+void setup() { Wire.begin(); meter.begin(); pinMode(25, OUTPUT); }
+
+void loop() {
+  float lux = meter.readLightLevel();
+  if (lux < 290 && pwm < 255) pwm += 5;
+  if (lux > 310 && pwm > 0) pwm -= 5;
+  analogWrite(25, pwm);
+  delay(100);
+}`);
+    ex(S + 'حوض أسماك ذكي: DS18B20 + سخان', P(C(...E), sen('e', 'ds18b20', 'ds', 80, 100, 'ds.DQ-e.G4', '3V3'), C('res_e12', 'pu', 220, 100, { ohms: 4700 }), W('e.3V3-pu.P1 pu.P2-e.G4'), relay('e', 'G26', 'rl', 300, 300), C('heater', 'ht', 300, 520), W('e.5V-rl.COM rl.NO-ht.P1 ht.P2-e.GND')),
+`#include <OneWire.h>
+#include <DallasTemperature.h>
+OneWire ow(4);
+DallasTemperature temp(&ow);
+
+void setup() { temp.begin(); pinMode(26, OUTPUT); Serial.begin(115200); }
+
+void loop() {
+  temp.requestTemperatures();
+  float c = temp.getTempCByIndex(0);
+  digitalWrite(26, c < 25.5);
+  Serial.print("الماء: "); Serial.println(c);
+  delay(1000);
+}`);
+    ex(S + 'ميزان مطبخ HX711 على OLED', P(C(...E), sen('e', 'hx711', 'hx', 80, 100, 'hx.DT-e.G19 hx.SCK-e.G18', '3V3'), oled('e')),
+OLH + `#include <HX711.h>
+HX711 scale;
+
+void setup() {
+${OLS}  scale.begin(19, 18); scale.set_scale(420.0); scale.tare();
+}
+
+void loop() {
+${show('"Kitchen scale"', 'String(scale.get_units(5), 0) + " g"')}  delay(500);
+}`);
+    ex(S + 'عدّاد طاقة INA219 على OLED', P(C(...E), i2c('e', 'm_ina219', 'ina', 80, 100, '3V3'), oled('e')),
+OLH + `#include <Adafruit_INA219.h>
+Adafruit_INA219 ina;
+
+void setup() {
+${OLS}  ina.begin();
+}
+
+void loop() {
+${show('String(ina.getBusVoltage_V(), 2) + "V  " + String(ina.getCurrent_mA(), 0) + "mA"', 'String(ina.getPower_mW(), 0) + "mW"')}  delay(1000);
+}`);
+    ex(S + 'ترمومتر بدون لمس MLX90614 على OLED', P(C(...E), i2c('e', 'm_mlx90614', 'ir', 80, 100, '3V3'), oled('e')),
+OLH + `#include <Adafruit_MLX90614.h>
+Adafruit_MLX90614 mlx;
+
+void setup() {
+${OLS}  mlx.begin();
+}
+
+void loop() {
+  float t = mlx.readObjectTempC();
+${show('t >= 37.8 ? "FEVER!" : "Body temperature"', 'String(t, 1) + " C"')}  delay(500);
+}`);
+    ex(S + 'موقف سيارات VL53L0X بألوان NeoPixel', P(C(...E), i2c('e', 'm_vl53l0x', 'tof', 80, 100, '3V3'), sen('e', 'neopixel_8', 'np', 260, 330, 'np.DIN-e.G5')),
+`#include <Wire.h>
+#include <VL53L0X.h>
+#include <Adafruit_NeoPixel.h>
+VL53L0X tof;
+Adafruit_NeoPixel px(8, 5, NEO_GRB + NEO_KHZ800);
+
+void setup() { Wire.begin(); tof.init(); px.begin(); px.setBrightness(80); }
+
+void loop() {
+  int mm = tof.readRangeSingleMillimeters();
+  uint32_t c = mm > 800 ? px.Color(0, 200, 0) : mm > 300 ? px.Color(220, 160, 0) : px.Color(220, 0, 0);
+  for (int i = 0; i < 8; i++) px.setPixelColor(i, c);
+  px.show(); delay(100);
+}`);
+    ex(S + 'تسجيل حضور الطلاب ببطاقات RFID', P(C(...E), C('m_rc522', 'rf', 80, 90), W('e.3V3-rf.VCC e.GND-rf.GND e.G5-rf.SDA e.G18-rf.SCK e.G23-rf.MOSI e.G19-rf.MISO e.G27-rf.RST'), buz('e', 'G25', 'bz', 340, 330)),
+`#include <SPI.h>
+#include <MFRC522.h>
+MFRC522 rfid(5, 27);
+int present = 0;
+
+void setup() { Serial.begin(115200); SPI.begin(); rfid.PCD_Init(); pinMode(25, OUTPUT); }
+
+void loop() {
+  if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) return;
+  present++;
+  Serial.print("تم تسجيل حضور — العدد: "); Serial.println(present);
+  digitalWrite(25, HIGH); delay(150); digitalWrite(25, LOW);
+  delay(1500);
+}`);
+    ex(S + 'عدّاد تنازلي على TM1637', P(C(...E), sen('e', 'tm1637', 'tm', 80, 90, 'tm.CLK-e.G18 tm.DIO-e.G19', '3V3'), buz('e', 'G25', 'bz', 320, 330)),
+`#include <TM1637Display.h>
+TM1637Display disp(18, 19);
+int t = 30;
+
+void setup() { disp.setBrightness(5); pinMode(25, OUTPUT); }
+
+void loop() {
+  disp.showNumberDec(t);
+  if (t == 0) { digitalWrite(25, HIGH); delay(1000); digitalWrite(25, LOW); t = 30; }
+  else { t--; delay(1000); }
+}`);
+    ex(S + 'أسهم متحركة على مصفوفة MAX7219', P(C(...E), sen('e', 'max7219', 'mx', 100, 100, 'mx.DIN-e.G23 mx.CLK-e.G18 mx.CS-e.G5')),
+`#include <LedControl.h>
+LedControl lc(23, 18, 5, 1);
+byte arrow[8] = {0x18, 0x3C, 0x7E, 0xFF, 0x18, 0x18, 0x18, 0x18};
+
+void setup() { lc.shutdown(0, false); lc.setIntensity(0, 6); }
+
+void loop() {
+  for (int s = 0; s < 8; s++) {
+    for (int r = 0; r < 8; r++) lc.setRow(0, r, arrow[(r + s) % 8]);
+    delay(120);
+  }
+}`);
+    ex(S + 'سيارة بمحركين L298N (أمام/خلف/دوران)', P(C(...E), C('drv_l298n', 'drv', 260, 90), C('motor_dc6', 'ml', 120, 400), C('motor_dc6', 'mr', 420, 400), C('bat_9v', 'bat', 520, 90), W('bat.POS-drv.VS bat.NEG-drv.GND drv.GND-e.GND e.G25-drv.ENA e.G26-drv.IN1 e.G27-drv.IN2 e.G32-drv.IN3 e.G33-drv.IN4 e.G4-drv.ENB drv.OUT1-ml.P1 drv.OUT2-ml.P2 drv.OUT3-mr.P1 drv.OUT4-mr.P2')),
+`void drive(int a1, int a2, int b1, int b2) { digitalWrite(26, a1); digitalWrite(27, a2); digitalWrite(32, b1); digitalWrite(33, b2); }
+
+void setup() { int p[6] = {25, 26, 27, 32, 33, 4}; for (int i = 0; i < 6; i++) pinMode(p[i], OUTPUT); analogWrite(25, 200); analogWrite(4, 200); }
+
+void loop() {
+  drive(1, 0, 1, 0); delay(1500);
+  drive(1, 0, 0, 1); delay(700);
+  drive(0, 1, 0, 1); delay(1500);
+  drive(0, 0, 0, 0); delay(800);
+}`);
+    ex(S + 'كاميرا دوّارة: جويستيك + سيرفو', P(C(...E), sen('e', 'joystick', 'js', 60, 100, 'js.VRX-e.G34 js.VRY-e.G35 js.SW-e.G27', '3V3'), servo('e', 'G18', 's1', 280, 300), servo('e', 'G19', 's2', 440, 300)),
+`#include <Servo.h>
+Servo pan, tilt;
+
+void setup() { pan.attach(18); tilt.attach(19); }
+
+void loop() {
+  pan.write(map(analogRead(34), 0, 4095, 0, 180));
+  tilt.write(map(analogRead(35), 0, 4095, 0, 180));
+  delay(20);
+}`);
+    ex(S + 'إطفاء تلقائي: لهب يشغّل مضخة الماء', P(C(...E), sen('e', 'flame', 'f', 80, 100, 'f.DO-e.G27 f.AO-e.G34'), relay('e', 'G26', 'rl', 300, 300, ['water_pump', 'pump']), buz('e', 'G25', 'bz', 480, 330)),
+`void setup() { pinMode(27, INPUT); pinMode(26, OUTPUT); pinMode(25, OUTPUT); Serial.begin(115200); }
+
+void loop() {
+  bool fire = digitalRead(27) == LOW;
+  digitalWrite(26, fire); digitalWrite(25, fire);
+  if (fire) Serial.println("🔥 إطفاء!");
+  delay(200);
+}`);
+    ex(S + 'نافذة تُغلق تلقائياً عند المطر', P(C(...E), sen('e', 'rain', 'rn', 80, 100, 'rn.AO-e.G34 rn.DO-e.G27'), servo('e', 'G18', 's', 300, 300)),
+`#include <Servo.h>
+Servo win;
+
+void setup() { win.attach(18); Serial.begin(115200); }
+
+void loop() {
+  bool rain = analogRead(34) < 2000;
+  win.write(rain ? 0 : 90);
+  Serial.println(rain ? "تمطر — إغلاق النافذة" : "الجو صافٍ — النافذة مفتوحة");
+  delay(1000);
+}`);
+    ex(S + 'بيت محمي: حرارة + تربة → مروحة ومضخة', P(C(...E), sen('e', 'dht22_sensor', 'dht', 60, 90, 'dht.DATA-e.G4', '3V3'), sen('e', 'soil_sensor', 'soil', 220, 90, 'soil.AOUT-e.G34', '3V3'), relay('e', 'G25', 'rf', 200, 330), relay('e', 'G26', 'rp', 380, 330, ['water_pump', 'pump']), oled('e', 60, 560)),
+OLH + `#include <DHT.h>
+DHT dht(4, DHT22);
+
+void setup() {
+${OLS}  dht.begin(); pinMode(25, OUTPUT); pinMode(26, OUTPUT);
+}
+
+void loop() {
+  float t = dht.readTemperature();
+  int m = map(analogRead(34), 0, 4095, 0, 100);
+  digitalWrite(25, t > 30);
+  digitalWrite(26, m < 40);
+${show('"Greenhouse"', 'String(t, 0) + "C " + String(m) + "%"')}  delay(1500);
+}`);
+    ex(S + 'مستوى خزان الماء HC-SR04 + مضخة تعبئة', P(C(...E), sen('e', 'ultrasonic_sensor', 'us', 80, 100, 'us.TRIG-e.G5 us.ECHO-e.G18'), relay('e', 'G26', 'rl', 300, 300, ['water_pump', 'pump']), oled('e')),
+OLH + `const int H = 100;   // عمق الخزان cm
+long cm() { digitalWrite(5, HIGH); delayMicroseconds(10); digitalWrite(5, LOW); return pulseIn(18, HIGH) / 58; }
+
+void setup() {
+${OLS}  pinMode(5, OUTPUT); pinMode(18, INPUT); pinMode(26, OUTPUT);
+}
+
+void loop() {
+  int level = constrain(100 - cm() * 100 / H, 0, 100);
+  if (level < 20) digitalWrite(26, HIGH);
+  if (level > 90) digitalWrite(26, LOW);
+${show('"Water tank"', 'String(level) + "%"')}  delay(800);
+}`);
+    ex(S + 'فولتميتر 16 بت ADS1115 على OLED', P(C(...E), i2c('e', 'm_ads1115', 'adc', 80, 100, '3V3'), C('potentiometer', 'p', 80, 340), W('e.3V3-p.VCC e.GND-p.GND p.WIPER-adc.A0'), oled('e', 300, 470)),
+OLH + `#include <Adafruit_ADS1X15.h>
+Adafruit_ADS1115 ads;
+
+void setup() {
+${OLS}  ads.setGain(GAIN_ONE); ads.begin();
+}
+
+void loop() {
+  float v = ads.computeVolts(ads.readADC_SingleEnded(0));
+${show('"ADS1115  A0"', 'String(v, 3) + " V"')}  delay(400);
+}`);
+    ex(S + 'حرارة LM35 على شاشة TM1637', P(C(...E), sen('e', 'tm1637', 'tm', 80, 90, 'tm.CLK-e.G18 tm.DIO-e.G19', '3V3'), sen('e', 'lm35', 't', 80, 330, 't.OUT-e.G34')),
+`#include <TM1637Display.h>
+TM1637Display disp(18, 19);
+
+void setup() { disp.setBrightness(5); }
+
+void loop() {
+  int c = analogRead(34) * 3300.0 / 4095.0 / 10.0;
+  disp.showNumberDec(c);
+  delay(500);
+}`);
+    ex(S + 'إشارة مرور بزر مشاة على ESP32', P(C(...E), led('e', 'G25', 'r', 'red', 100, 120), led('e', 'G26', 'y', 'yellow', 200, 120), led('e', 'G27', 'g', 'green', 300, 120), btn('e', 'G4', 'k', 200, 380)),
+`bool req = false;
+void lights(int r, int y, int g) { digitalWrite(25, r); digitalWrite(26, y); digitalWrite(27, g); }
+
+void setup() { pinMode(25, OUTPUT); pinMode(26, OUTPUT); pinMode(27, OUTPUT); pinMode(4, INPUT_PULLUP); }
+
+void loop() {
+  lights(0, 0, 1);
+  for (int i = 0; i < 40 && !req; i++) { if (digitalRead(4) == LOW) req = true; delay(100); }
+  lights(0, 1, 0); delay(1500);
+  lights(1, 0, 0); delay(3000);
+  req = false;
+}`);
+    ex(S + 'حرارة ورطوبة SHT31 على OLED', P(C(...E), i2c('e', 'm_sht31', 'sht', 80, 100, '3V3'), oled('e')),
+OLH + `#include <Adafruit_SHT31.h>
+Adafruit_SHT31 sht;
+
+void setup() {
+${OLS}  sht.begin(0x44);
+}
+
+void loop() {
+${show('"SHT31"', 'String(sht.readTemperature(), 1) + "C " + String(sht.readHumidity(), 0) + "%"')}  delay(1000);
+}`);
+    ex(S + 'بوصلة رقمية QMC5883 على OLED', P(C(...E), i2c('e', 'm_qmc5883', 'cmp', 80, 100, '3V3'), oled('e')),
+OLH + `#include <QMC5883LCompass.h>
+QMC5883LCompass compass;
+
+void setup() {
+${OLS}  compass.init();
+}
+
+void loop() {
+  compass.read();
+  int a = compass.getAzimuth();
+  String d = a < 45 || a >= 315 ? "N" : a < 135 ? "E" : a < 225 ? "S" : "W";
+${show('"Compass"', 'String(a) + " " + d')}  delay(300);
+}`);
+    ex(S + 'محطة هواء: ضغط BMP180 + حرارة', P(C(...E), i2c('e', 'm_bmp180', 'bmp', 80, 100, '3V3'), oled('e')),
+OLH + `#include <Adafruit_BMP085.h>
+Adafruit_BMP085 bmp;
+
+void setup() {
+${OLS}  bmp.begin();
+}
+
+void loop() {
+${show('"BMP180  T=" + String(bmp.readTemperature(), 1)', 'String(bmp.readPressure() / 100) + "hPa"')}  delay(1000);
+}`);
+    ex(S + 'إنذار حرارة الآلات MAX6675', P(C(...E), C('m_max6675', 'tc', 80, 100), W('e.3V3-tc.VCC e.GND-tc.GND e.G18-tc.SCK e.G5-tc.CS e.G19-tc.SO'), buz('e', 'G25', 'bz', 320, 330), oled('e')),
+OLH + `#include <max6675.h>
+MAX6675 tc(18, 5, 19);
+
+void setup() {
+${OLS}  pinMode(25, OUTPUT);
+}
+
+void loop() {
+  float c = tc.readCelsius();
+  digitalWrite(25, c > 250);
+${show('c > 250 ? "OVERHEAT!" : "Machine temp"', 'String(c, 0) + " C"')}  delay(800);
+}`);
+    ex(S + 'رادار حركة RCWL-0516 + عدّاد مرات', P(C(...E), C('m_rcwl0516', 'rd', 80, 100), W('e.5V-rd.VCC e.GND-rd.GND rd.OUT-e.G27'), oled('e')),
+OLH + `int hits = 0; bool was = false;
+
+void setup() {
+${OLS}  pinMode(27, INPUT);
+}
+
+void loop() {
+  bool m = digitalRead(27);
+  if (m && !was) hits++;
+  was = m;
+${show('m ? "Motion!" : "Watching..."', 'String(hits)')}  delay(100);
+}`);
+    ex(S + 'حساس نبض الإصبع MAX30102 على OLED', P(C(...E), i2c('e', 'm_max30102', 'hr', 80, 100, '3V3'), oled('e')),
+OLH + `#include "MAX30105.h"
+MAX30105 sensor;
+long last = 0; int bpm = 0; bool up = false;
+
+void setup() {
+${OLS}  sensor.begin(); sensor.setup();
+}
+
+void loop() {
+  long ir = sensor.getIR();
+  if (ir > 91200 && !up) { up = true; long now = millis(); if (last) bpm = 60000 / (now - last); last = now; }
+  if (ir < 90800) up = false;
+  if (millis() % 500 < 15) {
+${show('"Heart rate"', 'String(bpm) + " BPM"')}  }
+  delay(10);
+}`);
+    ex(S + 'كشف الغاز الطبيعي MQ-4 بثلاثة مستويات', P(C(...E), C('m_mq4', 'g', 80, 100), W('e.5V-g.VCC e.GND-g.GND g.AO-e.G34'), led('e', 'G25', 'a', 'green', 280, 300), led('e', 'G26', 'b', 'yellow', 380, 300), led('e', 'G27', 'c', 'red', 480, 300)),
+`void setup() { pinMode(25, OUTPUT); pinMode(26, OUTPUT); pinMode(27, OUTPUT); Serial.begin(115200); }
+
+void loop() {
+  int v = analogRead(34);
+  digitalWrite(25, v < 1500); digitalWrite(26, v >= 1500 && v < 2500); digitalWrite(27, v >= 2500);
+  Serial.print("الميثان: "); Serial.println(v);
+  delay(400);
+}`);
+    ex(S + 'نبض قلب Pulse Sensor + ليد ينبض', P(C(...E), C('m_pulse_sensor', 'ps', 80, 100), W('e.3V3-ps.VCC e.GND-ps.GND ps.S-e.G34'), led('e', 'G25', 'l', 'red', 320, 300)),
+`int thr = 1900; bool high = false; unsigned long last = 0;
+
+void setup() { pinMode(25, OUTPUT); Serial.begin(115200); }
+
+void loop() {
+  int s = analogRead(34);
+  if (s > thr && !high) { high = true; digitalWrite(25, HIGH); unsigned long n = millis(); if (last) { Serial.print("BPM = "); Serial.println(60000 / (n - last)); } last = n; }
+  if (s < thr - 150) { high = false; digitalWrite(25, LOW); }
+  delay(5);
+}`);
+    ex(S + 'قائمة إعدادات بالمشفّر الدوّار على OLED', P(C(...E), C('m_ky040', 'enc', 80, 90), W('e.3V3-enc.VCC e.GND-enc.GND enc.CLK-e.G27 enc.DT-e.G26 enc.SW-e.G25'), oled('e')),
+OLH + `int value = 50, last;
+
+void setup() {
+${OLS}  pinMode(27, INPUT); pinMode(26, INPUT); pinMode(25, INPUT_PULLUP); last = digitalRead(27);
+}
+
+void loop() {
+  int c = digitalRead(27);
+  if (c != last && c == LOW) value = constrain(value + (digitalRead(26) != c ? 5 : -5), 0, 100);
+  last = c;
+  if (digitalRead(25) == LOW) value = 50;
+${show('"Set point"', 'String(value) + "%"')}}`);
+    ex(S + 'محرك خطوي A4988: دورة كاملة كل 3 ثوانٍ', P(C(...E), C('m_a4988', 'drv', 80, 90), W('e.3V3-drv.VCC e.GND-drv.GND e.G25-drv.STEP e.G26-drv.DIR')),
+`void setup() { pinMode(25, OUTPUT); pinMode(26, OUTPUT); Serial.begin(115200); }
+
+void loop() {
+  digitalWrite(26, HIGH);
+  for (int i = 0; i < 200; i++) { digitalWrite(25, HIGH); delay(3); digitalWrite(25, LOW); delay(3); }
+  Serial.println("دورة كاملة (200 خطوة = 360°)");
+  delay(3000);
+}`);
+    ex(S + 'متتبع الخط بخمسة حساسات + محركان', P(C(...E), C('m_line5', 'ln', 60, 90), W('e.3V3-ln.VCC e.GND-ln.GND ln.S1-e.G32 ln.S2-e.G33 ln.S3-e.G34 ln.S4-e.G35 ln.S5-e.G4'), C('drv_l298n', 'drv', 300, 330), C('motor_dc6', 'ml', 200, 560), C('motor_dc6', 'mr', 420, 560), C('bat_9v', 'bat', 520, 330), W('bat.POS-drv.VS bat.NEG-drv.GND drv.GND-e.GND e.G25-drv.IN1 e.G26-drv.IN2 e.G27-drv.IN3 e.G18-drv.IN4 e.5V-drv.ENA e.5V-drv.ENB drv.OUT1-ml.P1 drv.OUT2-ml.P2 drv.OUT3-mr.P1 drv.OUT4-mr.P2')),
+`int S[5] = {32, 33, 34, 35, 4};
+void drive(int a1, int a2, int b1, int b2) { digitalWrite(25, a1); digitalWrite(26, a2); digitalWrite(27, b1); digitalWrite(18, b2); }
+
+void setup() { for (int i = 0; i < 5; i++) pinMode(S[i], INPUT); pinMode(25, OUTPUT); pinMode(26, OUTPUT); pinMode(27, OUTPUT); pinMode(18, OUTPUT); }
+
+void loop() {
+  bool L = digitalRead(32) == LOW || digitalRead(33) == LOW, M = digitalRead(34) == LOW, R = digitalRead(35) == LOW || digitalRead(4) == LOW;
+  if (M && !L && !R) drive(1, 0, 1, 0);
+  else if (L) drive(0, 0, 1, 0);
+  else if (R) drive(1, 0, 0, 0);
+  else drive(0, 0, 0, 0);
+  delay(20);
+}`);
+    ex(S + 'مفتاح لمس + مرحّل لإنارة الغرفة', P(C(...E), sen('e', 'touch', 'tc', 80, 100, 'tc.OUT-e.G27', '3V3'), relay('e', 'G26', 'rl', 300, 300, ['bulb_12v', 'lamp'])),
+`bool on = false, last = LOW;
+
+void setup() { pinMode(27, INPUT); pinMode(26, OUTPUT); }
+
+void loop() {
+  bool t = digitalRead(27);
+  if (t && !last) { on = !on; digitalWrite(26, on); }
+  last = t; delay(30);
+}`);
+    ex(S + 'تصفيقة تبدّل ألوان NeoPixel', P(C(...E), sen('e', 'sound', 'mic', 80, 100, 'mic.AO-e.G34'), sen('e', 'neopixel_8', 'np', 260, 330, 'np.DIN-e.G5')),
+`#include <Adafruit_NeoPixel.h>
+Adafruit_NeoPixel px(8, 5, NEO_GRB + NEO_KHZ800);
+int mode = 0;
+uint32_t colors[4];
+
+void setup() { px.begin(); px.setBrightness(80); colors[0] = px.Color(255, 0, 0); colors[1] = px.Color(0, 255, 0); colors[2] = px.Color(0, 0, 255); colors[3] = 0; }
+
+void loop() {
+  if (analogRead(34) > 2500) { mode = (mode + 1) % 4; delay(400); }
+  for (int i = 0; i < 8; i++) px.setPixelColor(i, colors[mode]);
+  px.show(); delay(20);
+}`);
+    ex(S + 'جرس باب ذكي بعائق IR وعدّاد', P(C(...E), sen('e', 'ir_obst', 'ir', 80, 100, 'ir.OUT-e.G27', '3V3'), buz('e', 'G25', 'bz', 320, 330), oled('e')),
+OLH + `int n = 0; bool was = false;
+
+void setup() {
+${OLS}  pinMode(27, INPUT); pinMode(25, OUTPUT);
+}
+
+void loop() {
+  bool now = digitalRead(27) == LOW;
+  if (now && !was) { n++; digitalWrite(25, HIGH); delay(200); digitalWrite(25, LOW); }
+  was = now;
+${show('"Visitors"', 'String(n)')}  delay(50);
+}`);
+    ex(S + 'منظم تيار حمل بالـ ACS712 وقطع تلقائي', P(C(...E), sen('e', 'acs712', 'cs', 80, 100, 'cs.OUT-e.G34'), relay('e', 'G26', 'rl', 300, 300, ['bulb_12v', 'lamp'])),
+`void setup() { pinMode(26, OUTPUT); digitalWrite(26, HIGH); Serial.begin(115200); }
+
+void loop() {
+  float v = analogRead(34) * 3.3 / 4095.0 * 1.5;    // مقسّم 1.5 لأن الحساس 5V
+  float a = (v - 2.5) / 0.185;
+  if (a > 3.0) { digitalWrite(26, LOW); Serial.println("⚠ تيار زائد — قُطع الحمل"); }
+  Serial.print("التيار: "); Serial.println(a, 2);
+  delay(500);
+}`);
+    ex(S + 'مراقبة بطارية بحساس الجهد على OLED', P(C(...E), sen('e', 'vsens', 'vs', 80, 100, 'vs.OUT-e.G34'), oled('e')),
+OLH + `void setup() {
+${OLS}}
+
+void loop() {
+  float v = analogRead(34) * 3.3 / 4095.0 * 5.0;
+  int pct = constrain(map(v * 100, 1050, 1270, 0, 100), 0, 100);
+${show('"Battery " + String(v, 2) + "V"', 'String(pct) + "%"')}  delay(1000);
+}`);
+    ex(S + 'منبّه الأشعة فوق البنفسجية UV على OLED', P(C(...E), C('m_guva_uv', 'uv', 80, 100), W('e.3V3-uv.VCC e.GND-uv.GND uv.SIG-e.G34'), oled('e')),
+OLH + `void setup() {
+${OLS}}
+
+void loop() {
+  float uv = analogRead(34) * 3.3 / 4095.0 / 0.1;
+${show('uv >= 6 ? "Use sunscreen!" : "UV index"', 'String(uv, 1)')}  delay(700);
+}`);
+    ex(S + 'حاجز ليزر أمني على ESP32', P(C(...E), C('m_ky008', 'lz', 60, 100), W('e.G25-lz.S lz.GND-e.GND'), sen('e', 'ldr_sensor', 'ldr', 240, 100, 'ldr.AO-e.G34', '3V3'), buz('e', 'G26', 'bz', 360, 330)),
+`void setup() { pinMode(25, OUTPUT); pinMode(26, OUTPUT); digitalWrite(25, HIGH); Serial.begin(115200); }
+
+void loop() {
+  bool broken = analogRead(34) < 2000;
+  digitalWrite(26, broken);
+  if (broken) Serial.println("⚠ عبور!");
+  delay(100);
+}`);
+    ex(S + 'عدّاد سرعة العجلة LM393 على OLED', P(C(...E), C('m_speed_lm393', 'sp', 80, 100), W('e.3V3-sp.VCC e.GND-sp.GND sp.DO-e.G27'), oled('e')),
+OLH + `volatile unsigned long n = 0;
+void count() { n++; }
+
+void setup() {
+${OLS}  attachInterrupt(digitalPinToInterrupt(27), count, RISING);
+}
+
+void loop() {
+  n = 0; delay(1000);
+${show('"Wheel speed"', 'String(n * 3) + " RPM"')}}`);
+
+    window.sparkExperiments = { from: N0, to: EXAMPLES.length };
+    (function () { const s = document.getElementById('exSelect'); if (s) for (let i = N0; i < EXAMPLES.length; i++) { const o = document.createElement('option'); o.value = i; o.textContent = EXAMPLES[i].name; s.appendChild(o); } })();
+    // keep the long examples list easy to use: group by board in the dropdown
+    function groupSelect() {
+        const sel = document.getElementById('exSelect'); if (!sel || sel.dataset.g) return; const opts = [...sel.options]; if (opts.length < 40) return;
+        sel.dataset.g = 1; const first = opts[0] && !opts[0].value ? opts[0] : null; const grp = { '🟦 أردوينو': [], '🟩 ESP32': [], 'أمثلة أخرى': [] };
+        opts.forEach(o => { if (o === first) return; const t = o.textContent; (t.startsWith('🟦') ? grp['🟦 أردوينو'] : t.startsWith('🟩') ? grp['🟩 ESP32'] : grp['أمثلة أخرى']).push(o); });
+        sel.innerHTML = ''; if (first) sel.appendChild(first);
+        Object.entries(grp).forEach(([k, a]) => { if (!a.length) return; const g = document.createElement('optgroup'); g.label = k + ' (' + a.length + ')'; a.forEach(o => g.appendChild(o)); sel.appendChild(g); });
+    }
+    addEventListener('load', () => setTimeout(groupSelect, 1800));
+})();
+
+// h55 — calmer sign-in screen: one "account type" dropdown instead of plan cards / extra links, optional fields folded away
+(function () {
+    const $ = id => document.getElementById(id);
+    const TYPES = [
+        ['student', 'fa-graduation-cap', 'طالب — مجاناً لمدة شهر', 'الأدوات الأساسية للتعلّم بدون كود، ويمكنك الترقية لاحقاً.'],
+        ['class', 'fa-chalkboard-user', 'طالب أو معلم في صف (كود الصف)', 'اكتب اسمك وبريدك ثم كود الصف الذي أعطاك إياه المعلم أو الإدارة.'],
+        ['engineer', 'fa-helmet-safety', 'مهندس — باقة العمل (بكود)', 'المحاكاة الكاملة وPCB والروبوتات، بكود تفعيل.'],
+        ['developer', 'fa-code', 'مطوّر — الباقة الكاملة (بكود)', 'كل أدوات المنصة بما فيها إنترنت الأشياء والذكاء الاصطناعي.'],
+        ['team', 'fa-user-shield', 'فريق التطوير', 'للمالك وفريق التطوير فقط، بكود الفريق.']
+    ];
+    const css = document.createElement('style'); css.textContent = `
+#accOv .acc-plans,#accOv #clsJoinHint{display:none!important}
+#accOv .acc-form>.acc-f>div:has(>#accOwn){display:none}
+#accTypeW{position:relative;margin:12px 0 4px}
+#accTypeW label{display:block;font-size:12.5px;font-weight:700;margin-bottom:6px;color:var(--sp-mut,#9aa6b2)}
+#accType{width:100%;height:50px;border-radius:12px;border:1px solid #3a4452;background:#161c23;color:#e6ebf1;font:inherit;font-size:15px;font-weight:700;padding:0 44px 0 40px;appearance:none;-webkit-appearance:none;cursor:pointer}
+#accType:focus{outline:none;border-color:#c8741f;box-shadow:0 0 0 3px rgba(200,116,31,.18)}
+#accTypeW .ic{position:absolute;inset-inline-start:14px;bottom:15px;color:#c8741f;pointer-events:none}
+#accTypeW .chev{position:absolute;inset-inline-end:14px;bottom:17px;color:#8b95a1;pointer-events:none;font-size:12px}
+#accTypeD{font-size:12.5px;color:#9aa6b2;line-height:1.7;margin:6px 2px 10px;min-height:20px}
+#accMore{margin:2px 0 8px;border:1px solid #2c3540;border-radius:12px;padding:0 12px;background:rgba(255,255,255,.015)}
+#accMore summary{cursor:pointer;padding:11px 0;font-size:13px;font-weight:700;color:#9aa6b2;list-style:none}
+#accMore summary::-webkit-details-marker{display:none}#accMore summary::before{content:'＋ ';color:#c8741f}#accMore[open] summary::before{content:'－ '}
+#accMore[open]{padding-bottom:10px}
+#accOv .acc-form input{border-radius:12px!important}
+#accOv #accNote{display:none}
+@media(max-width:768px){#accOv .acc-hero p,#accOv .acc-pts{display:none!important}#accOv .acc-hero h2{font-size:22px!important;line-height:1.5!important}#accOv .acc-art{padding-block:16px!important;min-height:0!important}}`;
+    document.head.appendChild(css);
+    function build() {
+        const ov = $('accOv'), pl = $('accPl'); if (!ov || !pl || $('accType')) return;
+        const own = () => /فريق التطوير/.test(($('accT') || {}).textContent || '') || /رجوع لتسجيل الدخول العادي/.test(($('accOwn') || {}).textContent || '');
+        const w = document.createElement('div'); w.id = 'accTypeW';
+        w.innerHTML = `<label for="accType">نوع الحساب</label><i class="fa-solid fa-graduation-cap ic" id="accTypeI"></i><select id="accType">${TYPES.map(t => `<option value="${t[0]}">${t[2]}</option>`).join('')}</select><i class="fa-solid fa-chevron-down chev"></i>`;
+        pl.before(w); const d = document.createElement('div'); d.id = 'accTypeD'; w.after(d);
+        const org = $('accOrgL'); if (org && !$('accMore')) { const m = document.createElement('details'); m.id = 'accMore'; m.innerHTML = '<summary>معلومات إضافية (اختياري)</summary>'; org.before(m); m.appendChild(org); }
+        const sel = $('accType');
+        const cur = () => { if (own()) return 'team'; const on = pl.querySelector('.acc-plan.on'); return on ? on.dataset.p : 'student'; };
+        sel.value = cur();
+        const apply = () => {
+            const v = sel.value, t = TYPES.find(x => x[0] === v);
+            if ((v === 'team') !== own()) { const b = $('accOwn'); if (b) b.click(); }
+            if (v !== 'team') { const p = v === 'class' ? 'engineer' : v; const b = pl.querySelector(`[data-p="${p}"]`); if (b && !b.classList.contains('on')) b.click(); }
+            $('accTypeI').className = 'fa-solid ' + t[1] + ' ic'; $('accTypeD').textContent = t[3];
+            const L = $('accCodeL'); if (L && L.firstChild && L.firstChild.nodeType === 3) L.firstChild.textContent = v === 'class' ? 'كود الصف' : v === 'team' ? 'كود فريق التطوير' : 'كود التفعيل';
+            const s = $('accS'); if (s && /الباقة/.test(s.textContent)) s.textContent = 'اختر نوع الحساب ثم أدخل بياناتك.';
+        };
+        sel.onchange = () => { apply(); const n = $('accName'); if (n && !n.value) n.focus(); };
+        apply();
+    }
+    setInterval(build, 500);
+})();
+
+// h56 — 200 more ready projects, generated from real sensor × output recipes (Arduino UNO + ESP32).
+// Every project: wired circuit, complete commented sketch, runs in the simulator, routable PCB.
+(function () {
+    const N0 = EXAMPLES.length;
+    const AR = { b: 'u', t: 'arduino_uno', an: 'A0', an2: 'A1', d: 'D2', d2: 'D3', d3: 'D4', tr: 'D9', ec: 'D10', V: '5V', LV: '5V', max: 1023, vref: 5.0, ser: 9600,
+        o: { led: 'D13', buz: 'D8', rel: 'D7', srv: 'D6', tmc: 'D11', tmd: 'D12', neo: 'D5', l3: ['D11', 'D12', 'D13'] } };
+    const ES = { b: 'e', t: 'esp32_devkit', an: 'G34', an2: 'G35', d: 'G27', d2: 'G19', d3: 'G18', tr: 'G5', ec: 'G18', V: '5V', LV: '3V3', max: 4095, vref: 3.3, ser: 115200,
+        o: { led: 'G2', buz: 'G25', rel: 'G26', srv: 'G32', tmc: 'G33', tmd: 'G23', neo: 'G23', l3: ['G25', 'G26', 'G2'] } };
+    const num = p => p.replace(/^[DG]/, '');                  // D7 → 7, G26 → 26, A0 stays A0
+    const AN = (B, p) => B.b === 'u' ? p : num(p);           // analog pin in code
+    const pct = (B, p) => `map(analogRead(${AN(B, p)}), 0, ${B.max}, 0, 100)`;
+    // ---- sensors: type, Arabic purpose, short ASCII label for screens, unit, read expression, alert condition ----
+    const S = [
+        { t: 'ldr_sensor', ic: '🌙', p: 'إنارة تلقائية عند الظلام', s: 'حساس الضوء LDR', en: 'Light', u: '%', w: B => `s.AO-${B.b}.${B.an}`, r: B => pct(B, B.an), op: '<', th: 30, load: 'lamp', srv: 'ستارة تُفتح نهاراً', lv: 1 },
+        { t: 'lm35', ic: '🌡️', p: 'تبريد تلقائي بالحرارة', s: 'حساس الحرارة LM35', en: 'Temp', u: 'C', w: B => `s.OUT-${B.b}.${B.an}`, r: B => B.b === 'u' ? `analogRead(A0) * 500.0 / 1023.0` : `analogRead(34) * 3300.0 / 4095.0 / 10.0`, op: '>', th: 30, load: 'fan', srv: 'فتحة تهوية' },
+        { t: 'dht22_sensor', ic: '🌡️', p: 'مراقبة حرارة الغرفة', s: 'حساس DHT22', en: 'Temp', u: 'C', w: B => `s.DATA-${B.b}.${B.d}`, inc: '#include <DHT.h>', g: B => `DHT dht(${num(B.d)}, DHT22);`, su: 'dht.begin();', r: () => 'dht.readTemperature()', op: '>', th: 30, load: 'fan', srv: 'فتحة تهوية', key: 'dhtT', lv: 1 },
+        { t: 'dht22_sensor', ic: '💧', p: 'التحكم برطوبة الجو', s: 'رطوبة DHT22', en: 'Humid', u: '%', w: B => `s.DATA-${B.b}.${B.d}`, inc: '#include <DHT.h>', g: B => `DHT dht(${num(B.d)}, DHT22);`, su: 'dht.begin();', r: () => 'dht.readHumidity()', op: '>', th: 70, load: 'fan', key: 'dhtH' },
+        { t: 'soil_sensor', ic: '🌱', p: 'ري تلقائي حسب رطوبة التربة', s: 'حساس رطوبة التربة', en: 'Soil', u: '%', w: B => `s.AOUT-${B.b}.${B.an}`, r: B => pct(B, B.an), op: '<', th: 40, load: 'pump', srv: 'صمام ري', lv: 1 },
+        { t: 'mq2', ic: '🔥', p: 'كشف تسرب الغاز', s: 'حساس الغاز MQ-2', en: 'Gas', u: '%', w: B => `s.AO-${B.b}.${B.an}`, r: B => pct(B, B.an), op: '>', th: 40, load: 'fan', srv: 'نافذة تهوية', pw: '5V', lv: 1 },
+        { t: 'flame', ic: '🧯', p: 'إنذار حريق', s: 'حساس اللهب', en: 'Fire', dig: ['FIRE!', 'Safe'], w: B => `s.DO-${B.b}.${B.d}`, r: B => `digitalRead(${num(B.d)}) == LOW`, load: 'pump', pw: '5V' },
+        { t: 'rain', ic: '☔', p: 'كاشف المطر', s: 'حساس المطر', en: 'Rain', u: '%', w: B => `s.AO-${B.b}.${B.an}`, r: B => `100 - ${pct(B, B.an)}`, op: '>', th: 50, load: 'lamp', srv: 'نافذة تُغلق عند المطر', pw: '5V' },
+        { t: 'sound', ic: '🔊', p: 'مراقبة مستوى الضجيج', s: 'حساس الصوت', en: 'Noise', u: '%', w: B => `s.AO-${B.b}.${B.an}`, r: B => pct(B, B.an), op: '>', th: 60, load: 'lamp', pw: '5V', lv: 1 },
+        { t: 'pir_sensor', ic: '🚶', p: 'كشف حركة الأشخاص', s: 'حساس الحركة PIR', en: 'Motion', dig: ['MOTION', 'Quiet'], w: B => `s.OUT-${B.b}.${B.d}`, r: B => `digitalRead(${num(B.d)}) == HIGH`, load: 'lamp', srv: 'باب يُفتح تلقائياً', pw: '5V' },
+        { t: 'ir_obst', ic: '🚧', p: 'كشف العوائق والعبور', s: 'حساس العوائق IR', en: 'Object', dig: ['OBJECT', 'Clear'], w: B => `s.OUT-${B.b}.${B.d}`, r: B => `digitalRead(${num(B.d)}) == LOW`, load: 'lamp', srv: 'بوابة تُفتح' },
+        { t: 'touch', ic: '👆', p: 'مفتاح لمس ذكي', s: 'حساس اللمس TTP223', en: 'Touch', dig: ['TOUCH', 'Idle'], w: B => `s.OUT-${B.b}.${B.d}`, r: B => `digitalRead(${num(B.d)}) == HIGH`, load: 'lamp' },
+        { t: 'tilt', ic: '📐', p: 'إنذار الميلان والسرقة', s: 'حساس الميل', en: 'Tilt', dig: ['TILTED', 'Level'], w: B => `s.OUT-${B.b}.${B.d}`, r: B => `digitalRead(${num(B.d)}) == HIGH`, load: 'lamp' },
+        { t: 'ultrasonic_sensor', ic: '📏', p: 'قياس المسافة وتحذير الاقتراب', s: 'حساس المسافة HC-SR04', en: 'Dist', u: 'cm', w: B => `s.TRIG-${B.b}.${B.tr} s.ECHO-${B.b}.${B.ec}`, fn: B => `long readCm() {\n  digitalWrite(${num(B.tr)}, LOW); delayMicroseconds(2);\n  digitalWrite(${num(B.tr)}, HIGH); delayMicroseconds(10); digitalWrite(${num(B.tr)}, LOW);\n  return pulseIn(${num(B.ec)}, HIGH) / 58;\n}`, su: B => `pinMode(${num(B.tr)}, OUTPUT); pinMode(${num(B.ec)}, INPUT);`, r: () => 'readCm()', op: '<', th: 20, load: 'lamp', srv: 'بوابة موقف', pw: '5V', lv: 1 },
+        { t: 'bmp280', ic: '⛅', p: 'توقّع الطقس من الضغط الجوي', s: 'حساس الضغط BMP280', en: 'Press', u: 'hPa', i2c: 1, inc: '#include <Adafruit_BMP280.h>', g: () => 'Adafruit_BMP280 bmp;', su: 'bmp.begin(0x76);', r: () => 'bmp.readPressure() / 100.0', op: '<', th: 1005, load: 'lamp', dec: 0 },
+        { t: 'bh1750', ic: '💡', p: 'إضاءة مكتب ذكية', s: 'حساس الإضاءة BH1750', en: 'Lux', u: 'lx', i2c: 1, inc: '#include <BH1750.h>', g: () => 'BH1750 meter;', su: 'meter.begin();', r: () => 'meter.readLightLevel()', op: '<', th: 100, load: 'lamp', srv: 'ستارة ذكية', dec: 0, lv: 1 },
+        { t: 'ds18b20', ic: '🐟', p: 'التحكم بحرارة الماء', s: 'حساس الماء DS18B20', en: 'Water', u: 'C', w: B => `s.DQ-${B.b}.${B.d} ${B.b}.${B.LV}-pu.P1 pu.P2-${B.b}.${B.d}`, extra: [['res_e12', 'pu', 230, 90, { ohms: 4700 }]], inc: '#include <OneWire.h>\n#include <DallasTemperature.h>', g: B => `OneWire ow(${num(B.d)});\nDallasTemperature water(&ow);`, su: 'water.begin();', pre: 'water.requestTemperatures();', r: () => 'water.getTempCByIndex(0)', op: '<', th: 25, load: 'heater' },
+        { t: 'm_mlx90614', ic: '🌡️', p: 'فحص حرارة الجسم بدون لمس', s: 'MLX90614', en: 'Body', u: 'C', i2c: 1, inc: '#include <Adafruit_MLX90614.h>', g: () => 'Adafruit_MLX90614 mlx;', su: 'mlx.begin();', r: () => 'mlx.readObjectTempC()', op: '>', th: 37.8, load: 'lamp' },
+        { t: 'm_sht31', ic: '💧', p: 'مراقبة الرطوبة الدقيقة', s: 'حساس SHT31', en: 'Humid', u: '%', i2c: 1, inc: '#include <Adafruit_SHT31.h>', g: () => 'Adafruit_SHT31 sht;', su: 'sht.begin(0x44);', r: () => 'sht.readHumidity()', op: '>', th: 70, load: 'fan', dec: 0 },
+        { t: 'm_vl53l0x', ic: '🎯', p: 'قياس مسافة دقيق بالليزر', s: 'VL53L0X', en: 'Range', u: 'mm', i2c: 1, inc: '#include <VL53L0X.h>', g: () => 'VL53L0X tof;', su: 'tof.init();', r: () => 'tof.readRangeSingleMillimeters()', op: '<', th: 200, load: 'lamp', srv: 'ذراع حاجز', dec: 0, lv: 1 },
+        { t: 'm_mq3', ic: '🍷', p: 'فحص الكحول', s: 'حساس MQ-3', en: 'Alcohol', u: '%', w: B => `s.AO-${B.b}.${B.an}`, r: B => pct(B, B.an), op: '>', th: 40, load: 'lamp', pw: '5V' },
+        { t: 'm_mq9', ic: '☠️', p: 'كشف أول أكسيد الكربون', s: 'حساس MQ-9', en: 'CO', u: '%', w: B => `s.AO-${B.b}.${B.an}`, r: B => pct(B, B.an), op: '>', th: 35, load: 'fan', srv: 'نافذة تهوية', pw: '5V' },
+        { t: 'm_mq4', ic: '🔥', p: 'كشف غاز الطبخ (الميثان)', s: 'حساس MQ-4', en: 'CH4', u: '%', w: B => `s.AO-${B.b}.${B.an}`, r: B => pct(B, B.an), op: '>', th: 40, load: 'fan', pw: '5V' },
+        { t: 'm_guva_uv', ic: '☀️', p: 'مؤشر الأشعة فوق البنفسجية', s: 'حساس UV', en: 'UV', u: '', w: B => `s.SIG-${B.b}.${B.an}`, r: B => `analogRead(${AN(B, B.an)}) * ${B.vref} / ${B.max}.0 / 0.1`, op: '>', th: 6, load: 'lamp', srv: 'مظلة تُفتح', dec: 1 },
+        { t: 'm_gp2y0a21', ic: '📏', p: 'تحذير اقتراب بحساس Sharp', s: 'Sharp IR', en: 'Dist', u: 'cm', w: B => `s.VO-${B.b}.${B.an}`, r: B => `29.988 * pow(analogRead(${AN(B, B.an)}) * ${B.vref} / ${B.max}.0, -1.173)`, op: '<', th: 20, load: 'lamp', pw: '5V' },
+        { t: 'm_rcwl0516', ic: '📡', p: 'كشف حركة بالرادار', s: 'رادار RCWL-0516', en: 'Radar', dig: ['MOTION', 'Quiet'], w: B => `s.OUT-${B.b}.${B.d}`, r: B => `digitalRead(${num(B.d)}) == HIGH`, load: 'lamp', pw: '5V' },
+        { t: 'acs712', ic: '⚡', p: 'حماية من التيار الزائد', s: 'حساس التيار ACS712', en: 'Amps', u: 'A', w: B => `s.OUT-${B.b}.${B.an}`, r: B => `(analogRead(${AN(B, B.an)}) * ${B.vref} / ${B.max}.0 - 2.5) / 0.185`, op: '>', th: 2, load: 'lamp', pw: '5V', dec: 2 },
+        { t: 'hx711', ic: '⚖️', p: 'ميزان وتنبيه الحمل الزائد', s: 'خلية الوزن HX711', en: 'Weight', u: 'g', w: B => `s.DT-${B.b}.${B.d2} s.SCK-${B.b}.${B.d3}`, inc: '#include <HX711.h>', g: () => 'HX711 scale;', su: B => `scale.begin(${num(B.d2)}, ${num(B.d3)}); scale.set_scale(420.0); scale.tare();`, r: () => 'scale.get_units(3)', op: '>', th: 500, load: 'lamp', dec: 0 },
+        { t: 'mpu6050', ic: '📐', p: 'قياس زاوية الميلان', s: 'MPU6050', en: 'Angle', u: 'deg', i2c: 1, inc: '#include <MPU6050.h>', g: () => 'MPU6050 imu;', su: 'imu.initialize();', r: () => 'abs(imu.getAccelX()) * 90.0', op: '>', th: 30, load: 'lamp', dec: 0 },
+        { t: 'm_ina219', ic: '🔋', p: 'مراقبة استهلاك الطاقة', s: 'INA219', en: 'Power', u: 'mW', i2c: 1, inc: '#include <Adafruit_INA219.h>', g: () => 'Adafruit_INA219 ina;', su: 'ina.begin();', r: () => 'ina.getPower_mW()', op: '>', th: 5000, load: 'lamp', dec: 0 },
+        { t: 'potentiometer', ic: '🎛️', p: 'تحكم يدوي بمقبض', s: 'المقاومة المتغيرة', en: 'Knob', u: '%', w: B => `s.WIPER-${B.b}.${B.an}`, pwr: B => `${B.b}.${B.LV}-s.VCC ${B.b}.GND-s.GND`, r: B => pct(B, B.an), op: '>', th: 50, load: 'lamp', srv: 'زاوية يحددها المقبض', lv: 1 },
+        { t: 'm_max6675', ic: '🏭', p: 'مراقبة حرارة فرن صناعي', s: 'MAX6675 مزدوج K', en: 'Oven', u: 'C', w: B => `s.SCK-${B.b}.${B.d3} s.CS-${B.b}.${B.d2} s.SO-${B.b}.${B.d}`, inc: '#include <max6675.h>', g: B => `MAX6675 tc(${num(B.d3)}, ${num(B.d2)}, ${num(B.d)});`, r: () => 'tc.readCelsius()', op: '>', th: 250, load: 'fan', dec: 0 }
+    ];
+    const LOADS = { lamp: ['bulb_12v', 'lamp', 'P1', 'P2', 'مصباح'], fan: ['cooling_fan', 'fan', 'VCC', 'GND', 'مروحة'], pump: ['water_pump', 'pump', 'POS', 'NEG', 'مضخة'], heater: ['heater', 'heat', 'P1', 'P2', 'سخّان'] };
+    // ---- outputs ----
+    const O = {
+        led: { n: 'ضوء تحذير', parts: B => [[['led_red', 'l', 320, 300], ['res_e12', 'lr', 320, 400, { ohms: 220 }]], `${B.b}.${B.o.led}-lr.P1 lr.P2-l.A l.K-${B.b}.GND`], su: B => `pinMode(${num(B.o.led)}, OUTPUT);`, act: B => `digitalWrite(${num(B.o.led)}, alert ? HIGH : LOW);` },
+        buz: { n: 'صفارة إنذار', parts: B => [[['active_buzzer', 'bz', 320, 330]], `${B.b}.${B.o.buz}-bz.POS bz.NEG-${B.b}.GND`], su: B => `pinMode(${num(B.o.buz)}, OUTPUT);`, act: B => `if (alert) { digitalWrite(${num(B.o.buz)}, HIGH); delay(120); digitalWrite(${num(B.o.buz)}, LOW); }` },
+        rel: { n: L => 'مرحّل يشغّل ' + LOADS[L][4], parts: (B, s) => { const L = LOADS[s.load]; return [[['relay_module', 'rl', 300, 300], [L[0], L[1], 300, 520]], `${B.b}.5V-rl.VCC ${B.b}.GND-rl.GND ${B.b}.${B.o.rel}-rl.IN ${B.b}.5V-rl.COM rl.NO-${L[1]}.${L[2]} ${L[1]}.${L[3]}-${B.b}.GND` + (s.load === 'fan' ? ` ${B.b}.5V-fan.PWM` : '')]; }, su: B => `pinMode(${num(B.o.rel)}, OUTPUT);`, act: B => `digitalWrite(${num(B.o.rel)}, alert ? HIGH : LOW);` },
+        srv: { n: s => s.srv ? 'سيرفو: ' + s.srv : 'سيرفو', need: s => !!s.srv, parts: B => [[['servo_motor', 'sv', 320, 300]], `${B.b}.5V-sv.VCC ${B.b}.GND-sv.GND ${B.b}.${B.o.srv}-sv.PWM`], inc: '#include <Servo.h>', g: () => 'Servo sv;', su: B => `sv.attach(${num(B.o.srv)});`, act: (B, s) => s.key === undefined && s.t === 'potentiometer' ? 'sv.write(map(v, 0, 100, 0, 180));' : 'sv.write(alert ? 90 : 0);' },
+        lcd: { n: 'شاشة LCD', parts: B => [[['lcd_i2c', 'lcd', B.b === 'e' ? 340 : 60, B.b === 'e' ? 330 : 470]], `${B.b}.5V-lcd.VCC ${B.b}.GND-lcd.GND ${B.b}.SDA-lcd.SDA ${B.b}.SCL-lcd.SCL`], inc: '#include <LiquidCrystal_I2C.h>', g: () => 'LiquidCrystal_I2C lcd(0x27, 16, 2);', su: () => 'lcd.init(); lcd.backlight();', act: (B, s) => `lcd.setCursor(0, 0); lcd.print("${s.en}: "); ${s.dig ? `lcd.print(alert ? "${s.dig[0]}" : "${s.dig[1]}");` : `lcd.print(v, ${s.dec === undefined ? 1 : s.dec}); lcd.print(" ${s.u}");`} lcd.print("    ");\n  lcd.setCursor(0, 1); lcd.print(alert ? "ALERT!          " : "OK              ");` },
+        oled: { n: 'شاشة OLED', parts: B => [[['oled_128x64', 'oled', 60, 470]], `${B.b}.${B.LV}-oled.VCC ${B.b}.GND-oled.GND ${B.b}.SDA-oled.SDA ${B.b}.SCL-oled.SCL`], inc: '#include <Adafruit_SSD1306.h>', g: () => 'Adafruit_SSD1306 oled(128, 64, &Wire, -1);', su: () => 'oled.begin(SSD1306_SWITCHCAPVCC, 0x3C); oled.setTextColor(SSD1306_WHITE);', act: (B, s) => `oled.clearDisplay();\n  oled.setTextSize(1); oled.setCursor(0, 0); oled.println(alert ? "${s.en} - ALERT" : "${s.en}");\n  oled.setTextSize(2); oled.setCursor(0, 24); ${s.dig ? `oled.println(alert ? "${s.dig[0]}" : "${s.dig[1]}");` : `oled.print(v, ${s.dec === undefined ? 1 : s.dec}); oled.println(" ${s.u}");`}\n  oled.display();` },
+        tm: { n: 'عدّاد رقمي TM1637', need: s => !s.dig, parts: B => [[['tm1637', 'tm', 320, 300]], `${B.b}.${B.LV}-tm.VCC ${B.b}.GND-tm.GND ${B.b}.${B.o.tmc}-tm.CLK ${B.b}.${B.o.tmd}-tm.DIO`], inc: '#include <TM1637Display.h>', g: B => `TM1637Display disp(${num(B.o.tmc)}, ${num(B.o.tmd)});`, su: () => 'disp.setBrightness(5);', act: () => 'disp.showNumberDec((int)v);' },
+        neo: { n: 'شريط ألوان NeoPixel', need: s => !s.dig, parts: B => [[['neopixel_8', 'np', 320, 300]], `${B.b}.5V-np.VCC ${B.b}.GND-np.GND ${B.b}.${B.o.neo}-np.DIN`], inc: '#include <Adafruit_NeoPixel.h>', g: B => `Adafruit_NeoPixel px(8, ${num(B.o.neo)}, NEO_GRB + NEO_KHZ800);`, su: () => 'px.begin(); px.setBrightness(80);', act: () => `uint32_t c = level == 0 ? px.Color(0, 180, 0) : level == 1 ? px.Color(220, 150, 0) : px.Color(220, 0, 0);\n  for (int i = 0; i < 8; i++) px.setPixelColor(i, i <= level * 3 + 1 ? c : 0);\n  px.show();` },
+        l3: { n: 'مؤشر ثلاثي الألوان', need: s => !s.dig, parts: B => { const [a, b, c] = B.o.l3; return [[['led_green', 'g', 260, 300], ['res_e12', 'gr', 260, 400, { ohms: 220 }], ['led_yellow', 'y', 360, 300], ['res_e12', 'yr', 360, 400, { ohms: 220 }], ['led_red', 'r', 460, 300], ['res_e12', 'rr', 460, 400, { ohms: 220 }]], `${B.b}.${a}-gr.P1 gr.P2-g.A g.K-${B.b}.GND ${B.b}.${b}-yr.P1 yr.P2-y.A y.K-${B.b}.GND ${B.b}.${c}-rr.P1 rr.P2-r.A r.K-${B.b}.GND`]; }, su: B => B.o.l3.map(p => `pinMode(${num(p)}, OUTPUT);`).join(' '), act: B => B.o.l3.map((p, i) => `digitalWrite(${num(p)}, level == ${i});`).join(' ') },
+        log: { n: 'مسجّل بيانات (أدنى/أعلى/متوسط)', parts: () => [[], ''], g: () => 'float vMin = 1e9, vMax = -1e9, vSum = 0; long count = 0, events = 0; bool was = false;', su: () => '', act: (B, s) => s.dig ? `if (alert && !was) { events++; Serial.print("حدث رقم "); Serial.println(events); }\n  was = alert;` : `vMin = min(vMin, v); vMax = max(vMax, v); vSum += v; count++;\n  if (count % 10 == 0) { Serial.print("أدنى="); Serial.print(vMin); Serial.print(" أعلى="); Serial.print(vMax); Serial.print(" متوسط="); Serial.println(vSum / count); }` }
+    };
+    const ORDER = ['rel', 'lcd', 'oled', 'buz', 'neo', 'srv', 'l3', 'tm', 'led', 'log'];
+    function build(B, s, ok) {
+        const o = O[ok], st = s.t;
+        const comps = [[B.t, B.b, 640, 90], [st, 's', 80, 90]].concat(s.extra || []);
+        const pwV = s.pw === '5V' ? '5V' : (s.i2c || B.b === 'u' ? B.LV : B.LV);
+        let wires = s.pwr ? s.pwr(B) : `${B.b}.${s.pw || B.LV}-s.VCC ${B.b}.GND-s.GND`;
+        if (s.i2c) wires += ` ${B.b}.SDA-s.SDA ${B.b}.SCL-s.SCL`; else wires += ' ' + s.w(B);
+        const [oc, ow] = o.parts(B, s); oc.forEach(c => comps.push(c)); if (ow) wires += ' ' + ow;
+        const need = s.i2c || ok === 'lcd' || ok === 'oled';
+        const inc = [need ? '#include <Wire.h>' : '', s.inc || '', o.inc || ''].filter(Boolean).join('\n');
+        const glob = [s.g ? s.g(B) : '', o.g ? o.g(B) : '', s.fn ? s.fn(B) : ''].filter(Boolean).join('\n');
+        const su = [`Serial.begin(${B.ser});`, s.i2c || need ? 'Wire.begin();' : '', typeof s.su === 'function' ? s.su(B) : (s.su || ''), s.dig ? `pinMode(${num(B.d)}, INPUT);` : '', o.su ? o.su(B) : ''].filter(Boolean).join('\n  ');
+        const cond = s.dig ? '' : `bool alert = v ${s.op} ${s.th};`, read = s.dig ? `bool alert = ${s.r(B)};\n  float v = alert ? 1 : 0;` : `float v = ${s.r(B)};\n  ${cond}`;
+        const lvl = s.dig ? 'int level = alert ? 2 : 0;' : (s.op === '>' ? `int level = v < ${s.th} * 0.8 ? 0 : (v < ${s.th} ? 1 : 2);` : `int level = v > ${s.th} * 1.25 ? 0 : (v > ${s.th} ? 1 : 2);`);
+        const name = typeof o.n === 'function' ? o.n(ok === 'rel' ? s.load : s) : o.n;
+        const title = `${s.ic} ${s.p} — ${s.s} + ${name}`;
+        const hdr = `// SPARK · ${s.p}\n// الحساس: ${s.s} · الإخراج: ${name}\n// ${s.dig ? 'حالة رقمية: التنبيه عند ' + s.dig[0] : 'التنبيه عندما تكون القراءة ' + (s.op === '>' ? 'أكبر من ' : 'أقل من ') + s.th + ' ' + s.u}\n`;
+        const code = `${hdr}${inc ? inc + '\n' : ''}${glob ? '\n' + glob + '\n' : ''}
+void setup() {
+  ${su}
+}
+
+void loop() {
+  ${s.pre ? s.pre + '\n  ' : ''}${read}
+  ${lvl}
+  ${o.act(B, s)}
+  Serial.print("${s.en}: "); ${s.dig ? `Serial.println(alert ? "${s.dig[0]}" : "${s.dig[1]}");` : `Serial.print(v); Serial.println(" ${s.u}");`}
+  delay(${ok === 'buz' ? 200 : 400});
+}`;
+        return { title, comps, wires, code };
+    }
+    // ---- pick 200 varied projects: walk sensors round-robin, alternating boards and output types ----
+    const seen = new Set(EXAMPLES.map(e => e.name)); const list = [];
+    for (let round = 0; list.length < 200 && round < 30; round++) {
+        S.forEach((s, si) => {
+            if (list.length >= 200) return;
+            const B = (round + si) % 2 ? ES : AR; let ok = ORDER[(round + si * 3) % ORDER.length];
+            if (B === ES && ok === 'lcd' && s.pw === '5V') ok = 'oled';   // keeps the ESP32 board routable on one layer
+            const o = O[ok];
+            if (o.need && !o.need(s)) return;
+            const p = build(B, s, ok), t = (B === AR ? '🟦 أردوينو · ' : '🟩 ESP32 · ') + p.title;
+            if (seen.has(t)) return; seen.add(t); list.push(p); EXP(t, p.comps, p.wires, p.code);
+        });
+    }
+    window.sparkExperiments2 = { from: N0, to: EXAMPLES.length };
+    (function () { const s = document.getElementById('exSelect'); if (s) for (let i = N0; i < EXAMPLES.length; i++) { const o = document.createElement('option'); o.value = i; o.textContent = EXAMPLES[i].name; s.appendChild(o); } })();
+})();
+
+// h57 — ready-projects browser redesign: board + topic dropdowns, collapsible topic sections, and a picture for every project
+(function () {
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const BOARDS = { arduino_uno: ['uno', 'أردوينو UNO', '#1f6fb2'], esp32_devkit: ['esp', 'ESP32', '#1f8a5b'], rpi4: ['pi', 'Raspberry Pi', '#b0204a'] };
+    const has = (e, re) => e.comps.some(c => re.test(c[0]));
+    // topic rules, first match wins (by the parts the project really uses, then by its name)
+    const TOPICS = [
+        ['labs', '🧪', 'المختبرات الأساسية', null],
+        ['web', '📲', 'تحكم من الجوال عبر واي فاي (ESP32 و ESP32-CAM)', e => /^(🌐|📷)/.test(e.name)],
+        ['pi', '🍓', 'Raspberry Pi', e => has(e, /^rpi/)],
+        ['robot', '🤖', 'الروبوتات والسيارات', e => has(e, /robot_car|drv_l298n|drv_tb6612|drv_l293d/) || /روبوت|سيارة|استوديو/.test(e.name)],
+        ['vision', '✋', 'الإيماءات والكاميرا', e => has(e, /camera/) || /إيماء|كاميرا/.test(e.name)],
+        ['iot', '📡', 'إنترنت الأشياء والاتصال', e => /MQTT|WiFi|ويب|LoRa|بلوتوث|إنترنت/.test(e.name) || has(e, /lora|max485|hc05|nrf24|esp01|sim800/)],
+        ['health', '🩺', 'الصحة وجسم الإنسان', e => has(e, /max30102|pulse_sensor|mlx90614/)],
+        ['farm', '🌱', 'الزراعة والري والمياه', e => has(e, /soil|water_pump|ph_meter|tds|ec_meter|turbidity|npk|flow|float_sw|ds18b20|rain|valve/)],
+        ['safety', '🚨', 'الأمان والإنذار', e => has(e, /mq\d|m_mq|flame|pir|tilt|ky008|rcwl|ky031|fp_r307|rc522/)],
+        ['weather', '🌡️', 'الحرارة والطقس', e => has(e, /dht|lm35|tmp36|bmp|bme|sht31|max6675|ntc|guva/)],
+        ['dist', '📏', 'المسافة والحركة والاتجاه', e => has(e, /ultrasonic|vl53|gp2y|ir_obst|tcrt|line5|mpu6050|qmc5883|hall|speed|ky040|joystick/)],
+        ['motor', '⚙️', 'المحركات والحركة', e => has(e, /servo|motor|stepper|a4988|uln2003|fan|solenoid/)],
+        ['energy', '⚡', 'الطاقة والقياس', e => has(e, /ina219|acs712|vsens|ads1115|hx711|solar|bat_/)],
+        ['display', '🖥️', 'الشاشات والعرض', e => has(e, /lcd|oled|tft|tm1637|max7219|neopixel|seven_segment|led_bar/)],
+        ['light', '💡', 'الإضاءة والأزرار والأساسيات', e => true]
+    ];
+    function items() {
+        const out = [], ps = document.getElementById('presetSelect');
+        if (ps) [...ps.querySelectorAll('option')].forEach(o => { if (o.value && !/^ex:/.test(o.value)) out.push({ v: o.value, l: o.textContent.trim(), topic: 'labs', board: '', comps: [] }); });
+        EXAMPLES.forEach((e, i) => {
+            if (!e || !e.comps) return; const bt = (e.comps.find(c => BOARDS[c[0]]) || [])[0];
+            const t = TOPICS.find(t => t[3] && t[3](e));
+            out.push({ v: 'x:' + i, l: e.name, topic: t ? t[0] : 'light', board: bt ? BOARDS[bt][0] : '', comps: e.comps.map(c => c[0]) });
+        });
+        if (window.edOpen) out.push({ v: 'edison', l: '🟠 بيئة Edison V2.0 — المحاكي والتحكم بالروبوت الحقيقي', topic: 'robot', board: '', comps: [] });
+        return out;
+    }
+    // the "picture" of a project: photo of its most telling part (or its icon), with the board as a small badge
+    const SKIP = /^(arduino_uno|esp32_devkit|rpi4|res_|resistor|led_red|led_green|led_yellow|led_blue|led_white|bat_|cap_|d_1n|npn_|pnp_|bb_)/;
+    function thumb(it) {
+        const main = it.comps.find(t => !SKIP.test(t)) || it.comps.find(t => !BOARDS[t]) || it.comps[0];
+        let img = ''; try { const k = main && PHOTO.cat[main], p = k && PHOTO.img[k]; if (p) img = `<img src="${p.d}" alt="" loading="lazy">`; } catch (e) { }
+        if (!img) { const c = main && COMPONENT_CATALOG[main]; const m = it.l.match(/^\p{Extended_Pictographic}\uFE0F?/u); img = c ? `<i class="fa-solid ${esc(c.icon || 'fa-microchip')}"></i>` : `<span class="em">${m ? m[0] : '📂'}</span>`; }
+        const b = Object.values(BOARDS).find(x => x[0] === it.board);
+        return `<div class="pz-th">${img}${b ? `<span class="pz-bd" style="background:${b[2]}">${b[0] === 'uno' ? 'UNO' : b[0] === 'esp' ? 'ESP32' : 'Pi'}</span>` : ''}</div>`;
+    }
+    const clean = l => l.replace(/^(🟦 أردوينو · |🟩 ESP32 · |🌐 ESP32 · |📷 ESP32-CAM · )/, '').replace(/^\p{Extended_Pictographic}\uFE0F?\s*/u, '');
+    const split = l => { const t = clean(l), i = t.indexOf(' — '); return i > 0 ? [t.slice(0, i), t.slice(i + 3)] : [t, '']; };
+    const css = document.createElement('style'); css.textContent = `
+.pz-ov{position:fixed;inset:0;z-index:9400;background:rgba(5,8,12,.62);display:flex;align-items:center;justify-content:center;padding:14px}
+.pz{width:min(980px,100%);height:min(88vh,860px);display:flex;flex-direction:column;background:#1a2027;color:#eef2f6;border:1px solid #323b46;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.pz-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--sp-line,#323b46)}.pz-h b{font-size:16px;flex:1}.pz-h small{opacity:.6;font-size:12px}
+.pz-h button{width:36px;height:36px;border-radius:10px;border:1px solid var(--sp-line,#323b46);background:transparent;color:inherit;cursor:pointer}
+.pz-f{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px;padding:10px 16px;border-bottom:1px solid var(--sp-line,#323b46)}
+.pz-f input,.pz-f select{height:42px;border-radius:11px;border:1px solid #3a4452;background:#141a20;color:#eef2f6;font:inherit;font-size:13.5px;padding:0 12px;min-width:0}
+.pz-f select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,#8b95a1 50%),linear-gradient(135deg,#8b95a1 50%,transparent 50%);background-position:14px 18px,19px 18px;background-size:5px 5px;background-repeat:no-repeat;padding-inline-start:30px;cursor:pointer}
+.pz-f input:focus,.pz-f select:focus{outline:none;border-color:#c8741f}
+.pz-b{flex:1;overflow:auto;padding:8px 12px 16px}
+.pz-g{border:1px solid var(--sp-line,#323b46);border-radius:14px;margin:8px 0;background:rgba(255,255,255,.015);overflow:hidden}
+.pz-g>summary{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;list-style:none;font-weight:800;font-size:14px}
+.pz-g>summary::-webkit-details-marker{display:none}.pz-g>summary .ic{font-size:20px}.pz-g>summary em{font-style:normal;font-weight:600;font-size:12px;opacity:.6;background:rgba(255,255,255,.06);border-radius:20px;padding:1px 9px}
+.pz-g>summary::after{content:'\\f078';font-family:'Font Awesome 6 Free';font-weight:900;margin-inline-start:auto;font-size:12px;opacity:.6;transition:transform .2s}.pz-g[open]>summary::after{transform:rotate(180deg)}
+.pz-l{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:9px;padding:0 12px 12px}
+.pz-i{display:flex;gap:11px;align-items:center;text-align:start;padding:8px;border-radius:12px;border:1px solid #2c353f;background:#151b21;color:#e6e9ee;cursor:pointer;font:inherit;min-height:74px}
+.pz-i:hover,.pz-i:focus-visible{border-color:#c8741f;background:#1b2229;outline:none}
+.pz-th{position:relative;flex:none;width:62px;height:58px;border-radius:10px;background:#0c1116;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pz-th img{max-width:88%;max-height:88%;object-fit:contain}.pz-th i{font-size:24px;color:#c8741f}.pz-th .em{font-size:26px}
+.pz-bd{position:absolute;bottom:2px;inset-inline-end:2px;font-size:8.5px;font-weight:800;color:#fff;border-radius:5px;padding:0 4px;line-height:14px}
+.pz-i b{display:block;font-size:13px;line-height:1.45;color:#e6e9ee}.pz-i small{display:block;font-size:11.5px;color:#aeb9c5;line-height:1.5;margin-top:2px}
+.pz-f input::placeholder{color:#8f9aa6}.pz-f select option,.pz-f select optgroup{background:#141a20;color:#eef2f6}.pz-h b,.pz-g>summary{color:#e6e9ee}.pz-h small,.pz-g>summary em{color:#b8c2cc;opacity:1}.pz-h button{color:#eef2f6;border-color:#3a4452}.pz-g{border-color:#323b46}
+.pz-e{text-align:center;opacity:.6;padding:40px}
+@media(max-width:768px){.pz-ov{padding:0;align-items:flex-end}.pz{height:94vh;border-radius:18px 18px 0 0}.pz-f{grid-template-columns:1fr 1fr}.pz-f input{grid-column:1/-1}.pz-l{grid-template-columns:1fr}}`;
+    document.head.appendChild(css);
+    let fB = '', fT = '', q = '';
+    function open() {
+        const all = items(), ov = document.createElement('div'); ov.className = 'pz-ov'; ov.dir = 'rtl';
+        const tops = TOPICS.filter(t => all.some(i => i.topic === t[0]));
+        ov.innerHTML = `<div class="pz" role="dialog" aria-label="المشاريع الجاهزة"><div class="pz-h"><i class="fa-solid fa-folder-open" style="color:#c8741f;font-size:18px"></i><b>المشاريع الجاهزة</b><small>${all.length} مشروعاً</small><button type="button" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="pz-f"><input type="search" placeholder="ابحث: ري، غاز، OLED، سيرفو…" aria-label="بحث" value="${esc(q)}">
+<select aria-label="اللوحة"><option value="">كل اللوحات</option><option value="uno">أردوينو UNO</option><option value="esp">ESP32</option><option value="pi">Raspberry Pi</option></select>
+<select aria-label="القسم"><option value="">كل الأقسام</option>${tops.map(t => `<option value="${t[0]}">${t[1]} ${t[2]}</option>`).join('')}</select></div><div class="pz-b"></div></div>`;
+        const [inp, sB, sT] = ov.querySelectorAll('.pz-f input,.pz-f select'), body = ov.querySelector('.pz-b'); sB.value = fB; sT.value = fT;
+        const close = () => ov.remove();
+        const draw = () => {
+            const qq = q.trim().toLowerCase(), shown = all.filter(i => (!fB || i.board === fB) && (!fT || i.topic === fT) && (!qq || i.l.toLowerCase().includes(qq)));
+            const one = !!(qq || fT || fB);
+            body.innerHTML = tops.map((t, k) => {
+                const it = shown.filter(i => i.topic === t[0]); if (!it.length) return '';
+                return `<details class="pz-g" data-t="${t[0]}" ${one || k === 0 ? 'open' : ''}><summary><span class="ic">${t[1]}</span>${t[2]} <em>${it.length}</em></summary><div class="pz-l" data-n="${it.length}"></div></details>`;
+            }).join('') || '<p class="pz-e">لا توجد مشاريع تطابق البحث</p>';
+            const fill = d => { const l = d.querySelector('.pz-l'); if (l.childElementCount) return; const it = shown.filter(i => i.topic === d.dataset.t); l.innerHTML = it.map(i => { const [a, b] = split(i.l); return `<button type="button" class="pz-i" data-v="${esc(i.v)}" data-l="${esc(i.l)}">${thumb(i)}<span><b>${esc(a)}</b>${b ? `<small>${esc(b)}</small>` : ''}</span></button>`; }).join(''); };
+            body.querySelectorAll('.pz-g').forEach(d => { if (d.open) fill(d); d.addEventListener('toggle', () => { if (d.open) fill(d); }); });
+        };
+        ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('.pz-h button')) return close(); const it = e.target.closest('.pz-i'); if (!it) return; close(); load(it.dataset.v, it.dataset.l); });
+        inp.addEventListener('input', () => { q = inp.value; draw(); }); sB.onchange = () => { fB = sB.value; draw(); }; sT.onchange = () => { fT = sT.value; draw(); };
+        document.addEventListener('keydown', function k(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', k); } });
+        document.body.appendChild(ov); draw(); if (innerWidth > 700) inp.focus();
+    }
+    function load(v, l) {
+        if (v === 'edison') { if (window.edOpen) edOpen(); return; }
+        if (/^x:/.test(v)) loadExample(+v.slice(2));
+        else { const ps = document.getElementById('presetSelect'); if (ps) ps.value = v; loadPresetTemplate(v); }
+        const b = document.getElementById('pjPick'); if (b) { const m = (l || '').match(/^\p{Extended_Pictographic}\uFE0F?/u), c = clean(l); const ic = b.querySelector('.ic'), tx = b.querySelector('.tx'); if (ic) ic.textContent = m ? m[0] : '📂'; if (tx) tx.textContent = split(c)[0] || c; }
+    }
+    window.pjOpen = open;
+    window.sparkProjects = { items, open };
+})();
+
+// h58 — control a simulated project from another phone over REAL WiFi.
+// Android app: the built-in SPARK Bridge (NetBridge.java) serves the project on the LAN and can broadcast a real hotspot.
+// Phones get the sketch's own WebServer pages AND an automatic control panel (/__spark) for any project; /capture gives the camera frame.
+(function () {
+    const $ = id => document.getElementById(id), esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const AND = () => { try { return !!(window.SparkAndroid && SparkAndroid.netStart); } catch (e) { return false; } };
+    // controls for the base parts (their state keys and ranges)
+    const BASE = {
+        dht22_sensor: [['temp', 'الحرارة', '°C', -20, 80, 0.5], ['humidity', 'الرطوبة', '%', 0, 100, 1]], soil_sensor: [['moisture', 'رطوبة التربة', '%', 0, 100, 1]],
+        ldr_sensor: [['lux', 'شدة الضوء', 'lx', 0, 1000, 10]], ultrasonic_sensor: [['distance', 'المسافة', 'cm', 2, 400, 1]], potentiometer: [['percent', 'المقبض', '%', 0, 100, 1]],
+        pir_sensor: [['motion', 'حركة', 'tg']], push_button: [['pressed', 'ضغط الزر', 'tg']], slide_switch: [['on', 'المفتاح', 'tg']]
+    };
+    const OUT = {
+        relay_module: c => c.state.closed ? 'مغلق (يعمل)' : 'مفتوح', servo_motor: c => Math.round(c.state.angle || 0) + '°', water_pump: c => c.state.active ? 'تعمل' : 'متوقفة', cooling_fan: c => c.state.active ? 'تعمل' : 'متوقفة',
+        active_buzzer: c => c.state.active ? 'يصفر' : 'صامت', lcd_i2c: c => (c.state.lines || [c.state.line1, c.state.line2]).filter(Boolean).join(' | '), lcd_20x4: c => (c.state.lines || []).join(' | '),
+        tm1637: c => c.state.text || '', led_indicator: c => c.state.on ? 'مضاء' : 'مطفأ', bulb_12v: c => ((c.pinVoltages.P1 || 0) - (c.pinVoltages.P2 || 0)) > 3 ? 'مضاء' : 'مطفأ'
+    };
+    const isLed = t => /^led_(red|green|yellow|blue|white|orange|ir)$/.test(t);
+    function snapshot() {
+        const items = [];
+        state.components.forEach(c => {
+            const cat = COMPONENT_CATALOG[c.type] || {}, d = (typeof EXT !== 'undefined' && EXT[c.type]) || null, it = { id: c.id, n: cat.name || c.type, ctl: [], out: '' };
+            if (d) { (d.vals || []).forEach(v => it.ctl.push({ k: v.k, l: v.l, u: v.u || '', min: v.min, max: v.max, step: v.step || 1, v: c.state[v.k] })); (d.tg || []).forEach(t => it.ctl.push({ k: t.k, l: t.l, tg: 1, v: !!c.state[t.k] })); }
+            (BASE[c.type] || []).forEach(b => it.ctl.push(b[2] === 'tg' ? { k: b[0], l: b[1], tg: 1, v: !!c.state[b[0]] } : { k: b[0], l: b[1], u: b[2], min: b[3], max: b[4], step: b[5], v: c.state[b[0]] }));
+            if (isLed(c.type)) it.out = ((c.pinVoltages.A || 0) - (c.pinVoltages.K || 0)) > 1.4 ? 'مضاء' : 'مطفأ';
+            else if (OUT[c.type]) try { it.out = OUT[c.type](c); } catch (e) { }
+            if (c.type === 'neopixel_8' && c.state.px) it.px = c.state.px.map(p => 'rgb(' + p.join(',') + ')');
+            if (c.type === 'camera_module') it.cam = 1;
+            if (it.ctl.length || it.out || it.px || it.cam) items.push(it);
+        });
+        const lbl = (($('pjPick') || {}).textContent || '').replace(/\s+/g, ' ').trim();
+        return { run: !!state.running, name: /اختر مشروعاً/.test(lbl) ? 'مشروع SPARK' : lbl.replace(/^\S*\s*(أردوينو|ESP32|ESP32-CAM)\s*·\s*/, ''), items, serial: lastSerial.slice(-6) };
+    }
+    const lastSerial = []; try { const _a = appendSerialLog; appendSerialLog = function (t) { lastSerial.push(String(t).slice(0, 120)); if (lastSerial.length > 30) lastSerial.shift(); return _a.apply(this, arguments); }; } catch (e) { }
+    const PANEL = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SPARK · تحكم</title>
+<style>body{margin:0;font-family:system-ui,sans-serif;background:#0f141a;color:#e6ebf1}header{position:sticky;top:0;background:#151b22;padding:12px 14px;border-bottom:1px solid #2a333d;display:flex;align-items:center;gap:10px;z-index:2}
+header b{flex:1;font-size:15px}#run{border:0;border-radius:10px;padding:9px 14px;font-weight:800;font-size:14px;color:#fff;background:#1f8a5b}#run.on{background:#b4412f}
+main{padding:10px;display:grid;gap:10px}.c{background:#161c23;border:1px solid #29323c;border-radius:14px;padding:12px}.c h3{margin:0 0 8px;font-size:14px;color:#e0a060}
+.r{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px}.r span{flex:1}.r b{min-width:64px;text-align:left;direction:ltr;color:#93c5fd}input[type=range]{width:100%;accent-color:#c8741f}
+.tg{border:1px solid #3a4452;background:#1d242c;color:#e6ebf1;border-radius:10px;padding:8px 12px;font-weight:700}.tg.on{background:#c8741f;border-color:#c8741f}
+.o{font-size:13px;color:#9aa6b2}.o b{color:#7ee2a8}.px{display:flex;gap:4px;margin-top:6px}.px i{flex:1;height:18px;border-radius:5px;border:1px solid #333}
+img.cam{width:100%;border-radius:10px;background:#000;margin-top:6px}pre{background:#0b1016;border-radius:10px;padding:8px;font-size:11.5px;white-space:pre-wrap;margin:0;direction:ltr;text-align:left;max-height:150px;overflow:auto}
+#st{font-size:11px;color:#9aa6b2}</style></head><body><header><b id="nm">SPARK</b><span id="st">…</span><button id="run">▶ تشغيل</button></header><main id="m"></main>
+<script>let S=null,busy=0;const $=i=>document.getElementById(i),q=o=>Object.entries(o).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+function set(id,k,v){fetch('/__spark/set?'+q({id,k,v})).then(r=>r.json()).then(j=>{S=j;paint(1)}).catch(()=>{})}
+$('run').onclick=()=>fetch('/__spark/run?on='+(S&&S.run?0:1)).then(r=>r.json()).then(j=>{S=j;paint(1)});
+function paint(soft){if(!S)return;$('nm').textContent=S.name;$('run').textContent=S.run?'■ إيقاف':'▶ تشغيل';$('run').className=S.run?'on':'';$('st').textContent=S.run?'المحاكاة تعمل':'متوقفة';
+ const m=$('m');if(soft&&m.dataset.k===S.items.map(i=>i.id+i.ctl.length).join()){S.items.forEach(it=>{const o=document.getElementById('o_'+it.id);if(o)o.innerHTML=it.out?'الحالة: <b>'+it.out+'</b>':'';it.ctl.forEach(c=>{const e=document.getElementById('v_'+it.id+'_'+c.k);if(e&&!c.tg&&document.activeElement!==e.previousElementSibling)e.textContent=(+c.v).toFixed(c.step<1?1:0)+' '+(c.u||'');const t=document.getElementById('t_'+it.id+'_'+c.k);if(t)t.classList.toggle('on',!!c.v)});const p=document.getElementById('p_'+it.id);if(p&&it.px)p.innerHTML=it.px.map(c=>'<i style="background:'+c+'"></i>').join('')});const sr=$('sr');if(sr)sr.textContent=S.serial.join('\\n');return}
+ m.dataset.k=S.items.map(i=>i.id+i.ctl.length).join();
+ m.innerHTML=S.items.map(it=>'<div class="c"><h3>'+it.n+'</h3>'+it.ctl.map(c=>c.tg?'<div class="r"><span>'+c.l+'</span><button class="tg'+(c.v?' on':'')+'" id="t_'+it.id+'_'+c.k+'" data-i="'+it.id+'" data-k="'+c.k+'">'+(c.v?'نعم':'لا')+'</button></div>':'<div class="r"><span>'+c.l+'</span><b id="v_'+it.id+'_'+c.k+'">'+(+c.v).toFixed(c.step<1?1:0)+' '+(c.u||'')+'</b></div><input type="range" min="'+c.min+'" max="'+c.max+'" step="'+c.step+'" value="'+c.v+'" data-i="'+it.id+'" data-k="'+c.k+'">').join('')+'<div class="o" id="o_'+it.id+'">'+(it.out?'الحالة: <b>'+it.out+'</b>':'')+'</div>'+(it.px?'<div class="px" id="p_'+it.id+'">'+it.px.map(c=>'<i style="background:'+c+'"></i>').join('')+'</div>':'')+(it.cam?'<img class="cam" id="cam" alt="الكاميرا">':'')+'</div>').join('')+'<div class="c"><h3>الشاشة التسلسلية</h3><pre id="sr">'+S.serial.join('\\n')+'</pre></div>';
+ m.querySelectorAll('input[type=range]').forEach(e=>{e.oninput=()=>{const b=document.getElementById('v_'+e.dataset.i+'_'+e.dataset.k);if(b)b.textContent=e.value};e.onchange=()=>set(e.dataset.i,e.dataset.k,e.value)});
+ m.querySelectorAll('.tg').forEach(e=>e.onclick=()=>set(e.dataset.i,e.dataset.k,e.classList.contains('on')?0:1));}
+async function tick(){if(busy)return;busy=1;try{S=await(await fetch('/__spark/state')).json();paint(1)}catch(e){$('st').textContent='⚠ لا اتصال'}busy=0;const c=$('cam');if(c&&!c.dataset.l){c.dataset.l=1;c.onload=c.onerror=()=>setTimeout(()=>{c.src='/capture?t='+Date.now()},350);c.src='/capture?t='+Date.now()}}
+setInterval(tick,700);tick();<\/script></body></html>`;
+    function reply(rq, code, type, body, b64) { rq.resp = { code, type, body, b64: !!b64 }; }
+    function camFrame() { const c = state.components.find(x => x.type === 'camera_module'); if (!c || !c.img) return null; const m = /^data:([^;]+);base64,(.*)$/.exec(c.img); return m ? { type: m[1], b64: m[2] } : null; }
+    window.sparkNetLocal = function (rq) {
+        const p = rq.path || '/', q = rq.q || {};
+        if (p === '/__spark' || p === '/__spark/') { reply(rq, 200, 'text/html; charset=utf-8', PANEL); return true; }
+        if (p === '/__spark/state') { reply(rq, 200, 'application/json', JSON.stringify(snapshot())); return true; }
+        if (p === '/__spark/set') {
+            const c = state.components.find(x => x.id === q.id); if (c && /^\w{1,24}$/.test(q.k || '')) { const old = c.state[q.k]; c.state[q.k] = typeof old === 'boolean' ? q.v === '1' || q.v === 'true' : Number(q.v); try { evaluateCircuitPhysics(); refreshComponentBodiesLive(); } catch (e) { } }
+            reply(rq, 200, 'application/json', JSON.stringify(snapshot())); return true;
+        }
+        if (p === '/__spark/run') { const on = q.on === '1'; if (!!state.running !== on) try { toggleSimulation(); } catch (e) { } setTimeout(() => reply(rq, 200, 'application/json', JSON.stringify(snapshot())), 300); return true; }
+        if ((p === '/capture' || p === '/cam.jpg' || p === '/__spark/cam') && !(iot.web.routes || {})[p]) { const f = camFrame(); if (f) reply(rq, 200, f.type, f.b64, true); else reply(rq, 404, 'text/plain', 'no camera'); return true; }
+        // no web server in the sketch (or simulation stopped) → the automatic control panel
+        if (p === '/' && (!state.running || !Object.keys(iot.web.routes || {}).length)) { reply(rq, 200, 'text/html; charset=utf-8', PANEL); return true; }
+        return false;
+    };
+    // ---------- start the built-in bridge in the Android app ----------
+    function boot() { if (!AND()) return; let ok = false; try { ok = SparkAndroid.netStart(); } catch (e) { } if (ok) setTimeout(() => { try { brConnect(true); } catch (e) { } }, 300); }
+    addEventListener('load', () => setTimeout(boot, 1500));
+    // ---------- the "control from a phone" sheet ----------
+    const css = document.createElement('style'); css.textContent = `
+#netBtn{position:fixed;z-index:60;inset-inline-start:12px;bottom:78px;display:none;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;border:1px solid #c8741f;background:rgba(21,27,34,.94);color:#e0a060;font-weight:800;font-size:12.5px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+#netBtn.show{display:flex}@media(min-width:769px){#netBtn{bottom:46px;inset-inline-start:auto;inset-inline-end:340px}}
+#netSh{position:fixed;inset:0;z-index:9300;background:rgba(5,8,12,.6);display:flex;align-items:flex-end;justify-content:center}
+#netSh>div{width:min(520px,100%);max-height:92vh;overflow:auto;background:var(--sp-surf,#1a2027);color:var(--sp-txt,#dfe5ec);border:1px solid var(--sp-line,#323b46);border-radius:18px 18px 0 0;padding:16px}
+@media(min-width:769px){#netSh{align-items:center}#netSh>div{border-radius:18px}}
+#netSh h3{margin:0 0 6px;font-size:16px;display:flex;gap:8px;align-items:center}#netSh h3 i{color:#c8741f}#netSh .m{color:#9aa6b2;font-size:12.5px;line-height:1.75}
+#netSh .card{border:1px solid #2c353f;border-radius:14px;padding:12px;margin-top:10px;background:#151b21}#netSh .card b{font-size:13.5px}
+#netSh .qr{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px}#netSh .qr>div{text-align:center;font-size:11.5px;color:#9aa6b2}
+#netSh code{direction:ltr;display:inline-block;background:#0b1016;border-radius:7px;padding:2px 7px;color:#93c5fd;font-size:13px;user-select:all}
+#netSh .b{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:10px;border:1px solid #3a4452;background:transparent;color:inherit;font-weight:700;font-size:13px;cursor:pointer;margin:8px 0 0 6px}#netSh .b.p{background:#c8741f;border-color:#c8741f;color:#fff}`;
+    document.head.appendChild(css);
+    const wifiQR = (s, p) => 'WIFI:T:WPA;S:' + s.replace(/([\\;,:"])/g, '\\$1') + ';P:' + p.replace(/([\\;,:"])/g, '\\$1') + ';;';
+    function sheet() {
+        let sh = $('netSh'); if (!sh) { sh = document.createElement('div'); sh.id = 'netSh'; sh.dir = 'rtl'; sh.onclick = e => { if (e.target === sh) sh.remove(); }; document.body.appendChild(sh); }
+        const on = BR.on && BR.info, ip = on ? BR.info.ips[0] : '', port = on ? BR.info.lanPort : 8080, hs = (on && BR.info.hotspot) || {}, url = 'http://' + ip + ':' + port;
+        let h = `<h3><i class="fa-solid fa-wifi"></i>تحكم بالمشروع من جوال آخر</h3>`;
+        if (!AND() && !on) h += `<div class="m">البث الحقيقي للواي فاي يعمل من <b>تطبيق سبارك على أندرويد</b>: افتح المشروع فيه ثم اضغط هذا الزر. على الكمبيوتر استخدم «جسر سبارك» من لوحة إنترنت الأشياء.</div><button class="b" id="netIot"><i class="fa-solid fa-tower-broadcast"></i>لوحة إنترنت الأشياء</button>`;
+        else if (!on) h += `<div class="m">جارٍ تشغيل خادم المشروع داخل التطبيق…</div><button class="b p" id="netRe">إعادة المحاولة</button>`;
+        else {
+            h += `<div class="m">${state.running ? '✓ المحاكاة تعمل' : '⚠ شغّل المحاكاة ليتجاوب المشروع'} — أي جوال يتصل بنفس الشبكة يفتح الرابط فيرى صفحة المشروع ولوحة التحكم.</div>
+<div class="card"><b>١) الشبكة</b><div class="m">${hs.on ? `هذا الجوال يبث الآن شبكة واي فاي حقيقية:<br>الاسم <code>${esc(hs.ssid)}</code> كلمة السر <code>${esc(hs.pass)}</code><br>امسح الرمز من الجوال الآخر للاتصال مباشرة.` : 'إما أن يكون الجوالان على <b>نفس شبكة الراوتر</b>، أو شغّل نقطة اتصال من هذا الجوال.'}</div>
+${hs.on ? '<div class="qr"><div><div id="netQw"></div>اتصل بالشبكة</div></div>' : ''}<button class="b ${hs.on ? '' : 'p'}" id="netHs">${hs.on ? '<i class="fa-solid fa-stop"></i>إيقاف نقطة الاتصال' : '<i class="fa-solid fa-tower-broadcast"></i>بث نقطة اتصال من هذا الجوال'}</button><div class="m" id="netHm">${esc(hs.msg && !hs.on ? hs.msg : '')}</div></div>
+<div class="card"><b>٢) افتح من الجوال الآخر</b><div class="qr"><div><div id="netQ1"></div>صفحة المشروع<br><code>${url}</code></div><div><div id="netQ2"></div>لوحة التحكم الكاملة<br><code>${url}/__spark</code></div></div>
+<div class="m">صفحة المشروع هي الصفحة التي يكتبها كود ESP32 (WebServer)، وإن لم يكن فيه خادم ويب تظهر لوحة التحكم تلقائياً: منزلقات الحساسات، الأزرار، حالة المخارج، الكاميرا والشاشة التسلسلية.</div></div>`;
+        }
+        h += `<button class="b" id="netX">إغلاق</button>`;
+        sh.innerHTML = '<div>' + h + '</div>';
+        $('netX').onclick = () => sh.remove(); if ($('netIot')) $('netIot').onclick = () => { sh.remove(); try { openIot(); } catch (e) { } };
+        if ($('netRe')) $('netRe').onclick = () => { boot(); setTimeout(sheet, 1200); };
+        if ($('netHs')) $('netHs').onclick = async e => { const b = e.currentTarget; b.disabled = true; $('netHm').textContent = '⏳ …'; try { const j = await (await fetch(BR.base + '/bridge/hotspot', { method: 'POST', body: JSON.stringify({ action: hs.on ? 'stop' : 'start' }) })).json(); $('netHm').textContent = j.msg || ''; } catch (er) { } await brConnect(true); sheet(); };
+        if (on) { try { brQR(url, $('netQ1')); brQR(url + '/__spark', $('netQ2')); if (hs.on && $('netQw')) brQR(wifiQR(hs.ssid, hs.pass), $('netQw')); } catch (e) { } }
+    }
+    function btn() {
+        let b = $('netBtn'); if (!b) { b = document.createElement('button'); b.id = 'netBtn'; b.type = 'button'; b.innerHTML = '<i class="fa-solid fa-wifi"></i>تحكم من الجوال'; b.onclick = () => { if (AND() && !BR.on) boot(); setTimeout(sheet, AND() && !BR.on ? 900 : 0); }; document.body.appendChild(b); }
+        const pp = document.getElementById('pcbPane'); const show = state.components.some(c => c.type === 'esp32_devkit' || c.type === 'camera_module') && !document.querySelector('#paneLibrary:not(.hidden).lib-half') && !(pp && !pp.classList.contains('hidden'));
+        b.classList.toggle('show', show);
+    }
+    setInterval(btn, 1200);
+    window.sparkNet = { open: sheet, snapshot };
+})();
+
+// h59 — ready ESP32 / ESP32-CAM web projects: the sketch's own web page reaches real phones over WiFi (built-in bridge / hotspot)
+(function () {
+    const N0 = EXAMPLES.length, E = ['esp32_devkit', 'e', 640, 90];
+    const ex = (n, comps, wires, code) => EXP('🌐 ESP32 · ' + n, comps, wires, code);
+    const cam = (n, comps, wires, code) => EXP('📷 ESP32-CAM · ' + n, comps, wires, code);
+    const LED = (pin, id, col, x, y) => [[['led_' + col, id, x, y], ['res_e12', id + 'r', x, y + 90, { ohms: 220 }]], `e.${pin}-${id}r.P1 ${id}r.P2-${id}.A ${id}.K-e.GND`];
+    const HEAD = `#include <WiFi.h>\n#include <WebServer.h>\n\nWebServer server(80);\nconst char* HEAD_HTML = "<!doctype html><html dir='rtl'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><style>body{font-family:sans-serif;background:#1c2128;color:#d0d6de;text-align:center;margin:0;padding:16px}h2{color:#f59e0b}.b{display:inline-block;margin:6px;padding:14px 24px;border-radius:14px;background:#262c34;color:#fff;text-decoration:none;font-size:18px;border:2px solid #353c46}.on{background:#c8741f;border-color:#c8741f}.big{font-size:44px;font-weight:800;color:#7dd3fc}</style></head><body>";\n`;
+    const AP = n => `  WiFi.softAP("${n}", "12345678");          // على اللوحة الحقيقية: شبكة ESP32 نفسها\n  Serial.print("افتح من الجوال: http://"); Serial.println(WiFi.softAPIP());\n`;
+    const PAGE = (title, body) => `String(HEAD_HTML) + "<h2>${title}</h2>" + ${body} + "</body></html>"`;
+    const L1 = LED('G2', 'l', 'yellow', 300, 120);
+
+    ex('إنارة الغرفة من الجوال (مرحّل ومصباح)', [E, ['relay_module', 'rl', 300, 260], ['bulb_12v', 'lamp', 300, 480]], 'e.5V-rl.VCC e.GND-rl.GND e.G26-rl.IN e.5V-rl.COM rl.NO-lamp.P1 lamp.P2-e.GND',
+HEAD + `bool lampOn = false;
+
+void page() {
+  String s = lampOn ? "مضاء 💡" : "مطفأ";
+  server.send(200, "text/html", String(${PAGE('إنارة الغرفة', `"<p class='big'>" + s + "</p><a class='b on' href='/on'>تشغيل</a><a class='b' href='/off'>إطفاء</a>"`)}));
+}
+void onLamp()  { lampOn = true;  digitalWrite(26, HIGH); page(); }
+void offLamp() { lampOn = false; digitalWrite(26, LOW);  page(); }
+
+void setup() {
+  Serial.begin(115200); pinMode(26, OUTPUT);
+${AP('SPARK-ROOM')}  server.on("/", page); server.on("/on", onLamp); server.on("/off", offLamp);
+  server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    ex('ألوان RGB بمنزلقات من الجوال', [E, ['rgb_led', 'rgb', 300, 140]], 'e.G25-rgb.R e.G26-rgb.G e.G27-rgb.B rgb.K-e.GND',
+HEAD + `int r = 0, g = 0, b = 0;
+
+void page() {
+  String h = ${PAGE('لون الإضاءة', `"<form action='/set'><p>أحمر <input type='range' name='r' max='255' value='" + String(r) + "'></p><p>أخضر <input type='range' name='g' max='255' value='" + String(g) + "'></p><p>أزرق <input type='range' name='b' max='255' value='" + String(b) + "'></p><button class='b on'>تطبيق</button></form>"`)};
+  server.send(200, "text/html", h);
+}
+void setColor() {
+  r = server.arg("r").toInt(); g = server.arg("g").toInt(); b = server.arg("b").toInt();
+  analogWrite(25, r); analogWrite(26, g); analogWrite(27, b);
+  page();
+}
+
+void setup() {
+  Serial.begin(115200); pinMode(25, OUTPUT); pinMode(26, OUTPUT); pinMode(27, OUTPUT);
+${AP('SPARK-RGB')}  server.on("/", page); server.on("/set", setColor); server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    ex('ذراع سيرفو بمنزلق من الجوال', [E, ['servo_motor', 'sv', 300, 140]], 'e.5V-sv.VCC e.GND-sv.GND e.G18-sv.PWM',
+`#include <Servo.h>
+` + HEAD + `Servo arm; int angle = 90;
+
+void page() {
+  server.send(200, "text/html", String(${PAGE('ذراع السيرفو', `"<p class='big'>" + String(angle) + "°</p><form action='/set'><input type='range' name='a' max='180' value='" + String(angle) + "' style='width:90%'><br><button class='b on'>تحريك</button></form>"`)}));
+}
+void setAngle() { angle = constrain(server.arg("a").toInt(), 0, 180); arm.write(angle); page(); }
+
+void setup() {
+  Serial.begin(115200); arm.attach(18); arm.write(angle);
+${AP('SPARK-ARM')}  server.on("/", page); server.on("/set", setAngle); server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    ex('محطة طقس DHT22 على صفحة ويب', [E, ['dht22_sensor', 'dht', 120, 120]], 'e.3V3-dht.VCC e.GND-dht.GND dht.DATA-e.G4',
+`#include <DHT.h>
+` + HEAD + `DHT dht(4, DHT22);
+
+void page() {
+  float t = dht.readTemperature(), h = dht.readHumidity();
+  server.send(200, "text/html", String(${PAGE('محطة الطقس', `"<meta http-equiv='refresh' content='3'><p>الحرارة</p><p class='big'>" + String(t, 1) + " °C</p><p>الرطوبة</p><p class='big'>" + String(h, 0) + " %</p>"`)}));
+}
+
+void setup() {
+  Serial.begin(115200); dht.begin();
+${AP('SPARK-WEATHER')}  server.on("/", page); server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    ex('ري ذكي عن بعد: قراءة التربة وتشغيل المضخة', [E, ['soil_sensor', 'soil', 100, 120], ['relay_module', 'rl', 320, 280], ['water_pump', 'pump', 320, 500]], 'e.3V3-soil.VCC e.GND-soil.GND soil.AOUT-e.G34 e.5V-rl.VCC e.GND-rl.GND e.G26-rl.IN e.5V-rl.COM rl.NO-pump.POS pump.NEG-e.GND',
+HEAD + `bool autoMode = true, pumpOn = false;
+
+void page() {
+  int m = map(analogRead(34), 0, 4095, 0, 100);
+  String h = ${PAGE('الري الذكي', `"<meta http-equiv='refresh' content='4'><p>رطوبة التربة</p><p class='big'>" + String(m) + "%</p><p>المضخة: " + String(pumpOn ? "تعمل 💧" : "متوقفة") + " · الوضع: " + String(autoMode ? "تلقائي" : "يدوي") + "</p><a class='b on' href='/pump?on=1'>تشغيل</a><a class='b' href='/pump?on=0'>إيقاف</a><a class='b' href='/auto'>وضع تلقائي</a>"`)};
+  server.send(200, "text/html", h);
+}
+void pump() { autoMode = false; pumpOn = server.arg("on") == "1"; digitalWrite(26, pumpOn); page(); }
+void autoOn() { autoMode = true; page(); }
+
+void setup() {
+  Serial.begin(115200); pinMode(26, OUTPUT);
+${AP('SPARK-FARM')}  server.on("/", page); server.on("/pump", pump); server.on("/auto", autoOn); server.begin();
+}
+
+void loop() {
+  server.handleClient();
+  if (autoMode) { int m = map(analogRead(34), 0, 4095, 0, 100); pumpOn = m < 40; digitalWrite(26, pumpOn); }
+  delay(5);
+}`);
+    ex('مستوى خزان الماء على الجوال (HC-SR04)', [E, ['ultrasonic_sensor', 'us', 100, 120]], 'e.5V-us.VCC e.GND-us.GND us.TRIG-e.G5 us.ECHO-e.G18',
+HEAD + `const int DEPTH = 100;   // عمق الخزان cm
+long cm() { digitalWrite(5, LOW); delayMicroseconds(2); digitalWrite(5, HIGH); delayMicroseconds(10); digitalWrite(5, LOW); return pulseIn(18, HIGH) / 58; }
+
+void page() {
+  int level = constrain(100 - cm() * 100 / DEPTH, 0, 100);
+  server.send(200, "text/html", String(${PAGE('خزان الماء', `"<meta http-equiv='refresh' content='3'><div style='margin:auto;width:120px;height:220px;border:3px solid #7dd3fc;border-radius:12px;position:relative;overflow:hidden'><div style='position:absolute;bottom:0;width:100%;height:" + String(level) + "%;background:#0ea5e9'></div></div><p class='big'>" + String(level) + "%</p>"`)}));
+}
+
+void setup() {
+  Serial.begin(115200); pinMode(5, OUTPUT); pinMode(18, INPUT);
+${AP('SPARK-TANK')}  server.on("/", page); server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    ex('إنذار غاز يظهر على الجوال مع زر إسكات', [E, ['mq2', 'gas', 100, 120], ['active_buzzer', 'bz', 320, 300]], 'e.5V-gas.VCC e.GND-gas.GND gas.AO-e.G34 e.G25-bz.POS bz.NEG-e.GND',
+HEAD + `bool muted = false;
+
+void page() {
+  int g = analogRead(34); bool danger = g > 1600;
+  String h = ${PAGE('كاشف الغاز', `"<meta http-equiv='refresh' content='2'><p class='big' style='color:" + String(danger ? "#ef4444" : "#22c55e") + "'>" + String(danger ? "⚠ خطر!" : "آمن") + "</p><p>القراءة: " + String(g) + "</p><a class='b' href='/mute'>" + String(muted ? "إلغاء الإسكات" : "إسكات الصفارة") + "</a>"`)};
+  server.send(200, "text/html", h);
+}
+void mute() { muted = !muted; page(); }
+
+void setup() {
+  Serial.begin(115200); pinMode(25, OUTPUT);
+${AP('SPARK-GAS')}  server.on("/", page); server.on("/mute", mute); server.begin();
+}
+
+void loop() {
+  server.handleClient();
+  digitalWrite(25, analogRead(34) > 1600 && !muted);
+  delay(5);
+}`);
+    ex('جرس باب PIR بسجل الزيارات على الجوال', [E, ['pir_sensor', 'pir', 100, 120], ['active_buzzer', 'bz', 320, 300]], 'e.5V-pir.VCC e.GND-pir.GND pir.OUT-e.G27 e.G25-bz.POS bz.NEG-e.GND',
+HEAD + `int visits = 0; bool was = false; unsigned long lastAt = 0;
+
+void page() {
+  String ago = lastAt ? String((millis() - lastAt) / 1000) + " ثانية" : "لا يوجد";
+  server.send(200, "text/html", String(${PAGE('جرس الباب', `"<meta http-equiv='refresh' content='3'><p>عدد الزيارات</p><p class='big'>" + String(visits) + "</p><p>آخر زيارة منذ: " + ago + "</p>"`)}));
+}
+
+void setup() {
+  Serial.begin(115200); pinMode(27, INPUT); pinMode(25, OUTPUT);
+${AP('SPARK-DOOR')}  server.on("/", page); server.begin();
+}
+
+void loop() {
+  server.handleClient();
+  bool m = digitalRead(27);
+  if (m && !was) { visits++; lastAt = millis(); digitalWrite(25, HIGH); delay(150); digitalWrite(25, LOW); }
+  was = m; delay(5);
+}`);
+    ex('شريط NeoPixel بألوان جاهزة من الجوال', [E, ['neopixel_8', 'np', 260, 160]], 'e.5V-np.VCC e.GND-np.GND e.G23-np.DIN',
+`#include <Adafruit_NeoPixel.h>
+` + HEAD + `Adafruit_NeoPixel px(8, 23, NEO_GRB + NEO_KHZ800);
+
+void fill(int r, int g, int b) { for (int i = 0; i < 8; i++) px.setPixelColor(i, px.Color(r, g, b)); px.show(); }
+void page() {
+  server.send(200, "text/html", String(${PAGE('شريط الإضاءة', `"<a class='b' style='background:#dc2626' href='/c?v=r'>أحمر</a><a class='b' style='background:#16a34a' href='/c?v=g'>أخضر</a><a class='b' style='background:#2563eb' href='/c?v=b'>أزرق</a><a class='b' style='background:#eab308' href='/c?v=y'>أصفر</a><a class='b' href='/c?v=o'>إطفاء</a>"`)}));
+}
+void color() {
+  String v = server.arg("v");
+  if (v == "r") fill(255, 0, 0); else if (v == "g") fill(0, 255, 0); else if (v == "b") fill(0, 0, 255); else if (v == "y") fill(255, 180, 0); else fill(0, 0, 0);
+  page();
+}
+
+void setup() {
+  Serial.begin(115200); px.begin(); px.setBrightness(80);
+${AP('SPARK-LIGHTS')}  server.on("/", page); server.on("/c", color); server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    ex('قفل باب بكلمة سر من الجوال', [E, ['servo_motor', 'sv', 300, 140], ...L1[0]], 'e.5V-sv.VCC e.GND-sv.GND e.G18-sv.PWM ' + L1[1],
+`#include <Servo.h>
+` + HEAD + `Servo lock; const String PIN = "2468";
+
+void page() { server.send(200, "text/html", String(${PAGE('القفل الذكي', `"<form action='/open'><input name='p' type='password' inputmode='numeric' placeholder='كلمة السر' style='font-size:22px;padding:10px;border-radius:10px;width:70%'><br><button class='b on'>فتح الباب</button></form>"`)})); }
+void openDoor() {
+  if (server.arg("p") == PIN) {
+    lock.write(90); digitalWrite(2, HIGH);
+    server.send(200, "text/html", String(${PAGE('✓ تم فتح الباب', `"<p>يُغلق تلقائياً بعد 5 ثوانٍ</p><a class='b' href='/'>رجوع</a>"`)}));
+    delay(5000); lock.write(0); digitalWrite(2, LOW);
+  } else server.send(200, "text/html", String(${PAGE('✗ كلمة سر خاطئة', `"<a class='b' href='/'>حاول مجدداً</a>"`)}));
+}
+
+void setup() {
+  Serial.begin(115200); lock.attach(18); lock.write(0); pinMode(2, OUTPUT);
+${AP('SPARK-LOCK')}  server.on("/", page); server.on("/open", openDoor); server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    ex('واجهة JSON لقراءات الحساسات (API)', [E, ['dht22_sensor', 'dht', 80, 100], ['ldr_sensor', 'ldr', 240, 100]], 'e.3V3-dht.VCC e.GND-dht.GND dht.DATA-e.G4 e.3V3-ldr.VCC e.GND-ldr.GND ldr.AO-e.G34',
+`#include <DHT.h>
+` + HEAD + `DHT dht(4, DHT22);
+
+void api() {
+  String j = "{\\"temp\\":" + String(dht.readTemperature(), 1) + ",\\"hum\\":" + String(dht.readHumidity(), 0) + ",\\"light\\":" + String(map(analogRead(34), 0, 4095, 0, 100)) + "}";
+  server.send(200, "application/json", j);
+}
+void page() { server.send(200, "text/html", String(${PAGE('واجهة البيانات', `"<p>افتح <b>/api</b> لتحصل على القراءات بصيغة JSON لاستخدامها في تطبيقك.</p><a class='b on' href='/api'>/api</a>"`)})); }
+
+void setup() {
+  Serial.begin(115200); dht.begin();
+${AP('SPARK-API')}  server.on("/", page); server.on("/api", api); server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    ex('سيارة روبوت تُقاد من الجوال', [E, ['drv_l298n', 'drv', 260, 90], ['motor_dc6', 'ml', 120, 400], ['motor_dc6', 'mr', 420, 400], ['bat_9v', 'bat', 520, 90]], 'bat.POS-drv.VS bat.NEG-drv.GND drv.GND-e.GND e.5V-drv.ENA e.5V-drv.ENB e.G26-drv.IN1 e.G27-drv.IN2 e.G32-drv.IN3 e.G33-drv.IN4 drv.OUT1-ml.P1 drv.OUT2-ml.P2 drv.OUT3-mr.P1 drv.OUT4-mr.P2',
+HEAD + `void drive(int a1, int a2, int b1, int b2) { digitalWrite(26, a1); digitalWrite(27, a2); digitalWrite(32, b1); digitalWrite(33, b2); }
+void page() {
+  server.send(200, "text/html", String(${PAGE('قيادة الروبوت', `"<p><a class='b' href='/go?d=f'>⬆ أمام</a></p><p><a class='b' href='/go?d=l'>⬅ يسار</a><a class='b on' href='/go?d=s'>■ قف</a><a class='b' href='/go?d=r'>يمين ➡</a></p><p><a class='b' href='/go?d=b'>⬇ خلف</a></p>"`)}));
+}
+void go() {
+  String d = server.arg("d");
+  if (d == "f") drive(1, 0, 1, 0); else if (d == "b") drive(0, 1, 0, 1); else if (d == "l") drive(0, 0, 1, 0); else if (d == "r") drive(1, 0, 0, 0); else drive(0, 0, 0, 0);
+  page();
+}
+
+void setup() {
+  Serial.begin(115200); pinMode(26, OUTPUT); pinMode(27, OUTPUT); pinMode(32, OUTPUT); pinMode(33, OUTPUT);
+${AP('SPARK-CAR')}  server.on("/", page); server.on("/go", go); server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    // ---- ESP32-CAM (camera module + ESP32): the live picture is served on /capture ----
+    const CAMC = [['camera_module', 'cam', 80, 80]], CAMW = 'e.5V-cam.VCC e.GND-cam.GND';
+    cam('بث مباشر للكاميرا على الجوال', [E, ...CAMC], CAMW,
+HEAD + `Camera cam;
+// على ESP32-CAM الحقيقي تستخدم مكتبة esp_camera ومثال CameraWebServer؛ في المحاكي الصورة تأتي من /capture
+
+void page() {
+  server.send(200, "text/html", String(${PAGE('كاميرا المراقبة', `"<img id='v' src='/capture' style='width:100%;max-width:480px;border-radius:12px;background:#000'><p>الإضاءة: " + String(cam.brightness()) + "%</p><script>setInterval(()=>{v.src='/capture?t='+Date.now()},400)<\/script>"`)}));
+}
+
+void setup() {
+  Serial.begin(115200); cam.begin();
+${AP('SPARK-CAM')}  server.on("/", page); server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    cam('كاشف حركة بالكاميرا مع صفارة وصورة', [E, ...CAMC, ['active_buzzer', 'bz', 320, 300]], CAMW + ' e.G25-bz.POS bz.NEG-e.GND',
+HEAD + `Camera cam; int alarms = 0; bool armed = true;
+
+void page() {
+  String h = ${PAGE('كاشف الحركة', `"<meta http-equiv='refresh' content='3'><img src='/capture' style='width:100%;max-width:420px;border-radius:12px'><p>مرات الإنذار: <b>" + String(alarms) + "</b> · الحركة الآن: " + String(cam.motion(), 1) + "</p><a class='b " + String(armed ? "on" : "") + "' href='/arm'>" + String(armed ? "الحراسة مفعّلة" : "الحراسة متوقفة") + "</a>"`)};
+  server.send(200, "text/html", h);
+}
+void arm() { armed = !armed; page(); }
+
+void setup() {
+  Serial.begin(115200); cam.begin(); pinMode(25, OUTPUT);
+${AP('SPARK-GUARD')}  server.on("/", page); server.on("/arm", arm); server.begin();
+}
+
+void loop() {
+  server.handleClient();
+  if (armed && cam.motion() > 8) { alarms++; digitalWrite(25, HIGH); delay(300); digitalWrite(25, LOW); Serial.println("حركة!"); }
+  delay(50);
+}`);
+    cam('تتبع الكرة الحمراء بسيرفو مع بث مباشر', [E, ...CAMC, ['servo_motor', 'sv', 320, 300]], CAMW + ' e.5V-sv.VCC e.GND-sv.GND e.G18-sv.PWM',
+`#include <Servo.h>
+` + HEAD + `Camera cam; Servo pan; int angle = 90;
+
+void page() {
+  server.send(200, "text/html", String(${PAGE('تتبع الكرة', `"<img id='v' src='/capture' style='width:100%;max-width:420px;border-radius:12px'><p>زاوية الكاميرا: " + String(angle) + "°</p><script>setInterval(()=>{v.src='/capture?t='+Date.now()},400)<\/script>"`)}));
+}
+
+void setup() {
+  Serial.begin(115200); cam.begin(); pan.attach(18);
+${AP('SPARK-TRACK')}  server.on("/", page); server.begin();
+}
+
+void loop() {
+  server.handleClient();
+  float x = cam.colorX(239, 68, 68);
+  if (x < 1.5) { angle = constrain(90 + x * 70, 0, 180); pan.write(angle); }
+  delay(60);
+}`);
+    cam('فلاش وصورة من الجوال', [E, ...CAMC, ...LED('G4', 'fl', 'white', 320, 300)[0]], CAMW + ' ' + LED('G4', 'fl', 'white', 320, 300)[1],
+HEAD + `Camera cam; bool flash = false;
+
+void page() {
+  server.send(200, "text/html", String(${PAGE('كاميرا بفلاش', `"<img src='/capture' style='width:100%;max-width:420px;border-radius:12px'><p><a class='b on' href='/'>📸 صورة جديدة</a><a class='b' href='/flash'>" + String(flash ? "إطفاء الفلاش" : "تشغيل الفلاش") + "</a></p>"`)}));
+}
+void toggleFlash() { flash = !flash; digitalWrite(4, flash); page(); }
+
+void setup() {
+  Serial.begin(115200); cam.begin(); pinMode(4, OUTPUT);
+${AP('SPARK-PHOTO')}  server.on("/", page); server.on("/flash", toggleFlash); server.begin();
+}
+
+void loop() { server.handleClient(); delay(5); }`);
+    window.sparkWebProjects = { from: N0, to: EXAMPLES.length };
+    (function () { const s = document.getElementById('exSelect'); if (s) for (let i = N0; i < EXAMPLES.length; i++) { const o = document.createElement('option'); o.value = i; o.textContent = EXAMPLES[i].name; s.appendChild(o); } })();
+})();
+
+// h60 — PCB toolbar: view switch + one organised "أدوات اللوحة" dropdown (design · export & manufacturing · view) instead of a long row of buttons
+(function () {
+    const css = document.createElement('style'); css.textContent = `
+#pcbPane .pcb-bar{flex-wrap:nowrap!important;position:relative}#pcbPane .pcb-bar .pcb-sep{display:none!important}
+#pcbTools{position:relative;flex:none}#pcbToolsB{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 13px;border-radius:10px;border:1px solid #c8741f;background:rgba(200,116,31,.12);color:#e9a35a;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap}
+#pcbToolsM{display:none;position:fixed;z-index:9700;min-width:260px;max-width:calc(100vw - 16px);max-height:70vh;overflow:auto;background:#161c23;color:#eef2f6;border:1px solid #323b46;border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.45);padding:6px}
+#pcbToolsM.open{display:block}#pcbToolsM h5{margin:8px 10px 4px;font-size:11.5px;color:#9aa6b2;font-weight:800}
+#pcbToolsM .pcb-b,#pcbToolsM .pcb-seg{display:flex!important;width:100%;justify-content:flex-start;height:40px;margin:2px 0;border-radius:10px;background:transparent;border:1px solid transparent;color:#eef2f6;font-size:13.5px}
+#pcbToolsM .pcb-b:hover{background:#1f2730}#pcbToolsM .pcb-b.on{background:rgba(200,116,31,.16);border-color:#c8741f}#pcbToolsM .pcb-b.pri{background:#1f8a5b;color:#fff}
+#pcbToolsM .pcb-seg{height:auto;padding:2px;gap:4px;border-color:#323b46}#pcbToolsM .pcb-seg button{flex:1;height:34px}
+#pcbToolsM .pcb-b i{width:20px;text-align:center}`;
+    document.head.appendChild(css);
+    let open = false;
+    const has = (b, re) => re.test(b.getAttribute('onclick') || '');
+    function organise() {
+        const pane = document.getElementById('pcbPane'), bar = pane && pane.querySelector('.pcb-bar'); if (!bar || bar.querySelector('#pcbTools')) return;
+        const all = [...bar.children], pick = re => all.filter(e => has(e, re) || [...e.querySelectorAll('[onclick]')].some(x => has(x, re)));
+        const groups = [
+            ['التصميم', pick(/pcbAuto\(|pcbSet\('layers'|pcbSet\('pour'|pcbSet\('holes'/)],
+            ['التصدير والتصنيع', pick(/pcbExportGerber|pcbPrint|pcbExportSVG|pcbExportBOM/)],
+            ['العرض', pick(/toggleFocus/)]
+        ];
+        if (!groups.some(g => g[1].length)) return;
+        const w = document.createElement('div'); w.id = 'pcbTools';
+        w.innerHTML = '<button type="button" id="pcbToolsB" aria-haspopup="true"><i class="fa-solid fa-sliders"></i>أدوات اللوحة<i class="fa-solid fa-chevron-down" style="font-size:10px"></i></button>';
+        const m = document.createElement('div'); m.id = 'pcbToolsM'; m.setAttribute('role', 'menu'); m.dir = 'rtl';
+        groups.forEach(([t, els]) => { if (!els.length) return; const h = document.createElement('h5'); h.textContent = t; m.appendChild(h); els.forEach(e => { if (e.matches('.pcb-b') && !e.textContent.trim()) e.insertAdjacentText('beforeend', 'ملء الشاشة'); m.appendChild(e); }); });
+        const view = all.find(e => [...e.querySelectorAll('[onclick]')].some(x => has(x, /pcbSetView/)));
+        (view ? view : bar.firstElementChild).after(w);
+        document.body.querySelectorAll('#pcbToolsM').forEach(x => x.remove()); document.body.appendChild(m);
+        const place = () => { const r = w.getBoundingClientRect(); m.style.top = (r.bottom + 6) + 'px'; const left = Math.max(8, Math.min(innerWidth - m.offsetWidth - 8, r.right - m.offsetWidth)); m.style.left = left + 'px'; };
+        const show = v => { open = v; m.classList.toggle('open', v); if (v) place(); };
+        document.getElementById('pcbToolsB').onclick = e => { e.stopPropagation(); show(!open); };
+        m.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (has(b, /pcbExport|pcbPrint|toggleFocus/)) show(false); });
+        if (open) show(true);
+    }
+    document.addEventListener('click', e => { const m = document.getElementById('pcbToolsM'); if (m && open && !m.contains(e.target) && !e.target.closest('#pcbTools')) { open = false; m.classList.remove('open'); } }, true);
+    setInterval(() => { const p = document.getElementById('pcbPane'); if (p && !p.classList.contains('hidden')) organise(); else { const m = document.getElementById('pcbToolsM'); if (m) m.classList.remove('open'); open = false; } }, 300);
 })();
 
         window.onload = function () {
