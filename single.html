@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='3.0.1',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='3.1.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -13910,7 +13910,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '3.0.1', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '3.1.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14257,7 +14257,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 3.0.1</b><br>• قائمة المشاريع تتبع ثيم التطبيق (فاتح أو داكن) بنصوص واضحة.<br>• SPARK AI المجاني يعمل فعلياً بلا مفتاح، وينتظر دوره بعدّاد بدل التحويل للمحلي.<br>• الصفوف تعمل حتى بدون خادم: التسليم والتصحيح بملف يُرسل عبر واتساب، وتنتقل للخادم تلقائياً عند توفره.<br><b>الإصدار 3.0.0</b><br>• أدوات لوحة PCB صارت في قائمة منسدلة مرتبة، ونصوص قائمة المشاريع أوضح.<br>• مساعد ذكي مجاني موحّد «SPARK AI» يعمل بلا مفتاح افتراضياً.<br>• 119 تجربة ومشروعاً جاهزاً جديداً (70 أردوينو و49 ESP32): الدائرة والكود الكامل، تعمل في المحاكي، ولوحة PCB موجّهة لكل تجربة.<br>• 200 مشروع متكامل إضافي (حساس + إخراج: مرحّل، شاشات، سيرفو، NeoPixel، مسجّل بيانات) — المجموع 356 مشروعاً جاهزاً.<br>• نافذة «المشاريع الجاهزة» الجديدة: قائمتان منسدلتان (اللوحة والقسم) وبحث، أقسام قابلة للطي حسب الموضوع، وصورة معبّرة لكل مشروع.<br>• تحكم بالمشروع من جوال آخر عبر واي فاي حقيقي (تطبيق أندرويد): خادم مدمج على نفس الشبكة أو نقطة اتصال يبثها الجوال، صفحة المشروع من كود ESP32 أو لوحة تحكم تلقائية، و16 مشروعاً جاهزاً لـ ESP32 وESP32-CAM مع بث الكاميرا.<br>• شاشة دخول أهدأ: قائمة منسدلة واحدة لنوع الحساب (طالب، صف، مهندس، مطوّر، فريق التطوير) والحقول الاختيارية مطوية.<br><b>الإصدار 2.9.1</b><br>• قسم جديد «مديولات أردوينو»: أكثر من 30 مديولاً (MLX90614، INA219، VL53L0X، MAX30102، ADS1115، RC522، MQ-3/4/9، KY-040، A4988، HC-05، nRF24، GPS، SD، DS3231، PCA9685، DFPlayer، ESP-01، SIM800L…) بشكلها وأطرافها الحقيقية وكود جاهز ومستلزماتها، ومكتبات كثير منها تعمل داخل المحاكي.<br><b>الإصدار 2.9.0</b><br>• «عنصر جديد بالوصف» في مكتبة العناصر: اكتب اسم العنصر أو صِفه فيقترح المساعد أطرافه وشكله وحساباته وكوده، ويُضاف للمكتبة والمحاكاة، ويمكنك اقتراحه للنشر للجميع.<br><b>الإصدار 2.8.8</b><br>• المساعد الذكي يعمل متصلاً ومجاناً دون أي مفتاح، ويرجع للمساعد المحلي تلقائياً عند انقطاع الإنترنت.<br>• واجهة مساعد أهدأ: صف واحد للأوامر السريعة، واختيار النموذج داخل زر «النموذج».<br><b>الإصدار 2.8.7</b><br>• رسائل أوضح عند تعذّر الاتصال بخادم الصفوف.<br><b>الإصدار 2.8.6</b><br>• شاشة الدخول: زر واضح لطلاب ومعلمي الصفوف للدخول بكود الصف، وإصلاح زر «الرقم السري».<br><b>الإصدار 2.8.5</b><br>• شاشة الدخول: دخول فريق التطوير السريع بالرقم السري أو البصمة بدل الكود الطويل.<br><b>الإصدار 2.8.4</b><br>• حسابات فريق التطوير تُفتح برقم سري من 6 أرقام، وعلى الجوال بالبصمة.<br><b>الإصدار 2.8.3</b><br>• تنزيل نموذج «العقل المحلي» يُكتب الآن مباشرة كملفات على الجهاز — إصلاح خطأ الحفظ على ويندوز.<br><b>الإصدار 2.8.2</b><br>• طريقة حفظ بديلة لنموذج «العقل المحلي» على الأجهزة التي يفشل فيها التخزين العادي (ويندوز).<br><b>الإصدار 2.8.1</b><br>• إصلاح تنزيل نموذج «العقل المحلي» في نسخة الويندوز (خطأ Failed to write blobs).<br><b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 3.1.0</b><br>• 🌾 مزرعة ذكية متكاملة (ESP32 و Raspberry Pi): طبيب النبات بالكاميرا + تسميد وري وتهوية آلية.<br>• 📲 تطبيق جوال حقيقي لأي مشروع: لوحة، تحكم، كاميرا، سجل — يُفتح من جوال آخر أو كمعاينة داخل المنصة.<br>• 300 مشروع جديد: 188 ESP32 و72 Raspberry Pi بتحكم من الجوال، و36 مختبراً هندسياً.<br><b>الإصدار 3.0.1</b><br>• قائمة المشاريع تتبع ثيم التطبيق (فاتح أو داكن) بنصوص واضحة.<br>• SPARK AI المجاني يعمل فعلياً بلا مفتاح، وينتظر دوره بعدّاد بدل التحويل للمحلي.<br>• الصفوف تعمل حتى بدون خادم: التسليم والتصحيح بملف يُرسل عبر واتساب، وتنتقل للخادم تلقائياً عند توفره.<br><b>الإصدار 3.0.0</b><br>• أدوات لوحة PCB صارت في قائمة منسدلة مرتبة، ونصوص قائمة المشاريع أوضح.<br>• مساعد ذكي مجاني موحّد «SPARK AI» يعمل بلا مفتاح افتراضياً.<br>• 119 تجربة ومشروعاً جاهزاً جديداً (70 أردوينو و49 ESP32): الدائرة والكود الكامل، تعمل في المحاكي، ولوحة PCB موجّهة لكل تجربة.<br>• 200 مشروع متكامل إضافي (حساس + إخراج: مرحّل، شاشات، سيرفو، NeoPixel، مسجّل بيانات) — المجموع 356 مشروعاً جاهزاً.<br>• نافذة «المشاريع الجاهزة» الجديدة: قائمتان منسدلتان (اللوحة والقسم) وبحث، أقسام قابلة للطي حسب الموضوع، وصورة معبّرة لكل مشروع.<br>• تحكم بالمشروع من جوال آخر عبر واي فاي حقيقي (تطبيق أندرويد): خادم مدمج على نفس الشبكة أو نقطة اتصال يبثها الجوال، صفحة المشروع من كود ESP32 أو لوحة تحكم تلقائية، و16 مشروعاً جاهزاً لـ ESP32 وESP32-CAM مع بث الكاميرا.<br>• شاشة دخول أهدأ: قائمة منسدلة واحدة لنوع الحساب (طالب، صف، مهندس، مطوّر، فريق التطوير) والحقول الاختيارية مطوية.<br><b>الإصدار 2.9.1</b><br>• قسم جديد «مديولات أردوينو»: أكثر من 30 مديولاً (MLX90614، INA219، VL53L0X، MAX30102، ADS1115، RC522، MQ-3/4/9، KY-040، A4988، HC-05، nRF24، GPS، SD، DS3231، PCA9685، DFPlayer، ESP-01، SIM800L…) بشكلها وأطرافها الحقيقية وكود جاهز ومستلزماتها، ومكتبات كثير منها تعمل داخل المحاكي.<br><b>الإصدار 2.9.0</b><br>• «عنصر جديد بالوصف» في مكتبة العناصر: اكتب اسم العنصر أو صِفه فيقترح المساعد أطرافه وشكله وحساباته وكوده، ويُضاف للمكتبة والمحاكاة، ويمكنك اقتراحه للنشر للجميع.<br><b>الإصدار 2.8.8</b><br>• المساعد الذكي يعمل متصلاً ومجاناً دون أي مفتاح، ويرجع للمساعد المحلي تلقائياً عند انقطاع الإنترنت.<br>• واجهة مساعد أهدأ: صف واحد للأوامر السريعة، واختيار النموذج داخل زر «النموذج».<br><b>الإصدار 2.8.7</b><br>• رسائل أوضح عند تعذّر الاتصال بخادم الصفوف.<br><b>الإصدار 2.8.6</b><br>• شاشة الدخول: زر واضح لطلاب ومعلمي الصفوف للدخول بكود الصف، وإصلاح زر «الرقم السري».<br><b>الإصدار 2.8.5</b><br>• شاشة الدخول: دخول فريق التطوير السريع بالرقم السري أو البصمة بدل الكود الطويل.<br><b>الإصدار 2.8.4</b><br>• حسابات فريق التطوير تُفتح برقم سري من 6 أرقام، وعلى الجوال بالبصمة.<br><b>الإصدار 2.8.3</b><br>• تنزيل نموذج «العقل المحلي» يُكتب الآن مباشرة كملفات على الجهاز — إصلاح خطأ الحفظ على ويندوز.<br><b>الإصدار 2.8.2</b><br>• طريقة حفظ بديلة لنموذج «العقل المحلي» على الأجهزة التي يفشل فيها التخزين العادي (ويندوز).<br><b>الإصدار 2.8.1</b><br>• إصلاح تنزيل نموذج «العقل المحلي» في نسخة الويندوز (خطأ Failed to write blobs).<br><b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -14590,9 +14590,10 @@ ${[[35, 35], [615, 35], [35, 525], [615, 525]].map(p => `<circle cx="${p[0]}" cy
                     if ((m = /^(\w+)\s*=\s*GPIO\.PWM\((.+)\)$/.exec(t))) { const p = num(split(m[2])[0]); dev[m[1]] = { k: 'gpwm', pin: p }; return ['pinMode(' + p + ', OUTPUT);']; }
                     if ((m = /^(\w+)\s*=\s*adafruit_dht\.DHT(22|11)\((.+)\)$/.exec(t))) { const p = num(split(m[3])[0]); dev[m[1]] = { k: 'dht', pin: p }; pre.push('DHT dht' + p + '(' + p + ', DHT' + m[2] + ');'); return ['dht' + p + '.begin();']; }
                     if ((m = /^(\w+)\s*,\s*(\w+)\s*=\s*Adafruit_DHT\.read(?:_retry)?\(\s*Adafruit_DHT\.DHT(22|11)\s*,\s*(\w+)\s*\)$/.exec(t))) { const p = num(m[4]); if (!need['dht' + p]) { need['dht' + p] = 1; pre.push('DHT dht' + p + '(' + p + ', DHT' + m[3] + ');'); setup.unshift('dht' + p + '.begin();'); } return [decl(m[1], '0', scope) + m[1] + ' = dht' + p + '.readHumidity();', decl(m[2], '0', scope) + m[2] + ' = dht' + p + '.readTemperature();']; }
-                    if ((m = /^(\w+)\s*=\s*(?:gpiozero\.)?(LED|PWMLED|Buzzer|OutputDevice|DigitalOutputDevice|PWMOutputDevice|Button|MotionSensor|DigitalInputDevice|LineSensor|LightSensor|DistanceSensor|Servo|AngularServo|MCP3008|TouchScreen|CharLCD)\((.*)\)$/.exec(t))) {
+                    if ((m = /^(\w+)\s*=\s*(?:gpiozero\.)?(LED|PWMLED|Buzzer|OutputDevice|DigitalOutputDevice|PWMOutputDevice|Button|MotionSensor|DigitalInputDevice|LineSensor|LightSensor|DistanceSensor|Servo|AngularServo|MCP3008|TouchScreen|PhoneApp|PlantDoctor|CharLCD)\((.*)\)$/.exec(t))) {
                         const n = m[1], cl = m[2], a = args(m[3]);
                         if (cl === 'TouchScreen') { dev[n] = { k: 'scr' }; pre.push('PiScreen ' + n + ';'); return []; }
+                        if (cl === 'PhoneApp' || cl === 'PlantDoctor') { dev[n] = { k: 'scr' }; pre.push((cl === 'PhoneApp' ? 'SparkApp ' : 'PlantDoctor ') + n + ';'); return []; }
                         if (cl === 'CharLCD') { dev[n] = { k: 'lcd' }; pre.push('LiquidCrystal_I2C ' + n + '(0x27, 16, 2);'); return [n + '.init();', n + '.backlight();']; }
                         if (cl === 'MCP3008') { dev[n] = { k: 'mcp', ch: num(a.kw.channel !== undefined ? a.kw.channel : a.pos[0] || 0) }; return []; }
                         if (cl === 'DistanceSensor') { const e = num(a.kw.echo !== undefined ? a.kw.echo : a.pos[0]), tr = num(a.kw.trigger !== undefined ? a.kw.trigger : a.pos[1]); dev[n] = { k: 'dist', echo: e, trig: tr }; need.dist = 1; return ['pinMode(' + tr + ', OUTPUT);', 'pinMode(' + e + ', INPUT);']; }
@@ -19109,6 +19110,7 @@ void loop() {
         });
     }
     window.sparkExperiments2 = { from: N0, to: EXAMPLES.length };
+    window.sparkGen = { S, O, ES, AR, LOADS, num, AN, pct, ORDER };
     (function () { const s = document.getElementById('exSelect'); if (s) for (let i = N0; i < EXAMPLES.length; i++) { const o = document.createElement('option'); o.value = i; o.textContent = EXAMPLES[i].name; s.appendChild(o); } })();
 })();
 
@@ -19120,7 +19122,9 @@ void loop() {
     // topic rules, first match wins (by the parts the project really uses, then by its name)
     const TOPICS = [
         ['labs', '🧪', 'المختبرات الأساسية', null],
-        ['web', '📲', 'تحكم من الجوال عبر واي فاي (ESP32 و ESP32-CAM)', e => /^(🌐|📷)/.test(e.name)],
+        ['farm2', '🌾', 'المزرعة الذكية وطبيب النبات', e => /^🌾/.test(e.name) || has(e, /^leaf_cam$/)],
+        ['web', '📲', 'تحكم من الجوال كتطبيق (ESP32 · ESP32-CAM · Raspberry Pi)', e => /^(🌐|📷|📲)/.test(e.name)],
+        ['eng', '🎓', 'مختبرات الهندسة', e => /^🎓/.test(e.name)],
         ['pi', '🍓', 'Raspberry Pi', e => has(e, /^rpi/)],
         ['robot', '🤖', 'الروبوتات والسيارات', e => has(e, /robot_car|drv_l298n|drv_tb6612|drv_l293d/) || /روبوت|سيارة|استوديو/.test(e.name)],
         ['vision', '✋', 'الإيماءات والكاميرا', e => has(e, /camera/) || /إيماء|كاميرا/.test(e.name)],
@@ -19235,6 +19239,7 @@ void loop() {
         tm1637: c => c.state.text || '', led_indicator: c => c.state.on ? 'مضاء' : 'مطفأ', bulb_12v: c => ((c.pinVoltages.P1 || 0) - (c.pinVoltages.P2 || 0)) > 3 ? 'مضاء' : 'مطفأ'
     };
     const isLed = t => /^led_(red|green|yellow|blue|white|orange|ir)$/.test(t);
+    window.sparkPanelSnap = () => snapshot();
     function snapshot() {
         const items = [];
         state.components.forEach(c => {
@@ -19326,7 +19331,7 @@ ${hs.on ? '<div class="qr"><div><div id="netQw"></div>اتصل بالشبكة</d
     }
     function btn() {
         let b = $('netBtn'); if (!b) { b = document.createElement('button'); b.id = 'netBtn'; b.type = 'button'; b.innerHTML = '<i class="fa-solid fa-wifi"></i>تحكم من الجوال'; b.onclick = () => { if (AND() && !BR.on) boot(); setTimeout(sheet, AND() && !BR.on ? 900 : 0); }; document.body.appendChild(b); }
-        const pp = document.getElementById('pcbPane'); const show = state.components.some(c => c.type === 'esp32_devkit' || c.type === 'camera_module') && !document.querySelector('#paneLibrary:not(.hidden).lib-half') && !(pp && !pp.classList.contains('hidden'));
+        const pp = document.getElementById('pcbPane'); const show = (state.components.some(c => /^(esp32_devkit|camera_module|leaf_cam|rpi4)$/.test(c.type)) || (window.SPARK_APP && SPARK_APP().used)) && !document.querySelector('#paneLibrary:not(.hidden).lib-half') && !(pp && !pp.classList.contains('hidden'));
         b.classList.toggle('show', show);
     }
     setInterval(btn, 1200);
@@ -19805,6 +19810,896 @@ html.light .pz-i b{color:#111827!important}html.light .pz-i small{color:#5b6573!
         const inp = d.querySelector('input'); d.querySelector('button').onclick = () => inp.click(); inp.onchange = async () => { for (const f of inp.files) await importFile(f); inp.value = ''; };
         head.after(d);
     }, 400);
+})();
+
+// h62 — "phone app" for any project + plant-doctor camera
+// • SparkApp (C, ESP32/Arduino) and PhoneApp (Python, Raspberry Pi): the sketch builds a real mobile-app screen
+//   (cards, gauges, switches, sliders, buttons, alerts, camera) that a second phone opens over WiFi — or previewed inside the platform.
+// • leaf_cam: ESP32-CAM pointed at a plant leaf (virtual leaf with selectable disease, or the device camera) and the
+//   PlantDoctor library that analyses the picture (colour segmentation) → disease, severity, confidence, advice.
+(function () {
+    const $ = id => document.getElementById(id), esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const str = v => typeof v === 'number' ? String(+v.toFixed(2)) : String(v == null ? '' : v);
+
+    // ================= 1) app model shared by C and Python =================
+    const fresh = () => ({ title: '', rows: [], cards: [], ctl: [], dn: {}, tg: {}, sl: {}, log: [], alert: '', at: 0, cam: 0, used: 0 });
+    let APP = fresh(); window.SPARK_APP = () => APP;
+    const card = (n, o) => { n = str(n).slice(0, 26); let c = APP.cards.find(x => x.n === n); if (!c) { if (APP.cards.length >= 14) return null; c = { n }; APP.cards.push(c); } Object.assign(c, o); return c; };
+    const ctl = (n, k, o) => { n = str(n).slice(0, 24); let c = APP.ctl.find(x => x.n === n); if (!c) { if (APP.ctl.length >= 14) return n; c = Object.assign({ n, k }, o || {}); APP.ctl.push(c); } return n; };
+    function appMethod(m, a) {
+        APP.used = 1; APP.at = Date.now();
+        switch (m) {
+            case 'begin': return 1;
+            case 'title': APP.title = str(a[0]).slice(0, 40); return 0;
+            case 'clear': APP.rows = []; return 0;
+            case 'text': { const r = Math.max(0, Math.min(5, a[0] | 0)); APP.rows[r] = str(a[1]).slice(0, 90); for (let i = 0; i < r; i++) if (APP.rows[i] === undefined) APP.rows[i] = ''; return 0; }
+            case 'print': case 'log': { APP.log.push(str(a[0]).slice(0, 90)); if (APP.log.length > 40) APP.log.shift(); return 0; }
+            case 'gauge': card(a[0], { t: 'g', v: +a[1] || 0, max: +a[2] || 100, u: a.length > 3 ? str(a[3]).slice(0, 8) : '' }); return 0;
+            case 'value': case 'show': card(a[0], { t: 'v', v: typeof a[1] === 'number' ? +a[1].toFixed(2) : str(a[1]).slice(0, 40), u: a.length > 2 ? str(a[2]).slice(0, 8) : '' }); return 0;
+            case 'led': case 'status': card(a[0], { t: 'l', on: !!a[1] }); return 0;
+            case 'alert': { const t = str(a[0]).slice(0, 120); if (t && t !== APP.alert) { APP.log.push('⚠ ' + t); if (APP.log.length > 40) APP.log.shift(); } APP.alert = t; return 0; }
+            case 'ok': APP.alert = ''; return 0;
+            case 'camera': APP.cam = 1; return 0;
+            case 'button': { const n = ctl(a[0], 'b'), v = APP.dn[n] ? 1 : 0; APP.dn[n] = 0; return v; }
+            case 'toggle': case 'switch': { const n = ctl(a[0], 't'); return APP.tg[n] ? 1 : 0; }
+            case 'set': { const n = ctl(a[0], 't'); APP.tg[n] = !!a[1]; return 0; }
+            case 'slider': { const n = ctl(a[0], 's', { min: +a[1] || 0, max: a[2] === undefined ? 100 : +a[2] }); if (APP.sl[n] === undefined) APP.sl[n] = a.length > 3 ? +a[3] : +a[1] || 0; return APP.sl[n]; }
+        }
+        return 0;
+    }
+    window.sparkAppDo = (n, k, v) => {
+        const c = APP.ctl.find(x => x.n === n); if (!c) return;
+        if (c.k === 'b') APP.dn[n] = 1; else if (c.k === 't') APP.tg[n] = v === undefined ? !APP.tg[n] : (v === '1' || v === true || v === 1 || v === 'true'); else if (c.k === 's') APP.sl[n] = Math.max(c.min, Math.min(c.max, +v || 0));
+    };
+    try { const _ts = toggleSimulation; toggleSimulation = function () { const was = !!state.running; const r = _ts.apply(this, arguments); if (!was && state.running) { APP = fresh(); } return r; }; } catch (e) { }
+
+    // ================= 2) the plant-doctor camera =================
+    const LW = 160, LH = 120;
+    const DIS = [
+        ['سليمة', 'Healthy', 'النبات سليم — استمر بنفس برنامج الري والتسميد.'],
+        ['اللفحة المبكرة', 'Early blight', 'أزل الأوراق المصابة، تجنّب بلل الأوراق، ورش مبيداً فطرياً نحاسياً.'],
+        ['الصدأ', 'Rust', 'حسّن التهوية، أزل الأوراق المصابة، ورش مبيداً فطرياً مناسباً للصدأ.'],
+        ['البياض الدقيقي', 'Powdery mildew', 'خفّض الرطوبة، ورش كبريتاً ميكرونياً أو بيكربونات البوتاسيوم.'],
+        ['نقص النيتروجين', 'Nitrogen deficiency', 'زد جرعة السماد النيتروجيني (يتولاها التسميد الآلي).'],
+        ['اللفحة المتأخرة', 'Late blight', 'حالة خطرة: اعزل النبات، أوقف الري بالرش، ورش مبيداً جهازياً فوراً.']
+    ];
+    window.SPARK_DISEASES = DIS;
+    function rnd(seed) { let s = seed >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+    function leafDraw(c) {
+        const s = c.state; if (!c.cv) { c.cv = document.createElement('canvas'); c.cv.width = LW; c.cv.height = LH; c.g = c.cv.getContext ? c.cv.getContext('2d', { willReadFrequently: true }) : null; }
+        const g = c.g; if (!g) return null;
+        try { if (s.real && window.cam && cam.vid && cam.vid.readyState >= 2) { g.drawImage(cam.vid, 0, 0, LW, LH); return g; } } catch (e) { }
+        const d = +s.dis || 0, sev = Math.max(0, Math.min(100, +s.sev || 0)) / 100, R = rnd(1000 + d * 97 + Math.round(sev * 20));
+        g.fillStyle = '#24303a'; g.fillRect(0, 0, LW, LH);
+        // leaf blade
+        const base = d === 4 ? [Math.round(70 + 150 * sev), Math.round(150 + 50 * sev), Math.round(50 - 20 * sev)] : [58, 150, 62];
+        g.save(); g.translate(LW / 2, LH / 2); g.rotate(-0.35);
+        g.beginPath(); g.moveTo(-62, 0); g.bezierCurveTo(-30, -44, 30, -44, 62, 0); g.bezierCurveTo(30, 44, -30, 44, -62, 0); g.closePath();
+        g.fillStyle = `rgb(${base[0]},${base[1]},${base[2]})`; g.fill(); g.clip();
+        g.strokeStyle = 'rgba(210,240,190,.55)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(-60, 0); g.lineTo(60, 0); for (let i = -40; i <= 40; i += 16) { g.moveTo(i, 0); g.lineTo(i + 14, -22); g.moveTo(i, 0); g.lineTo(i + 14, 22); } g.stroke();
+        const spots = Math.round(sev * 26);
+        for (let i = 0; i < spots; i++) {
+            const x = -50 + R() * 100, y = -26 + R() * 52, r = 2 + R() * (d === 5 ? 9 : 4.5);
+            if (d === 1) { g.fillStyle = '#6b4423'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.strokeStyle = '#c9b25a'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, r + 1.4, 0, 7); g.stroke(); }
+            else if (d === 2) { g.fillStyle = '#d9771f'; g.beginPath(); g.arc(x, y, r * 0.7, 0, 7); g.fill(); }
+            else if (d === 3) { g.fillStyle = 'rgba(240,240,236,.95)'; g.beginPath(); g.arc(x, y, r * 1.1, 0, 7); g.fill(); }
+            else if (d === 5) { g.fillStyle = '#2a1d14'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }
+        }
+        g.restore(); return g;
+    }
+    function leafAnalyse(c) {
+        const g = leafDraw(c); if (!g) return c.res || null;
+        let px; try { px = g.getImageData(0, 0, LW, LH).data; } catch (e) { return c.res || null; }
+        let G = 0, Y = 0, O = 0, B = 0, D = 0, W = 0;
+        for (let i = 0; i < px.length; i += 4) {
+            const r = px[i], gg = px[i + 1], b = px[i + 2], l = (r + gg + b) / 3, mx = Math.max(r, gg, b), mn = Math.min(r, gg, b);
+            if (l > 185 && mx - mn < 40) { W++; continue; }
+            if (l < 60) { if (b < r + 12) D++; continue; }
+            if (r > 165 && gg > 70 && gg < 155 && b < 90) { O++; continue; }
+            if (r > 130 && gg > 130 && b < 110 && Math.abs(r - gg) < 70) { Y++; continue; }
+            if (gg > r + 8 && gg > b + 8) { G++; continue; }
+            if (r > 60 && r < 175 && gg < r && b < gg + 10 && r - b > 35) { B++; continue; }
+        }
+        const leaf = G + Y + O + B + D + W, N = LW * LH, f = x => leaf ? x / leaf * 100 : 0;
+        let cls = 0, conf = 60;
+        if (leaf < N * 0.04) cls = -1;
+        else if (f(W) >= 3) { cls = 3; conf = 70 + f(W); }
+        else if (f(O) >= 2) { cls = 2; conf = 70 + f(O) * 2; }
+        else if (f(D) >= 4) { cls = 5; conf = 70 + f(D); }
+        else if (f(B) >= 2) { cls = 1; conf = 70 + f(B) * 2; }
+        else if (f(Y) >= 20) { cls = 4; conf = 60 + f(Y) / 2; }
+        else { cls = 0; conf = 70 + f(G) / 4; }
+        const sev = cls <= 0 ? 0 : cls === 4 ? f(Y) : f(W + O + D + B);
+        c.res = { cls, sev: Math.round(Math.min(100, sev * (cls === 4 ? 1 : 2.2))), conf: Math.round(Math.min(99, conf)), health: Math.round(f(G)), leaf: Math.round(leaf / N * 100), t: Date.now() };
+        try { c.img = c.cv.toDataURL('image/jpeg', 0.8); } catch (e) { }
+        return c.res;
+    }
+    const leafCam = () => state.components.find(x => x.type === 'leaf_cam');
+    const leafPowered = c => (c.pinVoltages.VCC || 0) - (c.pinVoltages.GND || 0) > 3;
+    X('leaf_cam', XC.RB, 'كاميرا طبيب النبات (ESP32-CAM)', 'تصوير ورقة النبات وتشخيص المرض — ورقة افتراضية أو كاميرا الجهاز', 'fa-leaf', 'emerald', 215, 'VCC,GND', '', {
+        state: { dis: 0, sev: 35, real: false },
+        sel: [{ k: 'dis', l: 'حالة الورقة أمام الكاميرا', get o() { return DIS.map((d, i) => [d[0] + ' · ' + d[1], i]); } }],
+        vals: [{ k: 'sev', l: 'شدة الإصابة', min: 0, max: 100, u: '%' }],
+        tg: [{ k: 'real', l: 'استخدم كاميرا الجهاز الحقيقية' }],
+        res: [{ a: 'VCC', b: 'GND', r: () => 40 }],
+        vis: c => { if (!c.img) try { leafAnalyse(c); } catch (e) { } const r = c.res; return (c.img ? `<img src="${c.img}" style="width:100%;border-radius:6px;display:block" alt="ورقة النبات">` : '') + (r ? `<div style="font-size:10.5px;text-align:center;margin-top:3px;color:${r.cls > 0 ? '#f59e0b' : '#34d399'}">${r.cls < 0 ? 'لا توجد ورقة في الصورة' : esc(DIS[r.cls][0]) + (r.cls > 0 ? ' · ' + r.sev + '%' : '') + ' · ثقة ' + r.conf + '%'}</div>` : ''); },
+        status: c => leafPowered(c) ? (c.state.real ? 'كاميرا حقيقية' : 'ورقة افتراضية') : 'غير موصولة'
+    });
+    try { PHOTO.cat.leaf_cam = PHOTO.cat.camera_module; } catch (e) { }
+    // when the user switches to the real camera, ask for it once
+    setInterval(() => { const c = leafCam(); if (!c) return; if (c.state.real && !c._rq) { c._rq = 1; try { openCam(true); } catch (e) { } } if (!c.state.real) c._rq = 0; if (state.running && Date.now() - (c._lt || 0) > 900) { c._lt = Date.now(); try { leafAnalyse(c); refreshComponentBodiesLive(); } catch (e) { } } }, 400);
+    function doctor(m, a) {
+        const c = leafCam(); if (m === 'begin') return c ? 1 : 0; if (!c || !leafPowered(c)) return m === 'name' || m === 'advice' ? 'لا كاميرا' : -1;
+        const r = (m === 'scan' || !c.res || Date.now() - c.res.t > 1500) ? leafAnalyse(c) : c.res; if (!r) return 0;
+        switch (m) {
+            case 'scan': case 'disease': return r.cls;
+            case 'severity': return r.sev; case 'confidence': return r.conf; case 'health': return r.health; case 'leaf': return r.leaf;
+            case 'name': return r.cls < 0 ? 'لا توجد ورقة' : DIS[r.cls][0];
+            case 'advice': return r.cls < 0 ? 'وجّه الكاميرا نحو ورقة النبات' : DIS[r.cls][2];
+            case 'sick': return r.cls > 0 ? 1 : 0;
+            case 'fungal': return [1, 2, 3, 5].includes(r.cls) ? 1 : 0;
+            case 'nutrient': return r.cls === 4 ? 1 : 0;
+        }
+        return 0;
+    }
+
+    // ================= VM hooks (C objects SparkApp / PlantDoctor; Python PhoneApp / PlantDoctor) =================
+    ['SparkApp', 'PlantDoctor'].forEach(k => { VM_TYPES.add(k); VM_OBJ.add(k); });
+    const _xm = extMethod;
+    extMethod = function (o, m, a) { if (o && o.cls === 'SparkApp') return appMethod(m, a || []); if (o && o.cls === 'PlantDoctor') return doctor(m, a || []); return _xm.apply(this, arguments); };
+    const _lm = libMethod;
+    libMethod = function (o, m, a) { if (o && o.cls === 'SparkApp') return appMethod(m, a || []); if (o && o.cls === 'PlantDoctor') return doctor(m, a || []); return _lm.apply(this, arguments); };
+
+    // ================= 3) the phone app page =================
+    const APP_HTML = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#11161c"><title>SPARK App</title>
+<style>*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;background:#0d1217;color:#e7ecf1;-webkit-tap-highlight-color:transparent}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(135deg,#c8741f,#9a5414);color:#fff;padding:14px 16px 12px;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+header h1{margin:0;font-size:19px;font-weight:800}header small{opacity:.85;font-size:12px}header .st{float:left;font-size:11.5px;background:rgba(0,0,0,.25);padding:3px 9px;border-radius:20px;margin-top:3px}
+main{padding:12px 12px 90px;max-width:620px;margin:auto}.al{background:#3b1d12;border:1px solid #f97316;color:#fed7aa;border-radius:14px;padding:11px 13px;margin-bottom:10px;font-weight:700;font-size:14px;display:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.c{background:#161d24;border:1px solid #26313c;border-radius:16px;padding:12px}.c small{color:#909aa8;font-size:12px;display:block}.c b{font-size:24px;font-weight:800;display:block;margin-top:2px}.c b em{font-size:13px;font-style:normal;color:#909aa8;font-weight:600}
+.bar{height:7px;border-radius:5px;background:#26313c;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#eab308,#ef4444);border-radius:5px}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#4a525e;margin-inline-end:6px;vertical-align:middle}.dot.on{background:#22c55e;box-shadow:0 0 10px #22c55e}
+.rows{margin-top:10px}.rows div{background:#161d24;border:1px solid #26313c;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:14px;line-height:1.6}
+.ctl{display:flex;flex-direction:column;gap:10px}.sw{display:flex;align-items:center;justify-content:space-between;background:#161d24;border:1px solid #26313c;border-radius:16px;padding:14px;font-weight:700;font-size:15px}
+.tg{width:54px;height:30px;border-radius:20px;background:#353c46;position:relative;border:0;cursor:pointer;flex:none}.tg:after{content:"";position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s}.tg.on{background:#16a34a}.tg.on:after{right:27px}
+.bt{width:100%;padding:16px;border-radius:16px;border:0;background:#c8741f;color:#fff;font-weight:800;font-size:16px;cursor:pointer}.bt:active{transform:scale(.98)}
+.sl{background:#161d24;border:1px solid #26313c;border-radius:16px;padding:12px 14px}.sl label{display:flex;justify-content:space-between;font-weight:700}.sl input{width:100%;margin-top:10px;accent-color:#c8741f;height:28px}
+.cam img{width:100%;border-radius:14px;display:block;background:#000;min-height:120px}.log{font-family:ui-monospace,monospace;font-size:12.5px;background:#0a0e12;border-radius:12px;padding:10px;white-space:pre-wrap;max-height:60vh;overflow:auto;color:#a7f3d0}
+nav{position:fixed;bottom:0;inset-inline:0;display:flex;background:#11161c;border-top:1px solid #26313c;padding-bottom:env(safe-area-inset-bottom)}nav button{flex:1;padding:10px 4px 12px;border:0;background:none;color:#8b98a6;font-size:11.5px;font-weight:700;cursor:pointer}nav button i{display:block;font-style:normal;font-size:20px}nav button.on{color:#e9a35a}
+.e{text-align:center;color:#8b98a6;padding:40px 10px;line-height:1.8}.run{display:block;width:100%;margin-top:12px;padding:12px;border-radius:14px;border:1px solid #353c46;background:#161d24;color:#e7ecf1;font-weight:700}
+</style></head><body><header><span class="st" id="st">…</span><h1 id="tt">SPARK</h1><small>تطبيق التحكم · SPARKSimLab</small></header><main id="m"></main>
+<nav><button data-t="h" class="on"><i>🏠</i>الرئيسية</button><button data-t="c"><i>🎛️</i>التحكم</button><button data-t="v" id="tv"><i>📷</i>الكاميرا</button><button data-t="l"><i>📝</i>السجل</button></nav>
+<script>
+var T='h',S=null,busy=0,shown='';function $(i){return document.getElementById(i)}
+function api(p){try{if(window.parent!==window&&window.parent.sparkAppApi)return Promise.resolve(window.parent.sparkAppApi(p))}catch(e){}return fetch(p,{cache:'no-store'}).then(function(r){return r.json()})}
+function e(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function q(o){return Object.keys(o).map(function(k){return k+'='+encodeURIComponent(o[k])}).join('&')}
+function act(n,k,v){api('/__app/do?'+q({n:n,k:k,v:v===undefined?'':v})).then(function(j){S=j;draw(1)}).catch(function(){})}
+function draw(force){if(!S)return;var a=S.app;$('tt').textContent=a.title||S.name||'SPARK';$('st').textContent=S.run?'● متصل':'⏸ متوقف';$('tv').style.display=S.cam?'':'none';
+var h='';if(T==='h'){h+='<div class="al" style="display:'+(a.alert?'block':'none')+'">⚠ '+e(a.alert)+'</div>';
+if(a.cards.length){h+='<div class="grid">'+a.cards.map(function(c){if(c.t==='l')return '<div class="c"><small>'+e(c.n)+'</small><b style="font-size:16px"><span class="dot '+(c.on?'on':'')+'"></span>'+(c.on?'يعمل':'متوقف')+'</b></div>';
+if(c.t==='g'){var p=Math.max(0,Math.min(100,c.v/(c.max||100)*100));return '<div class="c"><small>'+e(c.n)+'</small><b>'+e(Math.round(c.v*10)/10)+' <em>'+e(c.u)+'</em></b><div class="bar"><i style="width:'+p+'%"></i></div></div>'}
+return '<div class="c"><small>'+e(c.n)+'</small><b><bdi>'+e(c.v)+'</bdi> <em>'+e(c.u)+'</em></b></div>'}).join('')+'</div>'}
+var r=a.rows.filter(function(x){return x});if(r.length)h+='<div class="rows">'+r.map(function(x){return '<div>'+e(x)+'</div>'}).join('')+'</div>';
+if(!a.cards.length&&!r.length)h+='<div class="e">'+(S.run?'ينتظر بيانات المشروع…':'المحاكاة متوقفة. اضغط تشغيل.')+'</div>';
+h+='<button class="run" onclick="api(\\'/__spark/run?on='+(S.run?0:1)+'\\').then(function(){setTimeout(tick,400)})">'+(S.run?'⏸ إيقاف المحاكاة':'▶ تشغيل المحاكاة')+'</button>'}
+else if(T==='c'){h+='<div class="ctl">'+(a.ctl.length?a.ctl.map(function(c){var n=e(c.n),js=JSON.stringify(c.n).replace(/"/g,'&quot;');
+if(c.k==='t')return '<div class="sw"><span>'+n+'</span><button class="tg '+(a.tg[c.n]?'on':'')+'" aria-label="'+n+'" onclick="act('+js+',\\'t\\','+(a.tg[c.n]?0:1)+')"></button></div>';
+if(c.k==='s')return '<div class="sl"><label><span>'+n+'</span><b>'+e(a.sl[c.n])+'</b></label><input type="range" min="'+c.min+'" max="'+c.max+'" step="'+((c.max-c.min)>20?1:0.1)+'" value="'+e(a.sl[c.n])+'" onchange="act('+js+',\\'s\\',this.value)"></div>';
+return '<button class="bt" onclick="act('+js+',\\'b\\')">'+n+'</button>'}).join(''):'<div class="e">هذا المشروع لا يعرّف أزرار تحكم.</div>')+'</div>'}
+else if(T==='v'){h+='<div class="cam"><img id="cam" alt="الكاميرا"></div>'+(a.rows[0]?'<div class="rows"><div>'+e(a.rows[0])+'</div></div>':'')}
+else{h+='<div class="log">'+(a.log.length?e(a.log.slice().reverse().join('\\n')):'لا توجد أحداث بعد.')+'</div>'+(S.serial&&S.serial.length?'<div class="log" style="margin-top:10px;color:#93c5fd">'+e(S.serial.join('\\n'))+'</div>':'')}
+if(T==='c'&&!force&&document.activeElement&&document.activeElement.type==='range')return;if(h!==shown){shown=h;$('m').innerHTML=h;if(T==='v')cam()}}
+function cam(){var c=$('cam');if(!c)return;api('/__app/cam').then(function(j){if(j&&j.src)c.src=j.src;setTimeout(function(){if(T==='v')cam()},900)}).catch(function(){setTimeout(cam,1500)})}
+function tick(){if(busy)return;busy=1;api('/__app/state').then(function(j){S=j;draw();$('st').style.background=''}).catch(function(){$('st').textContent='⚠ لا اتصال'}).then(function(){busy=0})}
+document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){T=b.dataset.t;document.querySelectorAll('nav button').forEach(function(x){x.classList.toggle('on',x===b)});shown='';draw(1)}});
+tick();setInterval(tick,800);
+<\/script></body></html>`;
+    function camSrc() { const l = leafCam(); if (l && l.img) return l.img; const c = state.components.find(x => x.type === 'camera_module'); return c && c.img ? c.img : ''; }
+    function appState() {
+        let snap = {}; try { snap = window.sparkPanelSnap ? sparkPanelSnap() : {}; } catch (e) { }
+        return { run: !!state.running, name: snap.name || '', serial: snap.serial || [], cam: !!(APP.cam || leafCam() || state.components.some(x => x.type === 'camera_module')), app: { title: APP.title, rows: APP.rows, cards: APP.cards, ctl: APP.ctl, tg: APP.tg, sl: APP.sl, log: APP.log, alert: APP.alert } };
+    }
+    const qs = s => { const o = {}; String(s || '').split('&').forEach(p => { if (!p) return; const i = p.indexOf('='); o[decodeURIComponent(i < 0 ? p : p.slice(0, i))] = i < 0 ? '' : decodeURIComponent(p.slice(i + 1).replace(/\+/g, ' ')); }); return o; };
+    // in-platform preview talks to the same handlers directly
+    window.sparkAppApi = path => {
+        const [p, s] = String(path).split('?'), q = qs(s);
+        if (p === '/__app/do') { sparkAppDo(q.n, q.k, q.v === '' ? undefined : q.v); return appState(); }
+        if (p === '/__app/cam') return { src: camSrc() };
+        if (p === '/__spark/run') { const on = q.on === '1'; if (!!state.running !== on) try { toggleSimulation(); } catch (e) { } return { ok: 1 }; }
+        return appState();
+    };
+    const reply = (rq, code, type, body, b64) => { rq.resp = { code, type, body, b64: !!b64 }; };
+    const appUsed = () => APP.used || /\b(SparkApp|PhoneApp)\b/.test(String((window.editor && editor.getValue && editor.getValue()) || ($('codeEditor') || {}).value || ''));
+    const _nl = window.sparkNetLocal;
+    window.sparkNetLocal = function (rq) {
+        const p = rq.path || '/', q = rq.q || {};
+        if (p === '/app' || p === '/__app' || (p === '/' && APP.used && !Object.keys((iot.web || {}).routes || {}).length)) { reply(rq, 200, 'text/html; charset=utf-8', APP_HTML); return true; }
+        if (p === '/__app/state') { reply(rq, 200, 'application/json', JSON.stringify(appState())); return true; }
+        if (p === '/__app/do') { sparkAppDo(q.n, q.k, q.v === '' ? undefined : q.v); reply(rq, 200, 'application/json', JSON.stringify(appState())); return true; }
+        if (p === '/__app/cam') { reply(rq, 200, 'application/json', JSON.stringify({ src: camSrc() })); return true; }
+        if (p === '/__app/diagnosis') { const c = leafCam(), r = c && (leafAnalyse(c) || c.res); reply(rq, 200, 'application/json', JSON.stringify(r ? { disease: r.cls < 0 ? null : DIS[r.cls][1], name_ar: r.cls < 0 ? null : DIS[r.cls][0], severity: r.sev, confidence: r.conf, health: r.health, advice: r.cls < 0 ? '' : DIS[r.cls][2] } : { error: 'no camera' })); return true; }
+        if ((p === '/capture' || p === '/cam.jpg') && leafCam() && leafCam().img) { const m = /^data:([^;]+);base64,(.*)$/.exec(leafCam().img); if (m) { reply(rq, 200, m[1], m[2], true); return true; } }
+        return _nl ? _nl(rq) : false;
+    };
+
+    // ================= in-platform phone preview =================
+    const css = document.createElement('style'); css.textContent = `
+#appBtn{position:fixed;z-index:61;inset-inline-start:12px;bottom:124px;display:none;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;border:1px solid #16a34a;background:rgba(21,27,34,.94);color:#86efac;font-weight:800;font-size:12.5px;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+@media(min-width:769px){#appBtn{bottom:92px;inset-inline-start:auto;inset-inline-end:340px}}
+#appPv{position:fixed;inset:0;z-index:9400;background:rgba(5,8,12,.55);display:flex;align-items:center;justify-content:center}
+#appPv .ph{position:relative;width:min(380px,94vw);height:min(760px,90vh);border-radius:38px;background:#05070a;padding:12px;box-shadow:0 30px 80px rgba(0,0,0,.6);border:2px solid #2b333c}
+#appPv iframe{width:100%;height:100%;border:0;border-radius:28px;background:#0d1217}#appPv .x{position:absolute;top:-14px;inset-inline-end:-14px;width:38px;height:38px;border-radius:50%;border:0;background:#c8741f;color:#fff;font-size:16px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+#appPv .nt{position:absolute;bottom:-34px;inset-inline:0;text-align:center;color:#b4bcc8;font-size:12px}`;
+    document.head.appendChild(css);
+    function preview() {
+        let d = $('appPv'); if (d) d.remove(); d = document.createElement('div'); d.id = 'appPv'; d.dir = 'rtl'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', 'تطبيق الجوال');
+        d.innerHTML = '<div class="ph"><button class="x" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button><iframe title="تطبيق الجوال"></iframe><div class="nt">نفس التطبيق يظهر على أي جوال متصل بالشبكة · زر «تحكم من الجوال»</div></div>';
+        document.body.appendChild(d); d.querySelector('iframe').srcdoc = APP_HTML; d.querySelector('.x').onclick = () => d.remove(); d.onclick = e => { if (e.target === d) d.remove(); };
+    }
+    window.sparkAppPreview = preview;
+    setInterval(() => {
+        let b = $('appBtn'); const pp = $('pcbPane'), show = appUsed() && !(pp && !pp.classList.contains('hidden')) && !$('appPv');
+        if (!b && show) { b = document.createElement('button'); b.id = 'appBtn'; b.innerHTML = '<i class="fa-solid fa-mobile-screen-button"></i>تطبيق الجوال'; b.title = 'معاينة تطبيق الجوال الذي يبنيه الكود'; b.onclick = preview; document.body.appendChild(b); }
+        if (b) b.style.display = show ? 'inline-flex' : 'none';
+        // the "control from phone" sheet gets a preview card
+        const sh = $('netSh'); if (sh && appUsed() && !sh.querySelector('#netApp')) { const box = sh.firstElementChild || sh; const c = document.createElement('div'); c.className = 'card'; c.id = 'netApp'; c.innerHTML = '<b>📱 تطبيق الجوال لهذا المشروع</b><div class="m">الكود يبني تطبيقاً كاملاً (لوحة، تحكم، كاميرا، سجل) يفتحه الجوال الآخر من الرابط الرئيسي.</div><button class="b p" type="button"><i class="fa-solid fa-mobile-screen-button"></i>معاينة التطبيق هنا</button>'; c.querySelector('button').onclick = () => { sh.remove(); preview(); }; box.appendChild(c); }
+    }, 700);
+
+    // ================= Python: PhoneApp / PlantDoctor =================
+    window.sparkPyLibs = (window.sparkPyLibs || []).concat([['PhoneApp', 'SparkApp'], ['PlantDoctor', 'PlantDoctor']]);
+})();
+
+// h63 — 300 new ready projects, all controlled from a phone as an app (SparkApp / PhoneApp):
+//   🌾 smart-farm flagships (plant doctor camera + auto fertigation + irrigation), 📲 ESP32 and Raspberry Pi phone-app projects,
+//   🎓 engineering lab experiments with live measurements on the phone.
+(function () {
+    const N0 = EXAMPLES.length, G = window.sparkGen; if (!G) return;
+    const { S, O, ES, LOADS, num } = G;
+    const R = (id, x, y, o) => ['res_e12', id, x, y, { ohms: o }];
+    const add = (n, c, w, code) => EXP(n, c, w, code);
+
+    // ======================= 🌾 flagships =======================
+    add('🌾 المزرعة الذكية المتكاملة — طبيب النبات + تسميد وري آلي + تطبيق جوال (ESP32)',
+        [['esp32_devkit', 'e', 640, 140], ['leaf_cam', 'cam', 60, 40, { dis: 4, sev: 45 }], ['soil_sensor', 'soil', 60, 300], ['soil_ec', 'sec', 60, 470, { ec: 1.1 }], ['dht22_sensor', 'dht', 60, 640, { temp: 29, humidity: 72 }],
+        ['npk_7in1', 'npk', 330, 40], ['max485', 'rs', 330, 230], ['float_sw', 'tank', 330, 560, { t: { up: true }, m: {} }],
+        ['relay_module', 'rw', 1000, 40], ['water_pump', 'pw', 1240, 40], ['relay_module', 'rf', 1000, 260], ['water_pump', 'pf', 1240, 260], ['relay_module', 'rv', 1000, 480], ['cooling_fan', 'fan', 1240, 480], ['dc_supply', 'ps', 1240, 700]],
+        'e.5V-cam.VCC e.GND-cam.GND e.3V3-soil.VCC e.GND-soil.GND soil.AOUT-e.G34 e.3V3-sec.VCC e.GND-sec.GND sec.AO-e.G35 e.3V3-dht.VCC e.GND-dht.GND dht.DATA-e.G27 ' +
+        'e.5V-npk.VCC e.GND-npk.GND npk.A-rs.A npk.B-rs.B e.3V3-rs.VCC e.GND-rs.GND rs.RO-e.G32 rs.DI-e.G33 rs.DE-e.G25 rs.RE-e.G25 tank.C1-e.G4 tank.C2-e.GND ' +
+        'e.5V-rw.VCC e.GND-rw.GND e.G2-rw.IN ps.VPOS-rw.COM rw.NO-pw.POS pw.NEG-ps.GND e.5V-rf.VCC e.GND-rf.GND e.G5-rf.IN ps.VPOS-rf.COM rf.NO-pf.POS pf.NEG-ps.GND ' +
+        'e.5V-rv.VCC e.GND-rv.GND e.G19-rv.IN e.5V-rv.COM rv.NO-fan.VCC fan.GND-e.GND e.5V-fan.PWM',
+        `// 🌾 SPARK · المزرعة الذكية المتكاملة
+// ┌ طبيب النبات: كاميرا ESP32-CAM تصوّر الورقة وتشخّص المرض (سليمة، لفحة مبكرة/متأخرة، صدأ، بياض دقيقي، نقص نيتروجين)
+// ├ ري آلي: حساس رطوبة التربة + عوامة الخزان → مضخة الري
+// ├ تسميد آلي (Fertigation): حساس NPK عبر RS485 + ملوحة EC → مضخة السماد بجرعات محسوبة
+// ├ تهوية: DHT22 → مروحة عند الرطوبة/الحرارة العالية أو عند اكتشاف مرض فطري
+// └ تطبيق جوال كامل: افتح «تطبيق الجوال» أو «تحكم من الجوال» من جوال آخر على نفس الشبكة
+// غيّر حالة الورقة وشدتها من بطاقة الكاميرا، ورطوبة التربة، وNPK، وراقب القرارات في التطبيق.
+// للربط بتطبيق «طبيب النبات»: الصورة الحية على /capture ونتيجة التشخيص JSON على /__app/diagnosis
+#include <DHT.h>
+#include <SparkNPK.h>
+
+DHT dht(27, DHT22);
+SoilNPK npk(32, 33, 25);     // RO, DI, DE/RE عبر MAX485
+SparkApp app;                // تطبيق الجوال
+PlantDoctor doctor;          // طبيب النبات
+
+const int SOIL = 34, EC = 35, TANK = 4, PUMP = 2, FERT = 5, FAN = 19;
+bool watering = false, dosing = false, fanOn = false;
+unsigned long doseUntil = 0, lastScan = 0, lastDose = 0;
+int disease = 0, sev = 0;
+int doses = 0;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PUMP, OUTPUT); pinMode(FERT, OUTPUT); pinMode(FAN, OUTPUT); pinMode(TANK, INPUT_PULLUP);
+  dht.begin(); npk.begin(4800); doctor.begin();
+  app.title("🌾 مزرعتي الذكية");
+  app.camera();
+  Serial.println("المزرعة الذكية جاهزة");
+}
+
+void loop() {
+  // ---------- القراءات ----------
+  float soil = map(analogRead(SOIL), 0, 4095, 0, 100);
+  float t = dht.readTemperature();
+  float h = dht.readHumidity();
+  float ec = analogRead(EC) * 3.3 / 4095.0 / 3.0 * 20.0;      // dS/m
+  int n = npk.nitrogen(), p = npk.phosphorus(), k = npk.potassium();
+  bool tankOk = digitalRead(TANK) == LOW;                      // العوامة مرفوعة = يوجد ماء
+
+  // ---------- أوامر التطبيق ----------
+  bool manual = app.toggle("✋ وضع يدوي");
+  bool mPump = app.toggle("مضخة الري (يدوي)");
+  bool mFan = app.toggle("التهوية (يدوي)");
+  float target = app.slider("رطوبة التربة المطلوبة %", 20, 80, 45);
+  float ecTarget = app.slider("هدف الملوحة EC", 0.5, 3, 1.5);
+  if (app.button("🧪 جرعة سماد الآن") && tankOk) { dosing = true; doseUntil = millis() + 3000; doses++; app.log("جرعة سماد يدوية"); }
+
+  // ---------- طبيب النبات ----------
+  if (app.button("📷 افحص النبات الآن") || millis() - lastScan > 4000) {
+    lastScan = millis();
+    int d = doctor.scan();
+    sev = doctor.severity();
+    if (d != disease && d > 0) app.log("التشخيص: " + doctor.name() + " بشدة " + String(sev) + "%");
+    disease = d;
+  }
+  bool fungal = doctor.fungal() == 1;
+
+  // ---------- القرارات الآلية ----------
+  if (!manual) {
+    float low = fungal ? target - 15 : target - 5;            // مع المرض الفطري نقلّل بلل التربة والأوراق
+    if (soil < low) watering = true;
+    if (soil > target + 5) watering = false;
+    fanOn = h > 80 || t > 32 || fungal;
+    bool needN = n < 40 || disease == 4;                         // نقص نيتروجين من الحساس أو من الكاميرا
+    if (!dosing && tankOk && millis() - lastDose > 15000 && (ec < ecTarget || needN)) {
+      dosing = true; doseUntil = millis() + 3000; lastDose = millis(); doses++;
+      app.log(needN ? "جرعة نيتروجين آلية" : "جرعة سماد لرفع EC");
+    }
+  } else { watering = mPump; fanOn = mFan; }
+  if (!tankOk) { watering = false; dosing = false; }
+  if (dosing && millis() > doseUntil) dosing = false;
+
+  digitalWrite(PUMP, watering ? HIGH : LOW);
+  digitalWrite(FERT, dosing ? HIGH : LOW);
+  digitalWrite(FAN, fanOn ? HIGH : LOW);
+
+  // ---------- شاشة التطبيق ----------
+  app.gauge("رطوبة التربة", soil, 100, "%");
+  app.gauge("صحة النبات", doctor.health(), 100, "%");
+  app.gauge("الحرارة", t, 50, "°C");
+  app.gauge("رطوبة الجو", h, 100, "%");
+  app.value("الملوحة EC", ec, "dS/m");
+  app.value("N · P · K", String(n) + " · " + String(p) + " · " + String(k), "mg/kg");
+  app.status("مضخة الري", watering);
+  app.status("مضخة السماد", dosing);
+  app.status("التهوية", fanOn);
+  app.status("خزان الماء", tankOk);
+  app.value("جرعات اليوم", doses, "");
+  app.text(0, "🩺 " + doctor.name() + (disease > 0 ? " · الشدة " + String(sev) + "% · الثقة " + String(doctor.confidence()) + "%" : ""));
+  app.text(1, "💡 " + doctor.advice());
+  app.text(2, manual ? "✋ الوضع اليدوي: تتحكم بالمضخات والتهوية من الجوال" : "🤖 الوضع الآلي: الري والتسميد والتهوية تلقائياً");
+  if (!tankOk) app.alert("خزان الماء فارغ — أوقفنا الري والتسميد");
+  else if (disease == 5) app.alert("لفحة متأخرة! اعزل النبات وعالجه فوراً");
+  else if (disease > 0 && sev > 40) app.alert(doctor.name() + " بشدة " + String(sev) + "% — راجع التوصية");
+  else app.ok();
+
+  Serial.print("تربة="); Serial.print(soil); Serial.print("% EC="); Serial.print(ec, 1); Serial.print(" N="); Serial.print(n);
+  Serial.print(" | "); Serial.print(doctor.name()); Serial.print(watering ? " | ري" : ""); Serial.println(dosing ? " | تسميد" : "");
+  delay(300);
+}`);
+
+    add('🌾 المزرعة الذكية المتكاملة على Raspberry Pi — طبيب النبات + تسميد وري + تطبيق جوال',
+        [['rpi4', 'pi', 380, 150], ['leaf_cam', 'cam', 60, 40, { dis: 1, sev: 40 }], ['mcp3008', 'a', 90, 330], ['soil_sensor', 'soil', 60, 520], ['soil_ec', 'sec', 60, 700, { ec: 1.0 }],
+        ['dht22_sensor', 'dht', 330, 560, { temp: 28, humidity: 75 }], R('rp', 330, 470, 10000), ['float_sw', 'tank', 600, 620, { t: { up: true }, m: {} }],
+        ['drv_uln2003', 'u', 1000, 200], ['water_pump', 'pw', 1240, 40], ['water_pump', 'pf', 1240, 260], ['cooling_fan', 'fan', 1240, 480], ['dc_supply', 'ps', 1240, 700]],
+        'pi.5V-cam.VCC pi.GND-cam.GND a.VDD-pi.3V3 a.VREF-pi.3V3 a.GND-pi.GND a.CLK-pi.G11 a.DOUT-pi.G9 a.DIN-pi.G10 a.CS-pi.G8 soil.VCC-pi.3V3 soil.GND-pi.GND soil.AOUT-a.CH0 sec.VCC-pi.3V3 sec.GND-pi.GND sec.AO-a.CH1 ' +
+        'dht.VCC-pi.3V3 dht.GND-pi.GND dht.DATA-pi.G4 rp.P1-pi.3V3 rp.P2-pi.G4 tank.C1-pi.G27 tank.C2-pi.GND ' +
+        'u.IN1-pi.G17 u.IN2-pi.G22 u.IN3-pi.G23 u.GND-pi.GND ps.GND-pi.GND ps.VPOS-pw.POS pw.NEG-u.OUT1 ps.VPOS-pf.POS pf.NEG-u.OUT2 fan.VCC-pi.5V fan.PWM-pi.5V fan.GND-u.OUT3',
+        `# 🌾 SPARK · المزرعة الذكية على Raspberry Pi (Python)
+# طبيب النبات (كاميرا + تشخيص) · ري آلي · تسميد آلي · تهوية · تطبيق جوال كامل
+# رطوبة التربة والملوحة EC عبر المحوّل MCP3008 (CH0, CH1) لأن الراسبري بلا منافذ تماثلية
+# المضختان والمروحة عبر مشغّل ULN2003 (يسحب حتى 500mA لكل مخرج) فتتسع كلها على لوحة HAT واحدة
+# افتح «تطبيق الجوال»، وعلى الراسبري الحقيقي استبدل PlantDoctor بنموذج «طبيب النبات» (TFLite)
+import adafruit_dht
+import board
+from gpiozero import MCP3008, OutputDevice, Button
+from spark_pi import PhoneApp, PlantDoctor
+from time import sleep
+import time
+
+soil_adc = MCP3008(channel=0)
+ec_adc = MCP3008(channel=1)
+dht = adafruit_dht.DHT22(board.D4)
+tank = Button(27)
+pump = OutputDevice(17)
+fert = OutputDevice(22)
+fan = OutputDevice(23)
+app = PhoneApp()
+doctor = PlantDoctor()
+app.title("🌾 مزرعتي الذكية · Pi")
+app.camera()
+last_scan = 0
+last_dose = 0
+dose_until = 0
+disease = 0
+
+while True:
+    soil = soil_adc.value * 100
+    ec = ec_adc.voltage / 3.0 * 20
+    t = dht.temperature
+    h = dht.humidity
+    tank_ok = tank.is_pressed
+    manual = app.switch("✋ وضع يدوي")
+    target = app.slider("رطوبة التربة المطلوبة %", 20, 80, 45)
+    if app.button("📷 افحص النبات الآن") or time.time() - last_scan > 4:
+        last_scan = time.time()
+        disease = doctor.scan()
+    fungal = doctor.fungal()
+    if manual:
+        pump.value = app.switch("مضخة الري (يدوي)")
+        fan.value = app.switch("التهوية (يدوي)")
+    else:
+        if soil < target - 5:
+            pump.on()
+        if soil > target + 5:
+            pump.off()
+        if h > 80 or t > 32 or fungal:
+            fan.on()
+        else:
+            fan.off()
+        if time.time() - last_dose > 15 and (ec < 1.5 or disease == 4):
+            last_dose = time.time()
+            dose_until = time.time() + 3
+            app.log("جرعة سماد آلية")
+    if app.button("🧪 جرعة سماد الآن"):
+        dose_until = time.time() + 3
+    if not tank_ok:
+        pump.off()
+        dose_until = 0
+    if time.time() < dose_until:
+        fert.on()
+    else:
+        fert.off()
+    app.gauge("رطوبة التربة", soil, 100, "%")
+    app.gauge("صحة النبات", doctor.health(), 100, "%")
+    app.gauge("الحرارة", t, 50, "°C")
+    app.gauge("رطوبة الجو", h, 100, "%")
+    app.value("الملوحة EC", ec, "dS/m")
+    app.status("مضخة الري", pump.value)
+    app.status("مضخة السماد", fert.value)
+    app.status("التهوية", fan.value)
+    app.status("خزان الماء", tank_ok)
+    app.text(0, "🩺 " + doctor.name() + f" · الشدة {doctor.severity():.0f}%")
+    app.text(1, "💡 " + doctor.advice())
+    if not tank_ok:
+        app.alert("خزان الماء فارغ — توقف الري")
+    elif disease == 5:
+        app.alert("لفحة متأخرة! عالج فوراً")
+    else:
+        app.ok()
+    print(f"تربة={soil:.0f}% EC={ec:.1f} T={t:.1f}")
+    sleep(0.3)
+`);
+
+    add('🌾 طبيب النبات — كاميرا ESP32-CAM تشخّص أمراض الأوراق وترسل النتيجة للجوال',
+        [['esp32_devkit', 'e', 640, 140], ['leaf_cam', 'cam', 60, 60, { dis: 2, sev: 50 }], ['led_green', 'lg', 340, 80], R('rg', 340, 200, 220), ['led_red', 'lr', 460, 80], R('rr', 460, 200, 220), ['active_buzzer', 'bz', 340, 360]],
+        'e.5V-cam.VCC e.GND-cam.GND e.G2-rg.P1 rg.P2-lg.A lg.K-e.GND e.G4-rr.P1 rr.P2-lr.A lr.K-e.GND e.G25-bz.POS bz.NEG-e.GND',
+        `// 🌾 طبيب النبات: صوّر الورقة، شخّص المرض، أرسل التوصية للجوال
+// غيّر «حالة الورقة» و«شدة الإصابة» من بطاقة الكاميرا، أو فعّل كاميرا الجهاز الحقيقية ووجّهها لورقة نبات.
+// ليد أخضر = سليمة، أحمر + صفارة = مرض. التطبيق يعرض الصورة الحية والتشخيص والنصيحة.
+// التشخيص هنا تحليل لوني مبسّط للتعلّم؛ للحقل استخدم نموذج «طبيب النبات» على الصورة من /capture
+SparkApp app;
+PlantDoctor doctor;
+int scans = 0, sick = 0;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(2, OUTPUT); pinMode(4, OUTPUT); pinMode(25, OUTPUT);
+  doctor.begin();
+  app.title("🩺 طبيب النبات");
+  app.camera();
+}
+
+void loop() {
+  bool auto_ = !app.toggle("الفحص اليدوي فقط");
+  bool quiet = app.toggle("كتم الصفارة");
+  if (app.button("📷 افحص الآن") || auto_) {
+    int d = doctor.scan(); scans++;
+    if (d > 0) sick++;
+    digitalWrite(2, d == 0 ? HIGH : LOW);
+    digitalWrite(4, d > 0 ? HIGH : LOW);
+    if (d > 0 && !quiet) { digitalWrite(25, HIGH); delay(100); digitalWrite(25, LOW); }
+    app.text(0, "🩺 التشخيص: " + doctor.name());
+    app.text(1, "📊 الشدة " + String(doctor.severity()) + "% · الثقة " + String(doctor.confidence()) + "%");
+    app.text(2, "💡 " + doctor.advice());
+    app.gauge("صحة الورقة", doctor.health(), 100, "%");
+    app.gauge("شدة الإصابة", doctor.severity(), 100, "%");
+    app.value("عدد الفحوص", scans, "");
+    app.value("فحوص مصابة", sick, "");
+    if (d == 5) app.alert("لفحة متأخرة — خطر انتشار سريع"); else if (d > 0) app.alert("تم اكتشاف: " + doctor.name()); else app.ok();
+    Serial.print("فحص #"); Serial.print(scans); Serial.print(": "); Serial.print(doctor.name()); Serial.print(" "); Serial.print(doctor.severity()); Serial.println("%");
+  }
+  delay(1500);
+}`);
+
+    add('🌾 بيت محمي ذكي — مناخ وري وإضاءة نمو بتطبيق جوال (ESP32)',
+        [['esp32_devkit', 'e', 640, 140], ['dht22_sensor', 'dht', 60, 60, { temp: 31, humidity: 60 }], ['soil_sensor', 'soil', 60, 260], ['ldr_sensor', 'ldr', 60, 460], ['relay_module', 'rw', 1000, 40], ['water_pump', 'pw', 1240, 40],
+        ['relay_module', 'rv', 1000, 260], ['cooling_fan', 'fan', 1240, 260], ['servo_motor', 'win', 330, 560], ['led_white', 'gl', 330, 80], R('rl', 330, 200, 100), ['dc_supply', 'ps', 1240, 500]],
+        'e.3V3-dht.VCC e.GND-dht.GND dht.DATA-e.G27 e.3V3-soil.VCC e.GND-soil.GND soil.AOUT-e.G34 e.3V3-ldr.VCC e.GND-ldr.GND ldr.AO-e.G35 e.5V-rw.VCC e.GND-rw.GND e.G26-rw.IN ps.VPOS-rw.COM rw.NO-pw.POS pw.NEG-ps.GND ' +
+        'e.5V-rv.VCC e.GND-rv.GND e.G18-rv.IN e.5V-rv.COM rv.NO-fan.VCC fan.GND-e.GND e.5V-fan.PWM e.5V-win.VCC e.GND-win.GND e.G23-win.PWM e.G25-rl.P1 rl.P2-gl.A gl.K-e.GND',
+        `// 🌾 بيت محمي ذكي: حرارة ورطوبة، ري، نافذة تهوية بسيرفو، مروحة، وإضاءة نمو تعوّض نقص الشمس
+// كل الأهداف قابلة للتعديل من تطبيق الجوال
+#include <DHT.h>
+#include <Servo.h>
+DHT dht(27, DHT22);
+Servo win;
+SparkApp app;
+
+void setup() {
+  Serial.begin(115200); dht.begin(); win.attach(23);
+  pinMode(26, OUTPUT); pinMode(18, OUTPUT); pinMode(25, OUTPUT);
+  app.title("🌿 البيت المحمي");
+}
+
+void loop() {
+  float t = dht.readTemperature(), h = dht.readHumidity();
+  float soil = map(analogRead(34), 0, 4095, 0, 100), light = map(analogRead(35), 0, 4095, 0, 100);
+  float tMax = app.slider("أقصى حرارة °C", 20, 40, 30);
+  float sMin = app.slider("أدنى رطوبة تربة %", 10, 70, 40);
+  bool manual = app.toggle("✋ وضع يدوي");
+  bool pump = manual ? app.toggle("المضخة") : soil < sMin;
+  bool fan = manual ? app.toggle("المروحة") : (t > tMax || h > 85);
+  int open = manual ? app.slider("فتحة النافذة °", 0, 90, 0) : constrain((t - tMax + 4) * 15, 0, 90);
+  int grow = light < 35 ? map(light, 0, 35, 255, 0) : 0;
+  digitalWrite(26, pump); digitalWrite(18, fan); win.write(open); analogWrite(25, grow);
+  app.gauge("الحرارة", t, 50, "°C"); app.gauge("رطوبة الجو", h, 100, "%"); app.gauge("رطوبة التربة", soil, 100, "%"); app.gauge("ضوء الشمس", light, 100, "%");
+  app.status("المضخة", pump); app.status("المروحة", fan); app.value("النافذة", open, "°"); app.value("إضاءة النمو", map(grow, 0, 255, 0, 100), "%");
+  if (t > tMax + 5) app.alert("حرارة مرتفعة جداً داخل البيت المحمي"); else app.ok();
+  Serial.print("T="); Serial.print(t); Serial.print(" تربة="); Serial.print(soil); Serial.print(" نافذة="); Serial.println(open);
+  delay(400);
+}`);
+
+    // ======================= 🎓 engineering labs (ESP32 + phone app) =======================
+    const E = ['esp32_devkit', 'e', 640, 140], LAB = (n, c, w, code) => add('🎓 مختبر · ' + n, [E].concat(c), w, code);
+    const V = `analogRead(34) * 3.3 / 4095.0`;
+    const fmtR = r => r >= 1000 ? (r / 1000) + 'k' : String(r);
+    [[1000, 1000], [1000, 2200], [4700, 10000], [10000, 4700]].forEach(([a, b]) => LAB(`مقسم الجهد ${fmtR(a)}Ω / ${fmtR(b)}Ω — النظري مقابل المقاس`, [R('r1', 330, 80, a), R('r2', 330, 260, b)], 'e.3V3-r1.P1 r1.P2-r2.P1 r2.P2-e.GND r1.P2-e.G34',
+        `// مختبر الكهرباء: مقسم الجهد  Vout = Vin × R2 / (R1 + R2)
+// R1 = ${a}Ω ، R2 = ${b}Ω ، Vin = 3.3V  ← غيّر قيم المقاومات من خصائصها وقارن
+SparkApp app;
+const float R1 = ${a}.0, R2 = ${b}.0;
+void setup() { Serial.begin(115200); app.title("⚡ مقسم الجهد"); }
+void loop() {
+  float vout = ${V};
+  float theory = 3.3 * R2 / (R1 + R2);
+  float err = theory > 0 ? (vout - theory) / theory * 100.0 : 0;
+  float i = vout / R2 * 1000.0;
+  app.gauge("الجهد المقاس", vout, 3.3, "V"); app.value("الجهد النظري", theory, "V"); app.value("نسبة الخطأ", err, "%"); app.value("التيار", i, "mA");
+  app.text(0, "Vout = 3.3 × " + String(R2, 0) + " / (" + String(R1, 0) + " + " + String(R2, 0) + ")");
+  Serial.print("Vout="); Serial.print(vout, 3); Serial.print("V  النظري="); Serial.print(theory, 3); Serial.println("V");
+  delay(500);
+}`));
+    [470, 1000, 2200, 4700].forEach(rx => LAB(`قانون أوم — قياس مقاومة مجهولة (${fmtR(rx)}Ω) بمقاومة مرجعية`, [R('rx', 330, 80, rx), R('rref', 330, 260, 1000)], 'e.3V3-rx.P1 rx.P2-rref.P1 rref.P2-e.GND rx.P2-e.G34',
+        `// قانون أوم V = I × R : نقيس الجهد على المقاومة المرجعية 1kΩ فنعرف التيار، ومنه نحسب المقاومة المجهولة
+// I = Vref / 1000 ، Rx = (3.3 - Vref) / I
+SparkApp app;
+void setup() { Serial.begin(115200); app.title("Ω قانون أوم"); }
+void loop() {
+  float vref = ${V};
+  float i = vref / 1000.0;
+  float rx = i > 0 ? (3.3 - vref) / i : 0;
+  app.value("المقاومة المحسوبة", rx, "Ω"); app.value("القيمة الحقيقية", ${rx}, "Ω"); app.gauge("التيار", i * 1000.0, 3.3, "mA"); app.value("الجهد على Rx", 3.3 - vref, "V");
+  app.text(0, "Rx = (3.3 − " + String(vref, 2) + ") ÷ " + String(i * 1000.0, 2) + "mA");
+  Serial.print("I="); Serial.print(i * 1000.0, 2); Serial.print("mA  Rx="); Serial.println(rx, 0);
+  delay(500);
+}`));
+    [['توالي', 'e.3V3-r1.P1 r1.P2-r2.P1 r2.P2-r3.P1 r3.P2-e.GND r1.P2-e.G34', 'R2 + R3', '2200 + 1000'], ['توازي', 'e.3V3-r1.P1 r1.P2-r2.P1 r1.P2-r3.P1 r2.P2-e.GND r3.P2-e.GND r1.P2-e.G34', 'R2 ∥ R3', '2200.0 * 1000 / (2200 + 1000)']].forEach(([n, w, f, rq]) =>
+        LAB(`المقاومات على ال${n} — المقاومة المكافئة`, [R('r1', 330, 60, 1000), R('r2', 330, 220, 2200), R('r3', 460, 220, 1000)], w,
+            `// المقاومات على ال${n}: المقاومة المكافئة Req = ${f}
+// نقيس الجهد بعد R1 (1kΩ) ونحسب Req من مقسم الجهد ثم نقارن بالنظري
+SparkApp app;
+void setup() { Serial.begin(115200); app.title("🔗 ${n} المقاومات"); }
+void loop() {
+  float v = ${V};
+  float req = v < 3.29 ? 1000.0 * v / (3.3 - v) : 0;
+  float theory = ${rq};
+  app.value("Req المقاسة", req, "Ω"); app.value("Req النظرية", theory, "Ω"); app.gauge("الجهد على Req", v, 3.3, "V");
+  app.text(0, "Req = ${f}");
+  Serial.print("Req="); Serial.print(req, 0); Serial.print(" النظري="); Serial.println(theory, 0);
+  delay(500);
+}`));
+    [['red', 'الأحمر'], ['green', 'الأخضر'], ['blue', 'الأزرق'], ['yellow', 'الأصفر'], ['white', 'الأبيض']].forEach(([c, n]) => LAB(`جهد الانحياز الأمامي لليد ${n}`, [R('r', 330, 80, 100), ['led_' + c, 'l', 330, 260]], 'e.3V3-r.P1 r.P2-l.A l.K-e.GND r.P2-e.G34',
+        `// إلكترونيات: الليد ${n} يحتاج جهد انحياز أمامي Vf قبل أن يضيء — وكل لون له Vf مختلف
+// نقيس الجهد على الليد مباشرة، والتيار من المقاومة 100Ω
+SparkApp app;
+void setup() { Serial.begin(115200); app.title("💡 Vf لليد ${n}"); }
+void loop() {
+  float vf = ${V};
+  float i = (3.3 - vf) / 100.0 * 1000.0;
+  float p = vf * i;
+  app.gauge("Vf", vf, 3.3, "V"); app.value("التيار", i, "mA"); app.value("القدرة", p, "mW");
+  app.text(0, "قارن Vf بين الألوان: الأحمر أقل، الأزرق والأبيض أعلى");
+  Serial.print("Vf="); Serial.print(vf, 2); Serial.print("V  I="); Serial.print(i, 1); Serial.println("mA");
+  delay(500);
+}`));
+    LAB('الدايود 1N4007 — هبوط الجهد في الانحياز الأمامي', [R('r', 330, 80, 1000), ['d_1n4007', 'd', 330, 260]], 'e.3V3-r.P1 r.P2-d.A d.K-e.GND r.P2-e.G34',
+        `// الدايود السيليكوني يهبط عليه ≈ 0.6–0.7V في الانحياز الأمامي
+SparkApp app;
+void setup() { Serial.begin(115200); app.title("➡ الدايود"); }
+void loop() {
+  float vd = ${V}; float i = (3.3 - vd) / 1000.0 * 1000.0;
+  app.gauge("هبوط الجهد", vd, 1.2, "V"); app.value("التيار", i, "mA"); app.text(0, vd > 0.5 && vd < 0.9 ? "✓ ضمن مدى السيليكون 0.6–0.7V" : "قيمة غير متوقعة — راجع التوصيل");
+  Serial.print("Vd="); Serial.println(vd, 3); delay(500);
+}`);
+    [[10000, 0.0001], [47000, 0.000047], [100000, 0.00001], [22000, 0.00022]].forEach(([r, f]) => { const tau = r * f; LAB(`شحن وتفريغ المكثف RC (R=${fmtR(r)}Ω · C=${Math.round(f * 1e6)}µF · τ=${tau.toFixed(2)}s)`, [R('r', 330, 80, r), ['cap_elec', 'c', 330, 260, { F: f }]], 'e.G26-r.P1 r.P2-c.P1 c.P2-e.GND r.P2-e.G34',
+        `// دائرة RC: ثابت الزمن τ = R × C = ${tau.toFixed(3)} ثانية
+// عند الشحن يصل الجهد إلى 63% من 3.3V بعد τ واحد، وإلى 99% بعد 5τ
+// اضغط «شحن/تفريغ» من التطبيق وراقب المنحنى والزمن المقاس
+SparkApp app;
+bool charging = true; unsigned long t0 = 0; float measured = 0; bool marked = false;
+void setup() { Serial.begin(115200); pinMode(26, OUTPUT); digitalWrite(26, HIGH); t0 = millis(); app.title("⏱ دائرة RC"); }
+void loop() {
+  if (app.button("🔁 شحن / تفريغ")) { charging = !charging; digitalWrite(26, charging ? HIGH : LOW); t0 = millis(); marked = false; }
+  float v = ${V}; float t = (millis() - t0) / 1000.0;
+  if (!marked && ((charging && v >= 3.3 * 0.632) || (!charging && v <= 3.3 * 0.368))) { measured = t; marked = true; app.log("τ المقاسة = " + String(measured, 2) + " ث"); }
+  app.gauge("جهد المكثف", v, 3.3, "V"); app.value("الزمن", t, "ث"); app.value("τ النظرية", ${tau.toFixed(3)}, "ث"); app.value("τ المقاسة", measured, "ث");
+  app.text(0, charging ? "⬆ يشحن عبر R" : "⬇ يفرّغ عبر R");
+  Serial.print(t, 2); Serial.print("s  "); Serial.print(v, 3); Serial.println("V");
+  delay(100);
+}`); });
+    LAB('الترانزستور NPN كمفتاح إلكتروني لتشغيل ليد', [R('rb', 330, 300, 1000), ['npn_2n2222', 'q', 330, 440], R('rc', 460, 60, 220), ['led_red', 'l', 460, 200]], 'e.G26-rb.P1 rb.P2-q.B q.E-e.GND e.3V3-rc.P1 rc.P2-l.A l.K-q.C l.K-e.G34',
+        `// تيار صغير في القاعدة يتحكم بتيار أكبر بين المجمّع والباعث
+// قاعدة مفعّلة → Vce ≈ 0.2V (إشباع) والليد يضيء. قاعدة مطفأة → Vce مرتفع والليد مطفأ
+SparkApp app;
+void setup() { Serial.begin(115200); pinMode(26, OUTPUT); app.title("🔀 الترانزستور مفتاحاً"); }
+void loop() {
+  bool on = app.toggle("تفعيل القاعدة");
+  digitalWrite(26, on ? HIGH : LOW);
+  float vce = ${V};
+  app.status("الترانزستور", on); app.gauge("Vce", vce, 3.3, "V"); app.text(0, vce < 0.5 ? "منطقة الإشباع — المفتاح مغلق" : "منطقة القطع — المفتاح مفتوح");
+  Serial.print("Vce="); Serial.println(vce, 2); delay(300);
+}`);
+    LAB('التحكم بسرعة محرك DC بالـ PWM وترانزستور ودايود حماية', [R('rb', 330, 300, 1000), ['npn_2n2222', 'q', 330, 440], ['motor_dc6', 'm', 460, 60], ['d_1n4007', 'd', 460, 240]], 'e.G26-rb.P1 rb.P2-q.B q.E-e.GND e.5V-m.P1 m.P2-q.C d.A-q.C d.K-e.5V',
+        `// تعديل عرض النبضة PWM: نسبة التشغيل تحدد متوسط الجهد على المحرك وبالتالي سرعته
+// الدايود يحمي الترانزستور من جهد الملف العكسي عند الإطفاء
+SparkApp app;
+void setup() { Serial.begin(115200); pinMode(26, OUTPUT); app.title("⚙ سرعة المحرك"); }
+void loop() {
+  int duty = app.slider("السرعة %", 0, 100, 50);
+  if (app.button("⏹ إيقاف")) duty = 0;
+  analogWrite(26, map(duty, 0, 100, 0, 255));
+  app.gauge("نسبة التشغيل", duty, 100, "%"); app.value("متوسط الجهد", 5.0 * duty / 100.0, "V");
+  Serial.print("duty="); Serial.println(duty); delay(300);
+}`);
+    LAB('محرك سيرفو بزاوية يحددها الجوال (ميكاترونكس)', [['servo_motor', 'sv', 330, 120]], 'e.5V-sv.VCC e.GND-sv.GND e.G26-sv.PWM',
+        `// السيرفو يتحرك لزاوية محددة بعرض نبضة 1–2ms كل 20ms
+#include <Servo.h>
+Servo sv; SparkApp app;
+void setup() { Serial.begin(115200); sv.attach(26); app.title("🦾 ذراع سيرفو"); }
+void loop() {
+  int a = app.slider("الزاوية °", 0, 180, 90);
+  if (app.button("↺ المنتصف")) a = 90;
+  if (app.toggle("مسح تلقائي")) a = (millis() / 20) % 180;
+  sv.write(a); app.gauge("الزاوية", a, 180, "°"); app.value("عرض النبضة", 1000 + a * 1000 / 180, "µs");
+  Serial.println(a); delay(100);
+}`);
+    LAB('قياس جهد بطارية 9V بمقسم جهد (مستوى الشحن)', [['bat_9v', 'b', 330, 60], R('r1', 460, 60, 10000), R('r2', 460, 240, 4700)], 'b.POS-r1.P1 r1.P2-r2.P1 r2.P2-b.NEG b.NEG-e.GND r1.P2-e.G34',
+        `// الـ ESP32 يقيس حتى 3.3V فقط، فنصغّر 9V بمقسم 10k/4.7k (النسبة 0.32)
+SparkApp app;
+void setup() { Serial.begin(115200); app.title("🔋 مقياس البطارية"); }
+void loop() {
+  float vb = ${V} * (10000.0 + 4700.0) / 4700.0;
+  int pct = constrain(map(vb * 100, 700, 950, 0, 100), 0, 100);
+  app.gauge("جهد البطارية", vb, 10, "V"); app.gauge("الشحن", pct, 100, "%"); if (pct < 20) app.alert("البطارية ضعيفة"); else app.ok();
+  Serial.print("Vbat="); Serial.println(vb, 2); delay(500);
+}`);
+    LAB('حساس حرارة NTC بمقسم جهد ومعادلة بيتا', [['ntc', 'th', 330, 80], R('r', 330, 260, 10000)], 'e.3V3-th.P1 th.P2-r.P1 r.P2-e.GND th.P2-e.G34',
+        `// NTC: مقاومته تقل كلما زادت الحرارة. نحسب R_ntc من المقسم ثم الحرارة بمعادلة بيتا (β = 3950)
+SparkApp app;
+void setup() { Serial.begin(115200); app.title("🌡 حساس NTC"); }
+void loop() {
+  float v = ${V};
+  float rn = v > 0.01 ? 10000.0 * (3.3 - v) / v : 0;
+  float tk = 1.0 / (1.0 / 298.15 + log(rn / 10000.0) / 3950.0);
+  float tc = tk - 273.15;
+  app.gauge("الحرارة", tc, 100, "°C"); app.value("مقاومة NTC", rn, "Ω"); app.value("الجهد", v, "V");
+  Serial.print("R="); Serial.print(rn, 0); Serial.print(" T="); Serial.println(tc, 1); delay(500);
+}`);
+    [['red', 'الأحمر'], ['blue', 'الأزرق']].forEach(([c, n]) => LAB(`سطوع الليد ${n} بالـ PWM من منزلق الجوال`, [R('r', 330, 80, 220), ['led_' + c, 'l', 330, 260]], 'e.G25-r.P1 r.P2-l.A l.K-e.GND',
+        `// PWM: نغيّر نسبة زمن التشغيل 0–255 فيتغير السطوع الظاهري
+SparkApp app;
+void setup() { pinMode(25, OUTPUT); app.title("🔆 سطوع PWM"); }
+void loop() {
+  int b = app.slider("السطوع %", 0, 100, 60);
+  if (app.toggle("تنفّس تلقائي")) b = (millis() / 30) % 100;
+  analogWrite(25, map(b, 0, 100, 0, 255)); app.gauge("السطوع", b, 100, "%"); delay(60);
+}`));
+    LAB('زمن رد الفعل — لعبة قياس سرعة الاستجابة', [['led_green', 'l', 330, 60], R('r', 330, 200, 220), ['push_button', 'b', 330, 360]], 'e.G2-r.P1 r.P2-l.A l.K-e.GND e.G27-b.P1 b.P2-e.GND',
+        `// يضيء الليد بعد زمن عشوائي، اضغط الزر بأسرع ما يمكن — يُقاس زمن رد الفعل بالميلي ثانية
+SparkApp app; unsigned long t0 = 0, best = 9999, last = 0; bool armed = false, waiting = false; unsigned long goAt = 0;
+void setup() { Serial.begin(115200); pinMode(2, OUTPUT); pinMode(27, INPUT_PULLUP); app.title("⚡ زمن رد الفعل"); }
+void loop() {
+  if (app.button("▶ ابدأ جولة") && !waiting && !armed) { waiting = true; goAt = millis() + random(1500, 4000); digitalWrite(2, LOW); }
+  if (waiting && millis() >= goAt) { waiting = false; armed = true; t0 = millis(); digitalWrite(2, HIGH); }
+  if (armed && digitalRead(27) == LOW) { armed = false; last = millis() - t0; if (last < best) best = last; digitalWrite(2, LOW); app.log("رد الفعل: " + String(last) + " ms"); }
+  app.value("آخر محاولة", last, "ms"); app.value("أفضل زمن", best == 9999 ? 0 : best, "ms"); app.text(0, armed ? "اضغط الزر الآن!" : waiting ? "استعد…" : "اضغط ابدأ من التطبيق");
+  delay(5);
+}`);
+    LAB('تحكم ON/OFF بهستيريسيس — منظم حرارة لسخّان', [['dht22_sensor', 'd', 60, 80, { temp: 22, humidity: 50 }], ['relay_module', 'rl', 330, 120], ['heater', 'h', 330, 360]], 'e.3V3-d.VCC e.GND-d.GND d.DATA-e.G27 e.5V-rl.VCC e.GND-rl.GND e.G26-rl.IN e.5V-rl.COM rl.NO-h.P1 h.P2-e.GND',
+        `// أنظمة التحكم: منظم ON/OFF مع منطقة ميتة (هستيريسيس) يمنع التشغيل والإطفاء المتكرر
+#include <DHT.h>
+DHT dht(27, DHT22); SparkApp app; bool heat = false;
+void setup() { Serial.begin(115200); dht.begin(); pinMode(26, OUTPUT); app.title("🔥 منظم الحرارة"); }
+void loop() {
+  float t = dht.readTemperature();
+  float sp = app.slider("نقطة الضبط °C", 15, 35, 25), hy = app.slider("الهستيريسيس °C", 0.5, 5, 1);
+  if (t < sp - hy) heat = true; if (t > sp + hy) heat = false;
+  digitalWrite(26, heat); app.gauge("الحرارة", t, 50, "°C"); app.status("السخّان", heat); app.text(0, "يشتغل تحت " + String(sp - hy, 1) + " ويطفئ فوق " + String(sp + hy, 1));
+  Serial.print(t); Serial.println(heat ? " ON" : " OFF"); delay(500);
+}`);
+    LAB('تحكم تناسبي P بسرعة مروحة حسب الحرارة', [['dht22_sensor', 'd', 60, 80, { temp: 31, humidity: 50 }], ['cooling_fan', 'f', 330, 120]], 'e.3V3-d.VCC e.GND-d.GND d.DATA-e.G27 e.5V-f.VCC f.GND-e.GND e.G25-f.PWM',
+        `// التحكم التناسبي: الخرج = Kp × الخطأ — كلما ابتعدت الحرارة عن الهدف زادت سرعة المروحة
+#include <DHT.h>
+DHT dht(27, DHT22); SparkApp app;
+void setup() { Serial.begin(115200); dht.begin(); app.title("🌀 تحكم تناسبي"); }
+void loop() {
+  float t = dht.readTemperature(), sp = app.slider("الهدف °C", 18, 35, 26), kp = app.slider("Kp", 5, 60, 25);
+  float err = t - sp; int out = constrain(err * kp, 0, 255);
+  analogWrite(25, out); app.gauge("الحرارة", t, 50, "°C"); app.value("الخطأ", err, "°C"); app.gauge("سرعة المروحة", out * 100 / 255, 100, "%");
+  Serial.print("e="); Serial.print(err); Serial.print(" out="); Serial.println(out); delay(400);
+}`);
+    LAB('إشارة مرور بثلاثة أوضاع: آلي، يدوي، وميض ليلي', [['led_red', 'lr', 330, 60], R('rr', 330, 180, 220), ['led_yellow', 'ly', 460, 60], R('ry', 460, 180, 220), ['led_green', 'lg', 590, 380], R('rg', 590, 500, 220)], 'e.G2-rr.P1 rr.P2-lr.A lr.K-e.GND e.G4-ry.P1 ry.P2-ly.A ly.K-e.GND e.G5-rg.P1 rg.P2-lg.A lg.K-e.GND',
+        `// أنظمة التحكم المنطقي: آلة حالات لإشارة مرور يتحكم بها شرطي المرور من الجوال
+SparkApp app; int st = 0; unsigned long t0 = 0;
+void set(int r, int y, int g) { digitalWrite(2, r); digitalWrite(4, y); digitalWrite(5, g); }
+void setup() { pinMode(2, OUTPUT); pinMode(4, OUTPUT); pinMode(5, OUTPUT); app.title("🚦 إشارة المرور"); }
+void loop() {
+  bool night = app.toggle("🌙 وميض ليلي"), manual = app.toggle("👮 يدوي");
+  if (night) { set(0, (millis() / 500) % 2, 0); app.text(0, "وميض أصفر"); }
+  else if (manual) { if (app.button("➡ المرحلة التالية")) st = (st + 1) % 3; set(st == 0, st == 1, st == 2); app.text(0, "تحكم يدوي"); }
+  else { int d[] = {5000, 2000, 5000}; if (millis() - t0 > d[st]) { st = (st + 1) % 3; t0 = millis(); } set(st == 0, st == 1, st == 2); app.text(0, "دورة آلية"); }
+  app.status("أحمر", st == 0 && !night); app.status("أصفر", st == 1 || night); app.status("أخضر", st == 2 && !night); delay(50);
+}`);
+    LAB('مرسل شفرة مورس بصفارة من رسائل الجوال (اتصالات)', [['active_buzzer', 'bz', 330, 100], ['led_blue', 'l', 460, 60], R('r', 460, 200, 220)], 'e.G25-bz.POS bz.NEG-e.GND e.G2-r.P1 r.P2-l.A l.K-e.GND',
+        `// الاتصالات الرقمية: SOS بشفرة مورس (· · · — — — · · ·) بالصوت والضوء
+SparkApp app; int sent = 0;
+void beep(int ms) { digitalWrite(25, HIGH); digitalWrite(2, HIGH); delay(ms); digitalWrite(25, LOW); digitalWrite(2, LOW); delay(150); }
+void setup() { pinMode(25, OUTPUT); pinMode(2, OUTPUT); app.title("📡 مورس"); }
+void loop() {
+  int dot = app.slider("مدة النقطة ms", 80, 300, 150);
+  if (app.button("🆘 أرسل SOS")) { for (int i = 0; i < 3; i++) beep(dot); for (int i = 0; i < 3; i++) beep(dot * 3); for (int i = 0; i < 3; i++) beep(dot); sent++; }
+  if (app.button("· نقطة")) beep(dot); if (app.button("— شرطة")) beep(dot * 3);
+  app.value("رسائل SOS", sent, ""); delay(50);
+}`);
+    const sOf = t => S.find(s => s.t === t);
+    [['ultrasonic_sensor', 'قياس المسافة وسرعة اقتراب الجسم', `float d = readCm(); float sp = (prev - d) / 0.3; prev = d;`, `app.gauge("المسافة", d, 200, "cm"); app.value("سرعة الاقتراب", sp, "cm/s"); if (sp > 30) app.alert("جسم يقترب بسرعة!"); else app.ok();`, 'float prev = 0;'],
+     ['hx711', 'ميزان رقمي بخلية وزن مع التصفير من الجوال', `float d = scale.get_units(3); if (app.button("⚖ تصفير")) scale.tare();`, `app.gauge("الوزن", d, 1000, "g"); app.value("بالكيلو", d / 1000.0, "kg");`, ''],
+     ['acs712', 'قياس التيار والقدرة الكهربائية', `float d = (analogRead(34) * 3.3 / 4095.0 - 2.5) / 0.185; float p = abs(d) * 12.0;`, `app.gauge("التيار", abs(d), 5, "A"); app.value("القدرة عند 12V", p, "W"); if (abs(d) > 3) app.alert("تيار زائد!"); else app.ok();`, ''],
+     ['ir_obst', 'عدّاد قطع على خط إنتاج (أتمتة صناعية)', `bool hit = digitalRead(27) == LOW; if (hit && !was) count++; was = hit; if (app.button("↺ تصفير العداد")) count = 0; float d = count;`, `app.value("عدد القطع", count, "قطعة"); app.status("الحساس", hit); app.value("الهدف", app.slider("هدف الوردية", 10, 500, 100), "قطعة");`, 'long count = 0; bool was = false;']
+    ].forEach(([t, title, rd, ui, gl]) => {
+        const s = sOf(t); if (!s) return; const B = ES;
+        let w = s.pwr ? s.pwr(B) : `${B.b}.${s.pw || B.LV}-s.VCC ${B.b}.GND-s.GND`; w += ' ' + s.w(B);
+        LAB(title, [[t, 's', 80, 300]], w, `// ${title}\n${s.inc ? s.inc + '\n' : ''}${s.g ? s.g(B) + '\n' : ''}${s.fn ? s.fn(B) + '\n' : ''}SparkApp app; ${gl}
+void setup() { Serial.begin(115200); ${typeof s.su === 'function' ? s.su(B) : (s.su || '')} ${s.dig ? `pinMode(${num(B.d)}, INPUT);` : ''} app.title("${s.ic} ${title.split(' ')[0]} ${title.split(' ')[1] || ''}"); }
+void loop() {
+  ${rd}
+  ${ui}
+  Serial.println(d);
+  delay(300);
+}`);
+    });
+
+    // ======================= 📲 Raspberry Pi phone apps =======================
+    const PIB = ['rpi4', 'pi', 380, 150], MCPW = 'a.VDD-pi.3V3 a.VREF-pi.3V3 a.GND-pi.GND a.CLK-pi.G11 a.DOUT-pi.G9 a.DIN-pi.G10 a.CS-pi.G8';
+    const PS = [
+        { k: 'dhtT', ic: '🌡️', p: 'مراقبة الحرارة', s: 'DHT22', u: '°C', mx: 50, th: 30, op: '>', c: [['dht22_sensor', 's', 110, 120, { temp: 27, humidity: 55 }], R('rp', 110, 20, 10000)], w: 's.VCC-pi.3V3 s.GND-pi.GND s.DATA-pi.G4 rp.P1-pi.3V3 rp.P2-pi.G4', imp: 'import adafruit_dht\nimport board', init: 'sensor = adafruit_dht.DHT22(board.D4)', rd: 'v = sensor.temperature', load: 'fan' },
+        { k: 'dhtH', ic: '💧', p: 'التحكم برطوبة الجو', s: 'رطوبة DHT22', u: '%', mx: 100, th: 70, op: '>', c: [['dht22_sensor', 's', 110, 120, { temp: 27, humidity: 65 }], R('rp', 110, 20, 10000)], w: 's.VCC-pi.3V3 s.GND-pi.GND s.DATA-pi.G4 rp.P1-pi.3V3 rp.P2-pi.G4', imp: 'import adafruit_dht\nimport board', init: 'sensor = adafruit_dht.DHT22(board.D4)', rd: 'v = sensor.humidity', load: 'fan' },
+        { k: 'soil', ic: '🌱', p: 'ري الحديقة من الجوال', s: 'رطوبة التربة', u: '%', mx: 100, th: 40, op: '<', c: [['mcp3008', 'a', 90, 330], ['soil_sensor', 's', 110, 120]], w: MCPW + ' s.VCC-pi.3V3 s.GND-pi.GND s.AOUT-a.CH0', imp: 'from gpiozero import MCP3008', init: 'sensor = MCP3008(channel=0)', rd: 'v = sensor.value * 100', load: 'pump' },
+        { k: 'ldr', ic: '🌙', p: 'إنارة ذكية حسب الضوء', s: 'شدة الضوء LDR', u: '%', mx: 100, th: 30, op: '<', c: [['mcp3008', 'a', 90, 330], ['ldr_sensor', 's', 110, 120]], w: MCPW + ' s.VCC-pi.3V3 s.GND-pi.GND s.AO-a.CH0', imp: 'from gpiozero import MCP3008', init: 'sensor = MCP3008(channel=0)', rd: 'v = sensor.value * 100', load: 'lamp' },
+        { k: 'pot', ic: '🎛️', p: 'مقبض تحكم ومراقبة عن بعد', s: 'مقاومة متغيرة', u: '%', mx: 100, th: 60, op: '>', c: [['mcp3008', 'a', 90, 330], ['pot_lin', 's', 110, 160, { pos: 40 }]], w: MCPW + ' s.A-pi.3V3 s.B-pi.GND s.W-a.CH0', imp: 'from gpiozero import MCP3008', init: 'sensor = MCP3008(channel=0)', rd: 'v = sensor.value * 100', load: 'lamp' },
+        { k: 'dist', ic: '📏', p: 'حساس اقتراب ومواقف', s: 'المسافة HC-SR04', u: 'cm', mx: 200, th: 20, op: '<', c: [['ultrasonic_sensor', 's', 90, 330, { distance: 60 }], R('r1', 110, 120, 1000), R('r2', 240, 120, 2000)], w: 's.VCC-pi.5V s.GND-pi.GND s.TRIG-pi.G23 s.ECHO-r1.P1 r1.P2-pi.G24 r2.P1-pi.G24 r2.P2-pi.GND', imp: 'from gpiozero import DistanceSensor', init: 'sensor = DistanceSensor(echo=24, trigger=23)', rd: 'v = sensor.distance * 100', load: 'lamp' },
+        { k: 'pir', ic: '🚶', p: 'كاشف حركة وحماية المنزل', s: 'حساس الحركة PIR', dig: 1, c: [['pir_sensor', 's', 110, 140]], w: 's.VCC-pi.5V s.GND-pi.GND s.OUT-pi.G16', imp: 'from gpiozero import MotionSensor', init: 'sensor = MotionSensor(16)', rd: 'hit = sensor.value', load: 'lamp' },
+        { k: 'ir', ic: '🚧', p: 'كشف العبور والعوائق', s: 'حساس العوائق IR', dig: 1, c: [['ir_obst', 's', 110, 140]], w: 's.VCC-pi.3V3 s.GND-pi.GND s.OUT-pi.G20', imp: 'from gpiozero import DigitalInputDevice', init: 'sensor = DigitalInputDevice(20)', rd: 'hit = not sensor.value', load: 'lamp' },
+        { k: 'touch', ic: '👆', p: 'مفتاح لمس ذكي', s: 'حساس اللمس', dig: 1, c: [['touch', 's', 110, 140]], w: 's.VCC-pi.3V3 s.GND-pi.GND s.OUT-pi.G20', imp: 'from gpiozero import DigitalInputDevice', init: 'sensor = DigitalInputDevice(20)', rd: 'hit = sensor.value', load: 'lamp' },
+        { k: 'tilt', ic: '📐', p: 'إنذار الميلان والسرقة', s: 'حساس الميل', dig: 1, c: [['tilt', 's', 110, 140]], w: 's.VCC-pi.3V3 s.GND-pi.GND s.OUT-pi.G20', imp: 'from gpiozero import DigitalInputDevice', init: 'sensor = DigitalInputDevice(20)', rd: 'hit = sensor.value', load: 'lamp' },
+        { k: 'btn', ic: '🔘', p: 'جرس الباب الذكي', s: 'زر ضغط', dig: 1, c: [['push_button', 's', 110, 240]], w: 's.P1-pi.G27 s.P2-pi.GND', imp: 'from gpiozero import Button', init: 'sensor = Button(27)', rd: 'hit = sensor.is_pressed', load: 'lamp' }
+    ];
+    const PL = { lamp: ['bulb_12v', 'P1', 'P2', 'المصباح'], fan: ['cooling_fan', 'VCC', 'GND', 'المروحة'], pump: ['water_pump', 'POS', 'NEG', 'المضخة'] };
+    const PO = {
+        led: { n: 'ليد تنبيه', c: () => [R('ro', 800, 80, 330), ['led_red', 'o', 960, 60]], w: () => 'pi.G17-ro.P1 ro.P2-o.A o.K-pi.GND', imp: 'LED', init: 'out = LED(17)', act: 'if alert:\n        out.on()\n    else:\n        out.off()' },
+        pwm: { n: 'إضاءة متدرجة PWM', c: () => [R('ro', 800, 80, 330), ['led_white', 'o', 960, 60]], w: () => 'pi.G18-ro.P1 ro.P2-o.A o.K-pi.GND', imp: 'PWMLED', init: 'out = PWMLED(18)', act: 'if alert:\n        out.value = 1\n    else:\n        out.value = app.slider("السطوع الاعتيادي %", 0, 100, 20) / 100' },
+        buz: { n: 'صفارة إنذار', c: () => [['active_buzzer', 'o', 960, 300]], w: s => 'o.POS-pi.G' + (s.k === 'dist' ? 18 : 22) + ' o.NEG-pi.GND', imp: 'Buzzer', init: s => 'out = Buzzer(' + (s.k === 'dist' ? 18 : 22) + ')', act: 'if alert:\n        out.on()\n    else:\n        out.off()' },
+        rel: { n: s => 'مرحّل يشغّل ' + PL[s.load][3], c: s => [['relay_module', 'k', 800, 190], [PL[s.load][0], 'm', 1000, 330]], w: s => { const L = PL[s.load]; return `k.VCC-pi.5V k.GND-pi.GND k.IN-pi.G26 k.COM-pi.5V k.NO-m.${L[1]} m.${L[2]}-pi.GND` + (s.load === 'fan' ? ' m.PWM-pi.5V' : ''); }, imp: 'OutputDevice', init: 'out = OutputDevice(26)', act: 'if alert:\n        out.on()\n    else:\n        out.off()' },
+        srv: { n: 'بوابة بسيرفو', c: () => [['servo_motor', 'o', 960, 300]], w: () => 'o.VCC-pi.5V o.GND-pi.GND o.PWM-pi.G12', imp: 'Servo', init: 'out = Servo(12)', act: 'if alert:\n        out.max()\n    else:\n        out.min()' },
+        tl: { n: 'مؤشر ثلاثي الألوان', c: () => [R('r1', 800, 40, 330), ['led_green', 'g', 960, 20], R('r2', 800, 170, 330), ['led_yellow', 'y', 960, 150], R('r3', 800, 300, 330), ['led_red', 'o', 960, 280]], w: () => 'pi.G5-r1.P1 r1.P2-g.A g.K-pi.GND pi.G6-r2.P1 r2.P2-y.A y.K-pi.GND pi.G13-r3.P1 r3.P2-o.A o.K-pi.GND', imp: 'LED', init: 'green = LED(5)\nyellow = LED(6)\nred = LED(13)', act: 'green.value = not alert and not warn\n    yellow.value = warn and not alert\n    red.value = alert' },
+        lcd: { n: 'شاشة LCD', c: () => [['lcd_i2c', 'o', 960, 300], R('ro', 800, 80, 330), ['led_red', 'x', 960, 60]], w: () => 'o.VCC-pi.5V o.GND-pi.GND o.SDA-pi.SDA o.SCL-pi.SCL pi.G17-ro.P1 ro.P2-x.A x.K-pi.GND', imp: 'LED, CharLCD', init: 'lcd = CharLCD()\nout = LED(17)', act: 'out.value = alert\n    lcd.clear()\n    lcd.write_string(txt)' }
+    };
+    const pyList = [];
+    PS.forEach((s, si) => Object.keys(PO).forEach((ok, oi) => {
+        const o = PO[ok], on = typeof o.n === 'function' ? o.n(s) : o.n; if (s.dig && ok === 'tl') return;
+        const title = `📲 Pi · ${s.ic} ${s.p} — ${s.s} + ${on}`;
+        const imps = [s.imp.startsWith('from gpiozero') ? '' : s.imp, `from gpiozero import ${[s.imp.startsWith('from gpiozero') ? s.imp.replace('from gpiozero import ', '') : '', o.imp].filter(Boolean).join(', ')}`].filter(Boolean).join('\n');
+        const read = s.dig ? `    ${s.rd}\n    v = 1 if hit else 0` : `    ${s.rd}\n    limit = app.slider("حد التنبيه (${s.u})", 0, ${s.mx}, ${s.th})\n    hit = v ${s.op} limit`;
+        const code = `# 📲 ${s.p} — Raspberry Pi + تطبيق جوال
+# الحساس: ${s.s} · الإخراج: ${on}
+# افتح «تطبيق الجوال» (أو امسح الرمز من «تحكم من الجوال»): ترى القراءة، تغيّر الحد، تشغّل يدوياً أو تكتم التنبيه
+${imps}
+from spark_pi import PhoneApp
+from time import sleep
+
+${s.init}
+${typeof o.init === 'function' ? o.init(s) : o.init}
+app = PhoneApp()
+app.title("${s.ic} ${s.p}")
+events = 0
+
+while True:
+${read.replace('v = 1 if hit else 0', 'v = 0\n    if hit:\n        v = 1')}
+    manual = app.switch("تشغيل يدوي")
+    mute = app.switch("كتم التنبيه")
+    alert = (hit and not mute) or manual
+    warn = ${s.dig ? 'False' : `v ${s.op} limit ${s.op === '>' ? '* 0.85' : '* 1.2'}`}
+    if hit:
+        txt = "${s.dig ? 'تنبيه' : s.s}: ${s.dig ? 'نشط' : '{v:.1f}'}"
+    else:
+        txt = "الوضع طبيعي"
+    ${o.act}
+    ${s.dig ? `app.status("${s.s}", hit)` : `app.gauge("${s.s}", v, ${s.mx}, "${s.u}")`}
+    app.status("${on}", alert)
+    app.text(0, txt)
+    if hit and not mute:
+        app.alert("${s.ic} ${s.p}")
+        events = events + 1
+    else:
+        app.ok()
+    print(f"v={v:.1f} alert={alert}")
+    sleep(0.4)
+`.replace(/txt = "([^"]*)\{v:\.1f\}"/, 'txt = f"$1{v:.1f}"');
+        const comps = [PIB].concat(s.c, o.c(s)), wires = s.w + ' ' + o.w(s);
+        pyList.push([title, comps, wires, code]);
+    }));
+    pyList.forEach(p => add.apply(null, p));
+
+    // ======================= 📲 ESP32 phone apps from the sensor recipes =======================
+    const GMAX = s => s.u === '%' ? 100 : s.u === 'cm' ? 400 : s.u === 'mm' ? 2000 : s.u === 'C' ? (s.th > 100 ? 600 : 60) : s.u === 'A' ? 5 : s.u === 'g' ? 2000 : s.u === 'deg' ? 90 : s.u === 'mW' ? 10000 : Math.max(10, s.th * 2);
+    const UN = u => u === 'C' ? '°C' : u === 'deg' ? '°' : u;
+    function buildApp(s, ok) {
+        const B = ES, o = O[ok];
+        const comps = [[B.t, B.b, 640, 90], [s.t, 's', 80, 90]].concat(s.extra || []);
+        let wires = s.pwr ? s.pwr(B) : `${B.b}.${s.pw || B.LV}-s.VCC ${B.b}.GND-s.GND`;
+        if (s.i2c) wires += ` ${B.b}.SDA-s.SDA ${B.b}.SCL-s.SCL`; else wires += ' ' + s.w(B);
+        const [oc, ow] = o.parts(B, s); oc.forEach(c => comps.push(c)); if (ow) wires += ' ' + ow;
+        const need = s.i2c || ok === 'lcd' || ok === 'oled';
+        const inc = [need ? '#include <Wire.h>' : '', s.inc || '', o.inc || ''].filter(Boolean).join('\n');
+        const glob = [s.g ? s.g(B) : '', o.g ? o.g(B) : '', s.fn ? s.fn(B) : '', 'SparkApp app;'].filter(Boolean).join('\n');
+        const su = [`Serial.begin(${B.ser});`, need ? 'Wire.begin();' : '', typeof s.su === 'function' ? s.su(B) : (s.su || ''), s.dig ? `pinMode(${num(B.d)}, INPUT);` : '', o.su ? o.su(B) : '', `app.title("${s.ic} ${s.p}");`].filter(Boolean).join('\n  ');
+        const mx = GMAX(s), un = UN(s.u || '');
+        const read = s.dig ? `bool hit = ${s.r(B)};\n  float v = hit ? 1 : 0;` : `float v = ${s.r(B)};\n  float th = app.slider("حد التنبيه (${un})", 0, ${mx}, ${s.th});\n  bool hit = v ${s.op} th;`;
+        const lvl = s.dig ? 'int level = alert ? 2 : 0;' : (s.op === '>' ? `int level = alert ? 2 : (v > th * 0.85 ? 1 : 0);` : `int level = alert ? 2 : (v < th * 1.2 ? 1 : 0);`);
+        const name = typeof o.n === 'function' ? o.n(ok === 'rel' ? s.load : s) : o.n;
+        const title = `📲 ESP32 · ${s.ic} ${s.p} — ${s.s} + ${name}`;
+        const code = `// 📲 ${s.p} — ESP32 + تطبيق جوال
+// الحساس: ${s.s} · الإخراج: ${name}
+// افتح «تطبيق الجوال» أو «تحكم من الجوال»: القراءة الحية، ${s.dig ? '' : 'تعديل حد التنبيه، '}تشغيل يدوي، كتم، وسجل الأحداث
+${inc ? inc + '\n' : ''}
+${glob}
+long events = 0;
+bool wasHit = false;
+
+void setup() {
+  ${su}
+}
+
+void loop() {
+  ${s.pre ? s.pre + '\n  ' : ''}${read}
+  bool manual = app.toggle("تشغيل يدوي");
+  bool mute = app.toggle("كتم التنبيه");
+  bool alert = (hit && !mute) || manual;
+  ${lvl}
+  ${o.act(B, s)}
+  if (hit && !wasHit) { events++; app.log("${s.ic} ${s.dig ? s.dig[0] : s.en} #" + String(events)); }
+  wasHit = hit;
+  ${s.dig ? `app.status("${s.s}", hit);` : `app.gauge("${s.s}", v, ${mx}, "${un}");`}
+  app.status("${name}", alert);
+  app.value("عدد التنبيهات", events, "");
+  app.text(0, hit ? "⚠ ${s.p}: تنبيه" : "✓ الوضع طبيعي");
+  if (hit && !mute) app.alert("${s.ic} ${s.p}"); else app.ok();
+  Serial.print("${s.en}: "); ${s.dig ? `Serial.println(hit ? "${s.dig[0]}" : "${s.dig[1]}");` : `Serial.print(v); Serial.println(" ${s.u}");`}
+  delay(${ok === 'buz' ? 200 : 400});
+}`;
+        return [title, comps, wires, code];
+    }
+    const left = 300 - (EXAMPLES.length - N0), seen = new Set(EXAMPLES.map(e => e.name)), outs = ['rel', 'neo', 'srv', 'l3', 'buz', 'oled', 'tm', 'led'];
+    let made = 0;
+    for (let round = 0; made < left && round < 12; round++) S.forEach((s, si) => {
+        if (made >= left) return; let ok = outs[(round + si * 3) % outs.length]; const o = O[ok];
+        if ((o.need && !o.need(s)) || (s.t === 'ultrasonic_sensor' && ok === 'neo')) ok = 'led';
+        const p = buildApp(s, ok); if (seen.has(p[0])) return; seen.add(p[0]); add.apply(null, p); made++;
+    });
+    window.sparkExperiments3 = { from: N0, to: EXAMPLES.length };
+    (function () { const sel = document.getElementById('exSelect'); if (sel) for (let i = N0; i < EXAMPLES.length; i++) { const o = document.createElement('option'); o.value = i; o.textContent = EXAMPLES[i].name; sel.appendChild(o); } })();
 })();
 
         window.onload = function () {
