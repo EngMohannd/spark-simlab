@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" class="dark">
 <head>
-<script>(function(){try{var V='3.0.0',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
+<script>(function(){try{var V='3.0.1',u=JSON.parse(localStorage.getItem('spark_upd')||'null'),hm=/[#&]upd=([0-9.]+)/.exec(location.hash);if(hm&&(!u||u.v!==hm[1]))u={v:hm[1],tries:0};if(!u||!u.v)return;
 var c=function(a,b){a=a.split('.');b=b.split('.');for(var i=0;i<3;i++){var d=(+a[i]||0)-(+b[i]||0);if(d)return d}return 0};
 if(c(u.v,V)<=0||(u.tries|0)>=2)return;u.tries=(u.tries|0)+1;localStorage.setItem('spark_upd',JSON.stringify(u));
 var fail=function(){u.tries=9;localStorage.setItem('spark_upd',JSON.stringify(u));location.reload()};
@@ -10150,7 +10150,7 @@ ${parts}`;
                 if (aiKey('openrouter')) return { p: 'openrouter', model: m.orFree || OR_DEF.free, how: 'OpenRouter (مجاني)' };
                 if (aiKey('groq')) return { p: 'groq', model: m.groq || AIP.groq.model, how: 'Groq (مجاني)' };
                 if (aiFreeOk()) return { p: 'free', how: 'SPARK AI المجاني — بلا مفتاح' };
-                return null;
+                return { p: (typeof brainReady === 'function' && brainReady()) ? 'brain' : 'local', how: 'المساعد المحلي مؤقتاً — يرجع SPARK AI بعد قليل' };
             }
             return null;
         }
@@ -13894,7 +13894,7 @@ html:not(.light) #canvasViewport.cad-grid,html:not(.light) #canvasWorld:not(.bp)
         })();
 
 // ===== Phase 29: accounts, plans, signed activation codes, feature gating (state kept private in a closure) =====
-        const SPARK_VER = '3.0.0', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
+        const SPARK_VER = '3.0.1', SPARK_WA = '970597782808', SPARK_MAIL = 'mohanndultra@gmail.com';
         const SPARK_PUB = { "kty": "EC", "crv": "P-256", "x": "mGYmDUKsWcBJB2ppz7MfTBP9yMozRzHkKJ4r34rmxMk", "y": "8HEv5TvHFZZdT9BXwfeVTg7Mvhmuqad8uw6ePdvs61k" };
         // tiny key-value store in IndexedDB (shared with the updater)
         const sparkKV = (function () {
@@ -14241,7 +14241,7 @@ ${own ? '' : `<div class="acc-sec"><div class="acc-f"><label>ترقية البا
             // ---------- terms + what's new ----------
             const card = (t, h) => { const o = document.getElementById('spDoc'); if (o) o.remove(); const m = document.createElement('div'); m.id = 'spDoc'; m.dir = 'rtl'; m.style.cssText = 'position:fixed;inset:0;z-index:310;background:rgba(10,12,15,.6);display:flex;align-items:center;justify-content:center;padding:16px'; m.onclick = e => { if (e.target === m || e.target.closest('[data-x]')) m.remove(); }; m.innerHTML = `<div style="width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--sp-surf,#1c2128);color:var(--sp-txt,#d5dae1);border:1px solid var(--sp-line,#353c46);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.4)"><div style="display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--sp-line,#353c46)"><b style="font-size:16px;flex:1">${t}</b><button data-x style="background:none;border:0;color:inherit;font-size:16px;cursor:pointer;opacity:.7">✕</button></div><div style="padding:16px 20px;font-size:13.5px;line-height:2">${h}</div></div>`; document.body.appendChild(m); };
             window.sparkTerms = () => card('شروط الاستخدام والخصوصية', `<b>الترخيص</b><br>منصة SPARKSimLab ملك لحاضنة سبارك للابتكار والتكنولوجيا — تطوير م. مهند عادل البريم. يُمنح المستخدم ترخيص استخدام شخصي حسب باقته، ولا يجوز إعادة بيع المنصة أو أكواد التفعيل أو مشاركتها أو تعديل المنصة لتجاوز الباقات.<br><br><b>أكواد التفعيل</b><br>الكود شخصي ومرتبط ببريد صاحبه ومدته، ويحق للإدارة إيقاف أي كود يُساء استخدامه.<br><br><b>الخصوصية</b><br>مشاريعك وأكوادك البرمجية تُحفظ على جهازك فقط. عند اتصالك بالإنترنت تُرسل المنصة إلى إدارة سبارك بيانات الاشتراك فقط: الاسم، البريد، الجهة، الباقة، رقم الإصدار ووقت آخر استخدام — لإدارة الاشتراكات والدعم الفني، ولا تُشارك مع أي طرف آخر. تتصل المنصة كذلك لفحص التحديثات، ولخدمات الذكاء الاصطناعي إن فعّلتها بمفتاحك الخاص.<br><br><b>إخلاء المسؤولية</b><br>المحاكاة تعليمية وتقريبية. راجع مختصاً قبل تنفيذ دوائر الجهد العالي أو التطبيقات الحساسة، والتزم بقواعد السلامة الكهربائية.<br><br><b>الدعم</b><br>للاستفسار أو الإبلاغ عن مشكلة أو الاشتراك: واتساب <span dir="ltr">+970 597 782 808</span> أو البريد <span dir="ltr">${SPARK_MAIL}</span> — من قائمة «مساعدة» ← «تواصل معنا».`);
-            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 3.0.0</b><br>• أدوات لوحة PCB صارت في قائمة منسدلة مرتبة، ونصوص قائمة المشاريع أوضح.<br>• مساعد ذكي مجاني موحّد «SPARK AI» يعمل بلا مفتاح افتراضياً.<br>• 119 تجربة ومشروعاً جاهزاً جديداً (70 أردوينو و49 ESP32): الدائرة والكود الكامل، تعمل في المحاكي، ولوحة PCB موجّهة لكل تجربة.<br>• 200 مشروع متكامل إضافي (حساس + إخراج: مرحّل، شاشات، سيرفو، NeoPixel، مسجّل بيانات) — المجموع 356 مشروعاً جاهزاً.<br>• نافذة «المشاريع الجاهزة» الجديدة: قائمتان منسدلتان (اللوحة والقسم) وبحث، أقسام قابلة للطي حسب الموضوع، وصورة معبّرة لكل مشروع.<br>• تحكم بالمشروع من جوال آخر عبر واي فاي حقيقي (تطبيق أندرويد): خادم مدمج على نفس الشبكة أو نقطة اتصال يبثها الجوال، صفحة المشروع من كود ESP32 أو لوحة تحكم تلقائية، و16 مشروعاً جاهزاً لـ ESP32 وESP32-CAM مع بث الكاميرا.<br>• شاشة دخول أهدأ: قائمة منسدلة واحدة لنوع الحساب (طالب، صف، مهندس، مطوّر، فريق التطوير) والحقول الاختيارية مطوية.<br><b>الإصدار 2.9.1</b><br>• قسم جديد «مديولات أردوينو»: أكثر من 30 مديولاً (MLX90614، INA219، VL53L0X، MAX30102، ADS1115، RC522، MQ-3/4/9، KY-040، A4988، HC-05، nRF24، GPS، SD، DS3231، PCA9685، DFPlayer، ESP-01، SIM800L…) بشكلها وأطرافها الحقيقية وكود جاهز ومستلزماتها، ومكتبات كثير منها تعمل داخل المحاكي.<br><b>الإصدار 2.9.0</b><br>• «عنصر جديد بالوصف» في مكتبة العناصر: اكتب اسم العنصر أو صِفه فيقترح المساعد أطرافه وشكله وحساباته وكوده، ويُضاف للمكتبة والمحاكاة، ويمكنك اقتراحه للنشر للجميع.<br><b>الإصدار 2.8.8</b><br>• المساعد الذكي يعمل متصلاً ومجاناً دون أي مفتاح، ويرجع للمساعد المحلي تلقائياً عند انقطاع الإنترنت.<br>• واجهة مساعد أهدأ: صف واحد للأوامر السريعة، واختيار النموذج داخل زر «النموذج».<br><b>الإصدار 2.8.7</b><br>• رسائل أوضح عند تعذّر الاتصال بخادم الصفوف.<br><b>الإصدار 2.8.6</b><br>• شاشة الدخول: زر واضح لطلاب ومعلمي الصفوف للدخول بكود الصف، وإصلاح زر «الرقم السري».<br><b>الإصدار 2.8.5</b><br>• شاشة الدخول: دخول فريق التطوير السريع بالرقم السري أو البصمة بدل الكود الطويل.<br><b>الإصدار 2.8.4</b><br>• حسابات فريق التطوير تُفتح برقم سري من 6 أرقام، وعلى الجوال بالبصمة.<br><b>الإصدار 2.8.3</b><br>• تنزيل نموذج «العقل المحلي» يُكتب الآن مباشرة كملفات على الجهاز — إصلاح خطأ الحفظ على ويندوز.<br><b>الإصدار 2.8.2</b><br>• طريقة حفظ بديلة لنموذج «العقل المحلي» على الأجهزة التي يفشل فيها التخزين العادي (ويندوز).<br><b>الإصدار 2.8.1</b><br>• إصلاح تنزيل نموذج «العقل المحلي» في نسخة الويندوز (خطأ Failed to write blobs).<br><b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
+            window.sparkNews = () => card('ما الجديد — الإصدار ' + SPARK_VER, `<b>الإصدار 3.0.1</b><br>• قائمة المشاريع تتبع ثيم التطبيق (فاتح أو داكن) بنصوص واضحة.<br>• SPARK AI المجاني يعمل فعلياً بلا مفتاح، وينتظر دوره بعدّاد بدل التحويل للمحلي.<br>• الصفوف تعمل حتى بدون خادم: التسليم والتصحيح بملف يُرسل عبر واتساب، وتنتقل للخادم تلقائياً عند توفره.<br><b>الإصدار 3.0.0</b><br>• أدوات لوحة PCB صارت في قائمة منسدلة مرتبة، ونصوص قائمة المشاريع أوضح.<br>• مساعد ذكي مجاني موحّد «SPARK AI» يعمل بلا مفتاح افتراضياً.<br>• 119 تجربة ومشروعاً جاهزاً جديداً (70 أردوينو و49 ESP32): الدائرة والكود الكامل، تعمل في المحاكي، ولوحة PCB موجّهة لكل تجربة.<br>• 200 مشروع متكامل إضافي (حساس + إخراج: مرحّل، شاشات، سيرفو، NeoPixel، مسجّل بيانات) — المجموع 356 مشروعاً جاهزاً.<br>• نافذة «المشاريع الجاهزة» الجديدة: قائمتان منسدلتان (اللوحة والقسم) وبحث، أقسام قابلة للطي حسب الموضوع، وصورة معبّرة لكل مشروع.<br>• تحكم بالمشروع من جوال آخر عبر واي فاي حقيقي (تطبيق أندرويد): خادم مدمج على نفس الشبكة أو نقطة اتصال يبثها الجوال، صفحة المشروع من كود ESP32 أو لوحة تحكم تلقائية، و16 مشروعاً جاهزاً لـ ESP32 وESP32-CAM مع بث الكاميرا.<br>• شاشة دخول أهدأ: قائمة منسدلة واحدة لنوع الحساب (طالب، صف، مهندس، مطوّر، فريق التطوير) والحقول الاختيارية مطوية.<br><b>الإصدار 2.9.1</b><br>• قسم جديد «مديولات أردوينو»: أكثر من 30 مديولاً (MLX90614، INA219، VL53L0X، MAX30102، ADS1115، RC522، MQ-3/4/9، KY-040، A4988، HC-05، nRF24، GPS، SD، DS3231، PCA9685، DFPlayer، ESP-01، SIM800L…) بشكلها وأطرافها الحقيقية وكود جاهز ومستلزماتها، ومكتبات كثير منها تعمل داخل المحاكي.<br><b>الإصدار 2.9.0</b><br>• «عنصر جديد بالوصف» في مكتبة العناصر: اكتب اسم العنصر أو صِفه فيقترح المساعد أطرافه وشكله وحساباته وكوده، ويُضاف للمكتبة والمحاكاة، ويمكنك اقتراحه للنشر للجميع.<br><b>الإصدار 2.8.8</b><br>• المساعد الذكي يعمل متصلاً ومجاناً دون أي مفتاح، ويرجع للمساعد المحلي تلقائياً عند انقطاع الإنترنت.<br>• واجهة مساعد أهدأ: صف واحد للأوامر السريعة، واختيار النموذج داخل زر «النموذج».<br><b>الإصدار 2.8.7</b><br>• رسائل أوضح عند تعذّر الاتصال بخادم الصفوف.<br><b>الإصدار 2.8.6</b><br>• شاشة الدخول: زر واضح لطلاب ومعلمي الصفوف للدخول بكود الصف، وإصلاح زر «الرقم السري».<br><b>الإصدار 2.8.5</b><br>• شاشة الدخول: دخول فريق التطوير السريع بالرقم السري أو البصمة بدل الكود الطويل.<br><b>الإصدار 2.8.4</b><br>• حسابات فريق التطوير تُفتح برقم سري من 6 أرقام، وعلى الجوال بالبصمة.<br><b>الإصدار 2.8.3</b><br>• تنزيل نموذج «العقل المحلي» يُكتب الآن مباشرة كملفات على الجهاز — إصلاح خطأ الحفظ على ويندوز.<br><b>الإصدار 2.8.2</b><br>• طريقة حفظ بديلة لنموذج «العقل المحلي» على الأجهزة التي يفشل فيها التخزين العادي (ويندوز).<br><b>الإصدار 2.8.1</b><br>• إصلاح تنزيل نموذج «العقل المحلي» في نسخة الويندوز (خطأ Failed to write blobs).<br><b>الإصدار 2.8.0</b><br>• كل ليد يظهر بلونه الحقيقي في المكتبة والصور.<br>• الصفوف: كود واحد لطلاب الصف وكود للمعلم، تسليم المشاريع ومراجعتها والدرجات والرسائل داخل التطبيق.<br><b>الإصدار 2.7.3</b><br>• تبسيط استوديو الروبوت والدليل والأمثلة.<br><b>الإصدار 2.7.2</b><br>• تبسيط استوديو الروبوت وتحسينات في الثبات.<br>• استوديو المالك: ربط المستودع مرة واحدة ثم النشر بضغطة زر.<br><b>الإصدار 2.7.1</b><br>• الجوال: مساحة أكبر لساحة العمل — الشريط العلوي في سطرين، حالة المحاكاة شارة صغيرة، وأدوات الساحة شريط عمودي يُطوى على اليمين.<br>• الجوال: مكتبة العناصر تفتح على نصف الشاشة والدائرة ظاهرة بجانبها، وتبقى مفتوحة لإضافة أكثر من عنصر.<br><b>الإصدار 2.7.0</b><br>• المساعد الذكي: خبير عناصر يشرح أي عنصر في المكتبة مع توصيله وكوده على Arduino و ESP32 و Raspberry Pi، وفحص للدائرة، ومواضيع هندسية جديدة — بدون إنترنت.<br>• Raspberry Pi: لوحة PCB بمقاس HAT الحقيقي وترتيب الأطراف الصحيح، وفحص حدود 3.3V والتيار قبل التشغيل.<br>• حماية: الحساب وكود التفعيل والمفاتيح تُحفظ مشفّرة على الجهاز.<br><b>الإصدار 2.6.6</b><br>• تحسينات أمان وخصوصية للتطبيق على الجوال.<br><b>الإصدار 2.6.5</b><br>• إزالة قسم التحديات لتبقى المنصة أداة هندسية احترافية مركّزة.<br><b>الإصدار 2.6.4</b><br>• زر «تشغيل المحاكاة» لا تغطيه قائمة المشاريع على الشاشات العريضة.<br>• نصوص أوضح وتباين أعلى، وأزرار أسهل للمس على الجوال.<br>• شريط علوي أخف على الجوال، وإشارة تدل على وجود تبويبات إضافية.<br>• شاشة الدخول بألوان المنصة وعنوان متوازن.<br><b>الإصدار 2.6.3</b><br>• جولة تعريفية قصيرة عند أول استخدام (وتجدها في قائمة المساعدة).<br>• تنبيه قبل انتهاء الفترة المجانية أو الاشتراك بـ 7 و3 أيام ويوم، مع طلب الكود عبر واتساب بضغطة.<br>• نوافذ التأكيد (الحذف، الاستعادة، الاستيراد) تعمل الآن داخل تطبيق الجوال.<br><b>الإصدار 2.6.2</b><br>• نصوص شاشة الدخول أوضح فوق الخلفية.<br><b>الإصدار 2.6.1</b><br>• الشريط العلوي على الجوال صار سطرين مرتبين بأيقونات أوضح.<br><b>الإصدار 2.6.0</b><br>• بيئة كاملة لروبوت Edison V2.0: محاكي ثلاث ساحات ومهام، برمجة EdPy (Python)، نقل البرنامج للروبوت الحقيقي، وريموت بالأشعة تحت الحمراء من الهاتف.<br>• Raspberry Pi: محرر Python، تشغيل الكود على راسبري حقيقي عبر «وكيل SPARK»، ولوحة HAT وMCP3008 في تصميم PCB.<br>• قائمة المشاريع الجاهزة مرتبة بأيقونات وبحث وتصنيفات.<br>• إدخال القيم يدوياً لأي عنصر (4.7k، 100n، 9V…) وجهد البطاريات.<br>• المنصة تفتح بساحة فارغة، مع نغمة ترحيب يمكن إيقافها من الإعدادات.<br>• أكواد تفعيل قصيرة: SPK-XXXX-XXXX-XXXX.<br><b>الإصدار 2.5.0</b><br>• لوحة Raspberry Pi 4 تُبرمج بلغة Python (gpiozero / RPi.GPIO) مع شاشة لمس 7 بوصة ومحوّل MCP3008.<br>• 9 دوائر ومشاريع جديدة في قائمة المختبرات (إشارة مرور، مؤقت 555، ترانزستور ومحرك، ومشاريع Pi).<br>• تنزيل التحديث على أجزاء صغيرة مع إعادة المحاولة عند ضعف الإنترنت.<br><b>الإصدار 2.4.8</b><br>• تنزيل التحديث على قطع صغيرة مع إعادة المحاولة، ويظهر سبب الفشل إن حدث.<br><b>الإصدار 2.4.7</b><br>• على الجوال: سحب السلك بالإصبع يشكّله دون أن تتحرك الدائرة، ونقاط الانحناء أكبر.<br><b>الإصدار 2.4.6</b><br>• تشكيل السلك بالماوس لا يحرّك الشاشة ولا الدائرة.<br><b>الإصدار 2.4.5</b><br>• وضع الطلاب صار يعرض الاسم SPARKSimLab.<br><b>الإصدار 2.4.4</b><br>• اسم المنصة صار SPARKSimLab.<br>• المحاكاة تبدأ متوقفة عند فتح التطبيق — اضغط «تشغيل» عندما تكون جاهزاً.<br>• المراقب التسلسلي وراسم الإشارات مخفيان حتى تضغط زرهما.<br><br><b>الإصدار 2.4.3</b><br>• فحص الدائرة قبل التشغيل: تنبيه بالعناصر غير الموصولة أو الناقصة مع تعليمها بالأحمر.<br>• أداء أسرع على الجوال.<br>• تنظيف شريط التنقل على الجوال وإصلاح قائمة «أدوات الساحة».<br><br><b>الإصدار 2.4.2</b><br>• تطبيق التحديث صار مضموناً من أول ضغطة.<br><br><b>الإصدار 2.4.1</b><br>• واجهة أخف على الجوال: أدوات الساحة والخيارات السريعة صارت في قوائم منسدلة.<br><br><b>الإصدار 2.4</b><br>• زر الإشعارات 🔔: التحديثات، إعلانات الإدارة، وتنبيهات الاشتراك في مكان واحد.<br>• فحص أسرع للتحديثات عند فتح التطبيق.<br><br><b>الإصدار 2.3.1</b><br>• عناوين المجموعات في شريط التنقل (الدوائر والبرمجة، الروبوتات، التعلّم) صارت أزراراً تنقلك لمساحتها.<br><br><b>الإصدار 2.3</b><br>• متابعة الاشتراكات: تفعيل وإيقاف الأكواد يسري فوراً عند الاتصال بالإنترنت.<br>• تثبيت بداية الفترة المجانية لكل حساب.<br><br><b>الإصدار 2.2.2</b><br>• زر الإيميل يفتح Gmail مباشرة وينسخ العنوان.<br><br><b>الإصدار 2.2.1</b><br>• إصلاح زر تسجيل الخروج.<br>• إضافة البريد الإلكتروني كوسيلة تواصل رسمية بجانب واتساب.<br><br><b>الإصدار 2.2</b><br>• فحص شامل قبل الإطلاق وتحسين الثبات والأمان.<br>• حماية عند فتح ملفات المشاريع والتصاميم من مصادر خارجية.<br>• «أبلغ عن مشكلة» يرسل تفاصيلها للدعم عبر واتساب بضغطة.<br>• تنسيق الواجهة والأيقونات وشريط التنقل على كل المقاسات.<br><br><b>الإصدار 2.1</b><br>• تسجيل دخول وباقات (طالب، مهندس، مطوّر) وأكواد تفعيل.<br>• تحديث تلقائي موقّع لكل النسخ.<br>• ألوان جديدة مريحة للعين.<br>• حساسات المياه والتربة، LoRa، البصمة، ومحطة التحلية.<br>• رسم مسارات الأسلاك، التصميم الميكانيكي 3D، وتحويل الدائرة إلى PCB.`);
 
             // ---------- layout polish for mid-size screens ----------
             const st = document.createElement('style'); st.textContent = `
@@ -16797,7 +16797,12 @@ header.sp-head>#btnRunSim,header.sp-head>.sp-ai{height:36px!important}header.sp-
     const token = () => { try { const j = JSON.parse(LS.g('spark_cls_tok') || 'null'); return j && j.k === key() ? j.t : null; } catch (e) { return null; } };
     const T = () => C && C.role === 't';
 
+    const isLocal = () => /^L-/.test(String(token() || ''));
     async function api(a, x) {
+        if (isLocal()) return window.sparkClsLocal(a, x, C, T());
+        try { return await apiNet(a, x); } catch (e) { if (a === 'cjoin' && window.sparkClsLocal && !(e && /full|dev|code|role/.test(e.e || ''))) return window.sparkClsLocal(a, x, C, T()); throw e; }
+    }
+    async function apiNet(a, x) {
         const u = LS.g('spark_api'); if (!u) throw { m: 'خادم الصفوف غير مفعّل بعد — تواصل مع إدارة سبارك' };
         if (navigator.onLine === false) throw { m: 'لا يوجد اتصال بالإنترنت' };
         let j; try { const r = await fetch(u, { method: 'POST', body: JSON.stringify(Object.assign({ a, code: C.code, email: C.email, name: C.name, dev: LS.g('spark_dev') || '', token: token() }, x || {})) }); const tx = await r.text(); try { j = JSON.parse(tx); } catch (e) { throw { m: /<html|<!DOCTYPE/i.test(tx) ? 'الخادم يحتاج تحديثاً أو صلاحيات من الإدارة (الخادم ردّ بصفحة بدل بيانات)' : 'تعذّر الاتصال بالخادم — حاول مرة أخرى' }; } } catch (e) { throw e && e.m ? e : { m: 'تعذّر الاتصال بالخادم — تأكد من الإنترنت وحاول مرة أخرى' }; }
@@ -16850,11 +16855,15 @@ ${state === 'wait' ? '' : '<button class="cl-bt pri" id="clsRetry"><i class="fa-
         try { const j = await api('cjoin'); LS.s('spark_cls_tok', JSON.stringify({ k: key(), t: j.token })); gate('ok'); mount(); toast(T() ? 'تم تسجيلك معلماً للصف' : 'تم انضمامك للصف ✓'); refresh(); }
         catch (e) { gate('err', e.m); } finally { busy = false; }
     }
+    // a class that started without the server moves to it automatically once the server answers (local work stays on this device)
+    async function up() { try { const j = await apiNet('cjoin'); if (j && j.token) { LS.s('spark_cls_tok', JSON.stringify({ k: key(), t: j.token })); refresh(); } } catch (e) { } }
+    window.sparkClsRefresh = () => refresh();
+    window.sparkClsIsLocal = () => !!C && isLocal();
     function sync() {
         const c = cls(); if (JSON.stringify(c) === JSON.stringify(C)) { if (C && !token() && !$('clsGate') && !busy) join(); return; }
         C = c; ST = null; tab = null; REV = null; const p = $('clsPanel'); if (p) p.remove(); const r = $('clsRev'); if (r) r.remove();
         if (!C) { gate('ok'); const b = $('clsBtn'); if (b) b.remove(); clearInterval(poll); return; }
-        if (!token()) join(); else { gate('ok'); mount(); refresh(); }
+        if (!token()) join(); else { gate('ok'); mount(); refresh(); if (isLocal()) up(); }
         clearInterval(poll); poll = setInterval(() => { if (C && token() && document.visibilityState !== 'hidden') refresh(); }, $('clsPanel') ? 60e3 : 240e3);
     }
 
@@ -19642,6 +19651,144 @@ void loop() { server.handleClient(); delay(5); }`);
     }
     document.addEventListener('click', e => { const m = document.getElementById('pcbToolsM'); if (m && open && !m.contains(e.target) && !e.target.closest('#pcbTools')) { open = false; m.classList.remove('open'); } }, true);
     setInterval(() => { const p = document.getElementById('pcbPane'); if (p && !p.classList.contains('hidden')) organise(); else { const m = document.getElementById('pcbToolsM'); if (m) m.classList.remove('open'); open = false; } }, 300);
+})();
+
+// h61 — (1) project picker follows the app theme, (2) SPARK AI free model that really works (classic keyless endpoint, waits its turn instead of failing),
+// (3) classes work without the server: everything is kept on the device and travels as a small file (student → teacher, teacher → student)
+(function () {
+    // ---------- 1) picker colours follow the theme ----------
+    const css = document.createElement('style'); css.textContent = `
+html.light .pz{background:#ffffff!important;color:#1f2937!important;border-color:#e3e7ec!important;box-shadow:0 20px 60px rgba(15,23,42,.18)!important}
+html.light .pz-h,html.light .pz-f{border-color:#e7ebf0!important}html.light .pz-h b,html.light .pz-g>summary{color:#111827!important}html.light .pz-h small{color:#5b6573!important;background:none!important}html.light .pz-g>summary em{color:#5b6573!important;background:#f1f4f7!important}
+html.light .pz-h button{color:#1f2937!important;border-color:#d8dee5!important;background:#fff!important}
+html.light .pz-f input,html.light .pz-f select{background-color:#f7f9fb!important;color:#111827!important;border-color:#d5dbe2!important}html.light .pz-f input::placeholder{color:#7b8592!important}
+html.light .pz-f select option,html.light .pz-f select optgroup{background:#fff!important;color:#111827!important}
+html.light .pz-g{background:#fbfcfd!important;border-color:#e3e7ec!important}
+html.light .pz-i{background:#ffffff!important;border-color:#e1e6eb!important;color:#111827!important}html.light .pz-i:hover,html.light .pz-i:focus-visible{background:#fff8f1!important;border-color:#c8741f!important}
+html.light .pz-i b{color:#111827!important}html.light .pz-i small{color:#5b6573!important}html.light .pz-th{background:#f1f4f7!important}html.light .pz-e{color:#5b6573}
+#clsLoc{margin:10px 12px 0;padding:10px 12px;border-radius:12px;border:1px dashed #c8741f;background:rgba(200,116,31,.08);font-size:12.5px;line-height:1.7}
+#clsLoc b{color:#c8741f}#clsLoc button{margin-top:8px;width:100%;height:40px;border-radius:10px;border:0;background:#c8741f;color:#fff;font-weight:800;font-size:13.5px;cursor:pointer;display:flex;gap:8px;align-items:center;justify-content:center}
+#clsShare{position:fixed;inset:0;z-index:99990;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+#clsShare>div{width:min(420px,100%);background:var(--sp-surf,#1c2128);color:var(--sp-txt,#e6e9ee);border:1px solid var(--sp-line,#353c46);border-radius:16px;padding:18px;text-align:center;font-size:13.5px;line-height:1.8}
+#clsShare i.big{font-size:34px;color:#1f8a5b}#clsShare h4{margin:6px 0;font-size:16px}#clsShare button{margin-top:10px;width:100%;height:42px;border-radius:11px;border:1px solid var(--sp-line,#353c46);background:transparent;color:inherit;font-weight:700;cursor:pointer}#clsShare button.pri{background:#c8741f;border-color:#c8741f;color:#fff}`;
+    document.head.appendChild(css);
+
+    // ---------- 2) free model ----------
+    try {
+        AIP.free.n = 'SPARK AI مجاني'; AIP.free.base = 'https://text.pollinations.ai/openai'; AIP.free.model = 'openai';
+        const _oa = aiOpenAI, sleep = ms => new Promise(r => setTimeout(r, ms));
+        const short = msgs => msgs.slice(-6).map(m => ({ role: m.role, content: (typeof m.content === 'string' ? m.content : JSON.stringify(m.content)).slice(0, 4000) }));
+        aiOpenAI = async function (p, msgs, onText, signal) {
+            if (p !== 'free') return _oa.apply(this, arguments);
+            const sys = String(aiRules ? aiRules() : '').slice(0, 3500), body = { messages: [{ role: 'system', content: sys }].concat(short(msgs)), private: true, referrer: 'sparksimlab' };
+            const tries = [['https://text.pollinations.ai/openai', Object.assign({ model: 'openai' }, body), 1], ['https://text.pollinations.ai/openai', body, 1], ['https://text.pollinations.ai/', body, 0]];
+            let last; for (let k = 0; k < tries.length; k++) {
+                const [u, b, oa] = tries[k];
+                for (let w = 0; w < 2; w++) {
+                    let r; try { r = await fetch(u, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) }); } catch (e) { if (e && e.name === 'AbortError') throw e; last = e; break; }
+                    if (r.status === 402 || r.status === 429) {   // shared free line: wait for our turn (max ~35 s) with a visible countdown
+                        let s = Math.min(35, +(r.headers.get('retry-after') || 0) || 20); if (w) throw new Error('429 rate');
+                        while (s > 0) { onText('⏳ الخدمة المجانية مشغولة، دورك بعد ' + s + ' ثانية…'); await sleep(1000); s--; if (signal && signal.aborted) throw Object.assign(new Error('x'), { name: 'AbortError' }); }
+                        onText('…'); continue;
+                    }
+                    if (!r.ok) { last = new Error('HTTP ' + r.status); break; }
+                    const tx = await r.text(); let out = tx;
+                    if (/^\s*data:/.test(tx)) out = tx.split('\n').filter(l => l.startsWith('data:')).map(l => { try { const j = JSON.parse(l.slice(5)); const c = j.choices && j.choices[0]; return (c && ((c.delta && c.delta.content) || (c.message && c.message.content))) || ''; } catch (e) { return ''; } }).join('');
+                    else if (oa) { try { const j = JSON.parse(tx); out = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || ''; } catch (e) { out = ''; } }
+                    out = String(out || '').trim(); if (out && !/^\s*[{<]/.test(out)) { onText(out); return out; }
+                    last = new Error('empty'); break;
+                }
+            }
+            throw last || new Error('free');
+        };
+        // the assistant header always says which brain answers
+        addEventListener('load', () => setTimeout(() => { try { if (!AI.cfg.brand || AI.cfg.brand === 'local' || AI.cfg.brand === 'auto') { if (!['anthropic', 'gemini', 'openrouter', 'groq'].some(k => aiKey(k))) { AI.cfg.brand = 'free'; aiSaveCfg(); } } AI.freeDown = 0; aiStatus(); } catch (e) { } }, 2200));
+    } catch (e) { }
+
+    // ---------- 3) classes without the server ----------
+    const toast = m => { try { sxToast(m); } catch (e) { } };
+    const LSg = k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, LSs = (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } };
+    const rid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    let idb = null; const DB = () => idb || (idb = new Promise((ok, no) => { try { const q = indexedDB.open('sparkCls', 1); q.onupgradeneeded = () => q.result.createObjectStore('b'); q.onsuccess = () => ok(q.result); q.onerror = () => no(q.error); } catch (e) { no(e); } }));
+    const bPut = async (k, v) => { try { const d = await DB(); await new Promise((ok, no) => { const t = d.transaction('b', 'readwrite'); t.objectStore('b').put(v, k); t.oncomplete = ok; t.onerror = () => no(t.error); }); } catch (e) { LSs('spark_clsb|' + k, v); } };
+    const bGet = async k => { try { const d = await DB(); const v = await new Promise((ok, no) => { const q = d.transaction('b').objectStore('b').get(k); q.onsuccess = () => ok(q.result); q.onerror = () => no(q.error); }); if (v != null) return v; } catch (e) { } return LSg('spark_clsb|' + k); };
+    let CUR = null; const dbKey = C => 'spark_cls_db|' + C.id + '|' + String(C.email).toLowerCase();
+    const load = C => { try { return Object.assign({ members: {}, subs: [], msgs: [] }, JSON.parse(LSg(dbKey(C)) || '{}')); } catch (e) { return { members: {}, subs: [], msgs: [] }; } };
+    const save = (C, D) => LSs(dbKey(C), JSON.stringify(D));
+    const slug = s => String(s || '').replace(/[\\/:*?"<>|\s]+/g, '-').slice(0, 40);
+    function sheet(icon, title, html, btns) {
+        let s = document.getElementById('clsShare'); if (s) s.remove(); s = document.createElement('div'); s.id = 'clsShare'; s.dir = 'rtl'; s.setAttribute('role', 'dialog'); s.setAttribute('aria-modal', 'true');
+        s.innerHTML = `<div><i class="fa-solid ${icon} big"></i><h4>${title}</h4><div>${html}</div>${(btns || []).map((b, i) => `<button class="${b[2] ? 'pri' : ''}" data-i="${i}">${b[0]}</button>`).join('')}<button data-x>تم</button></div>`;
+        document.body.appendChild(s); s.querySelectorAll('[data-i]').forEach(x => x.onclick = () => btns[+x.dataset.i][1]()); s.querySelector('[data-x]').onclick = () => s.remove(); s.onclick = e => { if (e.target === s) s.remove(); };
+    }
+    function download(name, obj) {
+        const blob = new Blob([JSON.stringify(obj)], { type: 'application/json' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    }
+    function shareText(t) { try { if (window.SparkAndroid && SparkAndroid.share) return SparkAndroid.share(t); } catch (e) { } try { if (navigator.share) return navigator.share({ text: t }).catch(() => { }); } catch (e) { } window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank'); }
+    function sendFile(C, name, pkg, who) {
+        download(name, pkg);
+        sheet('fa-file-circle-check', 'تم تجهيز الملف ✓', `حُفظ الملف <b dir="ltr">${esc(name)}</b> على جهازك.<br>أرسله ${who} عبر واتساب أو أي تطبيق، ثم يفتحه من زر «استلام ملف» داخل لوحة الصف.`,
+            [['<i class="fa-solid fa-download"></i> حفظ الملف مرة أخرى', () => download(name, pkg)], ['<i class="fa-brands fa-whatsapp"></i> رسالة تنبيه عبر واتساب', () => shareText(`📎 أرسلت لك ملف «${pkg.t}» من منصة SPARKSimLab — صف ${C.cname || ''}. افتحه من لوحة الصف ← استلام ملف.`), 1]]);
+    }
+    window.sparkClsLocal = async function (a, x, C, teacher) {
+        x = x || {}; CUR = C; const D = load(C), me = String(C.email).toLowerCase(), now = Date.now();
+        const st = () => { const S = teacher ? D.subs : D.subs.filter(s => s.e === me); return { ok: 1, local: 1, role: teacher ? 't' : 's', name: C.cname, seats: C.seats, count: Object.keys(D.members).length, teacher: '', subs: S.map(s => ({ id: s.id, e: s.e, n: s.n, t: s.t, at: s.at, st: s.st, g: s.g, cm: s.cm, rev: !!s.rev, rat: s.rat })), msgs: D.msgs.slice(-400), members: teacher ? Object.keys(D.members).map(e => ({ e, n: D.members[e].n, at: D.members[e].at, last: D.members[e].last })) : [] }; };
+        if (a === 'cjoin') { setTimeout(() => { try { toast('الصف يعمل بدون خادم: التسليم والتصحيح يتمّان بملف ترسله عبر واتساب'); } catch (e) { } }, 1200); return { ok: 1, token: 'L-' + rid(), role: teacher ? 't' : 's', seats: C.seats, count: 0, name: C.cname, local: 1 }; }
+        if (a === 'cstate') return st();
+        if (a === 'csubmit') {
+            const data = String(x.data || ''); if (!data) throw { m: 'لا يوجد مشروع لتسليمه' };
+            const id = rid(), s = { id, e: me, n: C.name, t: String(x.title || 'مشروع').slice(0, 80), at: now, st: 'new', g: '', cm: '', rev: 0, rat: 0 };
+            await bPut(id, data); D.subs.push(s); save(C, D);
+            sendFile(C, `تسليم-${slug(C.name)}-${slug(s.t)}.spark`, { spark: 'cls', v: 1, ty: 'sub', cls: C.id, cname: C.cname, id, e: me, n: C.name, t: s.t, at: now, data }, 'لمعلمك');
+            return { ok: 1, id };
+        }
+        if (a === 'cget') { const v = await bGet(x.id + (x.rev ? '|r' : '')); if (!v) throw { m: 'الملف غير موجود على هذا الجهاز' }; return { ok: 1, data: v }; }
+        if (a === 'creview') {
+            const s = D.subs.find(z => z.id === x.id); if (!s) throw { m: 'التسليم غير موجود' };
+            s.st = 'done'; s.g = String(x.grade || '').slice(0, 12); s.cm = String(x.comment || '').slice(0, 1500); s.rat = now; if (x.data) { await bPut(s.id + '|r', String(x.data)); s.rev = 1; } save(C, D);
+            sendFile(C, `تصحيح-${slug(s.n)}-${slug(s.t)}.spark`, { spark: 'cls', v: 1, ty: 'rev', cls: C.id, cname: C.cname, id: s.id, e: s.e, t: s.t, g: s.g, cm: s.cm, rat: now, data: x.data ? String(x.data) : '' }, 'للطالب');
+            return { ok: 1 };
+        }
+        if (a === 'cmsg') {
+            const tx = String(x.text || '').trim().slice(0, 1500); if (!tx) return { ok: 0 };
+            D.msgs.push({ f: me, to: teacher ? (x.to || '*') : 'T', tx, at: now, n: C.name }); save(C, D);
+            shareText(`💬 ${C.name} — صف ${C.cname || ''}:\n${tx}`); return { ok: 1 };
+        }
+        if (a === 'ckick') { delete D.members[String(x.to || '').toLowerCase()]; D.subs = D.subs.filter(s => s.e !== String(x.to || '').toLowerCase()); save(C, D); return { ok: 1 }; }
+        throw { m: 'غير متاح بدون خادم' };
+    };
+    async function importFile(file) {
+        const C = CUR || (sparkAcc && sparkAcc.cls && sparkAcc.cls()); if (!C) return; const teacher = C.role === 't', me = String(C.email).toLowerCase();
+        let p; try { p = JSON.parse(await file.text()); } catch (e) { return toast('هذا ليس ملف صف من SPARKSimLab'); }
+        if (!p || p.spark !== 'cls') return toast('هذا ليس ملف صف من SPARKSimLab');
+        if (p.cls !== C.id) return toast('هذا الملف لصف آخر');
+        const D = load(C);
+        if (p.ty === 'sub') {
+            if (!teacher) return toast('ملفات التسليم يفتحها المعلم');
+            const e = String(p.e || '').toLowerCase(); if (!D.members[e] && Object.keys(D.members).length >= (+C.seats || 30)) return toast('اكتمل عدد طلاب الصف');
+            D.members[e] = Object.assign(D.members[e] || { at: Date.now() }, { n: p.n || e, last: Date.now() });
+            if (!D.subs.some(s => s.id === p.id)) { await bPut(p.id, String(p.data || '')); D.subs.push({ id: p.id, e, n: p.n, t: p.t, at: p.at || Date.now(), st: 'new', g: '', cm: '', rev: 0, rat: 0 }); }
+            save(C, D); toast('وصل مشروع «' + p.t + '» من ' + (p.n || e) + ' ✓');
+        } else if (p.ty === 'rev') {
+            if (teacher) return toast('ملف التصحيح يفتحه الطالب');
+            if (String(p.e || '').toLowerCase() !== me) return toast('هذا التصحيح لطالب آخر');
+            let s = D.subs.find(z => z.id === p.id); if (!s) { s = { id: p.id, e: me, n: C.name, t: p.t, at: p.rat }; D.subs.push(s); }
+            Object.assign(s, { st: 'done', g: p.g, cm: p.cm, rat: p.rat }); if (p.data) { await bPut(p.id + '|r', p.data); s.rev = 1; } save(C, D);
+            toast('وصل تصحيح «' + p.t + '»' + (p.g ? ' — الدرجة ' + p.g : '') + ' ✓');
+        } else return toast('ملف غير معروف');
+        try { sparkClsRefresh(); } catch (e) { }
+    }
+    window.sparkClsImport = importFile;
+    // banner + "receive file" button inside the class panel while working without the server
+    setInterval(() => {
+        const p = document.getElementById('clsPanel'); if (!p || p.querySelector('#clsLoc') || !(window.sparkClsIsLocal && sparkClsIsLocal())) return;
+        const C = sparkAcc.cls(), t = C && C.role === 't', head = p.querySelector('.ct') || p.firstElementChild; if (!head) return;
+        const d = document.createElement('div'); d.id = 'clsLoc';
+        d.innerHTML = `<b><i class="fa-solid fa-plug-circle-xmark"></i> الصف يعمل بدون خادم</b><br>${t ? 'يرسل لك الطلاب مشاريعهم كملف (واتساب أو غيره)، افتحه من هنا، صحّحه وأعطِ الدرجة، فيُجهَّز ملف التصحيح لترسله للطالب.' : 'عند التسليم يُحفظ ملف المشروع، أرسله لمعلمك. ولما يصلك ملف التصحيح افتحه من هنا.'}<button type="button"><i class="fa-solid fa-file-import"></i>استلام ملف ${t ? 'من طالب' : 'من المعلم'}</button><input type="file" accept=".spark,.json,application/json,application/octet-stream" multiple hidden>`;
+        const inp = d.querySelector('input'); d.querySelector('button').onclick = () => inp.click(); inp.onchange = async () => { for (const f of inp.files) await importFile(f); inp.value = ''; };
+        head.after(d);
+    }, 400);
 })();
 
         window.onload = function () {
